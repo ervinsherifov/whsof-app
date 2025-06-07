@@ -59,7 +59,7 @@ const App = () => (
             } />
             
             <Route path="/tasks" element={
-              <ProtectedRoute allowedRoles={['OFFICE_ADMIN', 'SUPER_ADMIN']}>
+              <ProtectedRoute allowedRoles={['OFFICE_ADMIN', 'SUPER_ADMIN', 'WAREHOUSE_STAFF']}>
                 <Layout>
                   <TaskManagement />
                 </Layout>

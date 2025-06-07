@@ -40,7 +40,7 @@ const sidebarItems: SidebarItem[] = [
   {
     label: 'Task Management',
     path: '/tasks',
-    roles: ['OFFICE_ADMIN', 'SUPER_ADMIN'],
+    roles: ['OFFICE_ADMIN', 'SUPER_ADMIN', 'WAREHOUSE_STAFF'],
   },
   {
     label: 'Reports',
