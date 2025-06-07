@@ -193,4 +193,25 @@
   .focus-visible:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
+
+  /* Hide Lovable edit button and branding */
+  iframe[src*="lovable"] {
+    display: none !important;
+  }
+
+  /* Hide any lovable branded elements */
+  [data-lovable], [class*="lovable"], [id*="lovable"] {
+    display: none !important;
+  }
+
+  /* Mobile optimization - prevent horizontal scroll */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
 }
