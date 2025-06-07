@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Fullscreen, Tv } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const TVDashboard: React.FC = () => {
@@ -8,6 +10,26 @@ export const TVDashboard: React.FC = () => {
   const [trucks, setTrucks] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -75,52 +97,64 @@ export const TVDashboard: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
-        return 'bg-blue-500';
+        return 'bg-secondary text-secondary-foreground';
       case 'ARRIVED':
-        return 'bg-green-500';
+        return 'bg-green-600 text-white';
       case 'DONE':
-        return 'bg-gray-500';
+        return 'bg-muted text-muted-foreground';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'URGENT':
-        return 'bg-red-500';
+        return 'bg-destructive text-destructive-foreground';
       case 'HIGH':
-        return 'bg-orange-500';
+        return 'bg-orange-600 text-white';
       case 'MEDIUM':
-        return 'bg-yellow-500';
+        return 'bg-secondary text-secondary-foreground';
       case 'LOW':
-        return 'bg-green-500';
+        return 'bg-green-600 text-white';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-4xl font-bold">Loading...</div>
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-6xl 4xl:text-8xl font-bold">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 lg:p-8">
+    <div className="h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6">
+      {/* Fullscreen Toggle */}
+      <div className="absolute top-2 right-2 z-10">
+        <Button 
+          onClick={toggleFullscreen}
+          variant="outline"
+          size="sm"
+          className="bg-background/80 backdrop-blur"
+        >
+          {isFullscreen ? <Tv className="w-4 h-4" /> : <Fullscreen className="w-4 h-4" />}
+        </Button>
+      </div>
+
       {/* Header */}
-      <div className="text-center mb-6 lg:mb-8">
-        <h1 className="text-3xl lg:text-6xl font-bold mb-2 lg:mb-4">Warehouse Operations</h1>
-        <div className="text-2xl lg:text-4xl font-mono text-muted-foreground">
+      <div className="text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0">
+        <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4">Warehouse Operations</h1>
+        <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground">
           {currentTime.toLocaleTimeString('en-US', { 
             hour12: false,
             hour: '2-digit',
             minute: '2-digit'
           })}
         </div>
-        <div className="text-lg lg:text-2xl text-muted-foreground">
+        <div className="text-lg lg:text-2xl 4xl:text-3xl text-muted-foreground">
           {currentTime.toLocaleDateString('en-US', { 
             weekday: 'long',
             year: 'numeric',
@@ -130,47 +164,40 @@ export const TVDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
+      {/* Main Content Grid */}
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 lg:gap-4 4xl:gap-6 min-h-0">
         {/* Trucks Status */}
-        <Card className="h-fit">
-          <CardHeader className="pb-2 lg:pb-4">
-            <CardTitle className="text-xl lg:text-3xl">Truck Status</CardTitle>
+        <Card className="flex flex-col min-h-0">
+          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
+            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Truck Status</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 lg:space-y-4">
+          <CardContent className="flex-1 overflow-y-auto">
+            <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
               {trucks.slice(0, 6).map((truck) => (
                 <div 
                   key={truck.id}
-                  className="border rounded-lg p-3 lg:p-4 bg-card"
+                  className="border border-border rounded-lg p-2 lg:p-3 4xl:p-4 bg-card"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-lg lg:text-2xl font-bold">{truck.license_plate}</div>
-                    <Badge 
-                      className={`text-white text-sm lg:text-lg px-2 lg:px-3 py-1 ${getStatusColor(truck.status)}`}
-                    >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-base lg:text-xl 4xl:text-2xl font-bold">{truck.license_plate}</div>
+                    <Badge className={`text-xs lg:text-sm 4xl:text-lg px-2 py-1 ${getStatusColor(truck.status)}`}>
                       {truck.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 lg:gap-4 text-sm lg:text-lg">
+                  <div className="grid grid-cols-2 gap-1 lg:gap-2 text-xs lg:text-sm 4xl:text-lg">
                     <div>
                       <span className="text-muted-foreground">Ramp:</span>
-                      <div className="font-bold text-lg lg:text-2xl">
+                      <div className="font-bold text-sm lg:text-lg 4xl:text-xl">
                         {truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}
                       </div>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Pallets:</span>
-                      <div className="font-bold text-lg lg:text-2xl">{truck.pallet_count}</div>
+                      <div className="font-bold text-sm lg:text-lg 4xl:text-xl">{truck.pallet_count}</div>
                     </div>
                   </div>
-                  <div className="mt-2 text-sm lg:text-lg">
+                  <div className="mt-1 text-xs lg:text-sm 4xl:text-lg truncate">
                     <span className="text-muted-foreground">Cargo:</span> {truck.cargo_description}
-                  </div>
-                  <div className="mt-2 text-sm lg:text-lg">
-                    <span className="text-muted-foreground">Staff:</span> {truck.assigned_staff_name || 'Not assigned'}
-                  </div>
-                  <div className="mt-2 text-sm lg:text-lg">
-                    <span className="text-muted-foreground">Arrival:</span> {truck.arrival_date} {truck.arrival_time}
                   </div>
                 </div>
               ))}
@@ -179,39 +206,35 @@ export const TVDashboard: React.FC = () => {
         </Card>
 
         {/* Urgent Tasks */}
-        <Card className="h-fit">
-          <CardHeader className="pb-2 lg:pb-4">
-            <CardTitle className="text-xl lg:text-3xl">Urgent Tasks</CardTitle>
+        <Card className="flex flex-col min-h-0">
+          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
+            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Urgent Tasks</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 lg:space-y-4">
+          <CardContent className="flex-1 overflow-y-auto">
+            <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
               {tasks.map((task) => (
                 <div 
                   key={task.id}
-                  className="border rounded-lg p-3 lg:p-4 bg-card"
+                  className="border border-border rounded-lg p-2 lg:p-3 4xl:p-4 bg-card"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-base lg:text-xl font-bold line-clamp-2">{task.title}</div>
-                    <Badge 
-                      className={`text-white text-sm lg:text-lg px-2 lg:px-3 py-1 ${getPriorityColor(task.priority)}`}
-                    >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="text-sm lg:text-lg 4xl:text-xl font-bold line-clamp-2 flex-1 mr-2">{task.title}</div>
+                    <Badge className={`text-xs lg:text-sm 4xl:text-lg px-2 py-1 ${getPriorityColor(task.priority)}`}>
                       {task.priority}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4 text-sm lg:text-lg">
-                    <div>
-                      <span className="text-muted-foreground">Assigned to:</span>
-                      <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
-                    </div>
+                  <div className="text-xs lg:text-sm 4xl:text-lg">
+                    <div className="text-muted-foreground">Assigned to:</div>
+                    <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
                     {task.due_date && (
-                      <div>
-                        <span className="text-muted-foreground">Due:</span>
-                        <div className="font-bold text-base lg:text-xl">
+                      <div className="mt-1">
+                        <span className="text-muted-foreground">Due: </span>
+                        <span className="font-bold">
                           {new Date(task.due_date).toLocaleTimeString('en-US', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
                           })}
-                        </div>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -220,66 +243,66 @@ export const TVDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Ramp Status Grid */}
+        <Card className="flex flex-col min-h-0">
+          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
+            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Ramp Status</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col">
+            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2 4xl:gap-3 flex-1">
+              {Array.from({ length: 12 }, (_, i) => {
+                const rampNumber = i + 1;
+                const isUnloading = rampNumber <= 6;
+                const occupyingTruck = trucks.find(truck => 
+                  truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
+                );
+                const isOccupied = !!occupyingTruck;
+                
+                return (
+                  <div 
+                    key={rampNumber}
+                    className={`
+                      aspect-square rounded-lg border-2 flex flex-col items-center justify-center text-center p-1 lg:p-2 4xl:p-3
+                      ${isOccupied 
+                        ? 'bg-destructive/10 border-destructive text-destructive' 
+                        : 'bg-green-100 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
+                      }
+                    `}
+                  >
+                    <div className="text-lg lg:text-2xl 4xl:text-4xl font-bold">#{rampNumber}</div>
+                    <div className="text-xs lg:text-sm 4xl:text-lg font-medium">
+                      {isUnloading ? 'Unloading' : 'Loading'}
+                    </div>
+                    <div className="text-xs lg:text-sm 4xl:text-lg font-bold">
+                      {isOccupied ? 'BUSY' : 'FREE'}
+                    </div>
+                    {occupyingTruck && (
+                      <div className="text-xs lg:text-sm 4xl:text-base truncate w-full">
+                        {occupyingTruck.license_plate}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 lg:mt-4 flex justify-center space-x-3 lg:space-x-6 text-xs lg:text-sm 4xl:text-lg flex-shrink-0">
+              <div className="flex items-center space-x-1 lg:space-x-2">
+                <div className="w-2 h-2 lg:w-3 lg:h-3 4xl:w-4 4xl:h-4 bg-destructive rounded"></div>
+                <span>Occupied</span>
+              </div>
+              <div className="flex items-center space-x-1 lg:space-x-2">
+                <div className="w-2 h-2 lg:w-3 lg:h-3 4xl:w-4 4xl:h-4 bg-green-600 rounded"></div>
+                <span>Available</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Ramp Status Grid */}
-      <Card>
-        <CardHeader className="pb-2 lg:pb-4">
-          <CardTitle className="text-xl lg:text-3xl">Ramp Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 lg:gap-4">
-            {Array.from({ length: 12 }, (_, i) => {
-              const rampNumber = i + 1;
-              const isUnloading = rampNumber <= 6;
-              const occupyingTruck = trucks.find(truck => 
-                truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
-              );
-              const isOccupied = !!occupyingTruck;
-              
-              return (
-                <div 
-                  key={rampNumber}
-                  className={`
-                    aspect-square rounded-lg border-2 flex flex-col items-center justify-center text-center p-2 lg:p-4
-                    ${isOccupied 
-                      ? 'bg-red-100 border-red-500 text-red-700' 
-                      : 'bg-green-100 border-green-500 text-green-700'
-                    }
-                  `}
-                >
-                  <div className="text-xl lg:text-3xl font-bold">#{rampNumber}</div>
-                  <div className="text-xs lg:text-sm font-medium">
-                    {isUnloading ? 'Unloading' : 'Loading'}
-                  </div>
-                  <div className="text-sm lg:text-lg font-bold mt-1">
-                    {isOccupied ? 'BUSY' : 'FREE'}
-                  </div>
-                  {occupyingTruck && (
-                    <div className="text-xs mt-1 truncate w-full">
-                      {occupyingTruck.license_plate}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-4 lg:mt-6 flex justify-center space-x-4 lg:space-x-8 text-sm lg:text-lg">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 lg:w-4 lg:h-4 bg-red-500 rounded"></div>
-              <span>Occupied</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded"></div>
-              <span>Available</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Auto-refresh indicator */}
-      <div className="fixed bottom-2 lg:bottom-4 right-2 lg:right-4 text-muted-foreground text-sm lg:text-lg">
-        Auto-refresh: 10s • Realtime updates
+      <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded">
+        Auto-refresh: 10s • Realtime
       </div>
     </div>
   );
