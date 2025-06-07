@@ -55,29 +55,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state changed:', event, session?.user?.id);
         
+        // Only synchronous state updates here
+        setSession(session);
+        setIsAuthenticated(!!session?.user);
+        
         if (session?.user) {
-          setSession(session);
-          setIsAuthenticated(true);
-          
-          // Get user profile and role
-          const profile = await getUserProfile(session.user.id);
-          if (mounted && profile) {
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              name: profile.display_name || profile.email || session.user.email || '',
-              role: profile.role
+          // Defer Supabase calls with setTimeout to prevent deadlock
+          setTimeout(() => {
+            if (!mounted) return;
+            getUserProfile(session.user.id).then(profile => {
+              if (mounted && profile) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  name: profile.display_name || profile.email || session.user.email || '',
+                  role: profile.role
+                });
+              }
             });
-          }
+          }, 0);
         } else {
-          setSession(null);
           setUser(null);
-          setIsAuthenticated(false);
         }
         
         if (mounted) {
@@ -91,30 +94,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       if (!mounted) return;
       
+      // Synchronous state updates
+      setSession(existingSession);
+      setIsAuthenticated(!!existingSession?.user);
+      
       if (existingSession?.user) {
-        setSession(existingSession);
-        setIsAuthenticated(true);
-        
-        // Get user profile and role
-        getUserProfile(existingSession.user.id).then(profile => {
-          if (mounted && profile) {
-            setUser({
-              id: existingSession.user.id,
-              email: existingSession.user.email || '',
-              name: profile.display_name || profile.email || existingSession.user.email || '',
-              role: profile.role
-            });
-          }
-          if (mounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
-        });
+        // Defer profile fetching to prevent blocking
+        setTimeout(() => {
+          if (!mounted) return;
+          getUserProfile(existingSession.user.id).then(profile => {
+            if (mounted && profile) {
+              setUser({
+                id: existingSession.user.id,
+                email: existingSession.user.email || '',
+                name: profile.display_name || profile.email || existingSession.user.email || '',
+                role: profile.role
+              });
+            }
+          });
+        }, 0);
       } else {
-        if (mounted) {
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
+        setUser(null);
+      }
+      
+      // Always set loading to false and initialized to true
+      if (mounted) {
+        setIsLoading(false);
+        setIsInitialized(true);
       }
     });
 
