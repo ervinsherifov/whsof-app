@@ -128,6 +128,30 @@ export type Database = {
         }
         Relationships: []
       }
+      truck_completion_photos: {
+        Row: {
+          created_at: string
+          id: string
+          photo_url: string
+          truck_id: string
+          uploaded_by_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_url: string
+          truck_id: string
+          uploaded_by_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_url?: string
+          truck_id?: string
+          uploaded_by_user_id?: string
+        }
+        Relationships: []
+      }
       trucks: {
         Row: {
           arrival_date: string

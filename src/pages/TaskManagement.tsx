@@ -145,9 +145,34 @@ export const TaskManagement: React.FC = () => {
       
       let dueDateTime = null;
       if (formData.dueDate && formData.dueTime) {
-        dueDateTime = new Date(`${formData.dueDate}T${formData.dueTime}`).toISOString();
+        const taskDateTime = new Date(`${formData.dueDate}T${formData.dueTime}`);
+        const now = new Date();
+        
+        if (taskDateTime < now) {
+          toast({
+            title: 'Invalid due date',
+            description: 'Cannot schedule tasks in the past',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        dueDateTime = taskDateTime.toISOString();
       } else if (formData.dueDate) {
-        dueDateTime = new Date(formData.dueDate).toISOString();
+        const taskDate = new Date(formData.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (taskDate < today) {
+          toast({
+            title: 'Invalid due date',
+            description: 'Cannot schedule tasks in the past',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        dueDateTime = taskDate.toISOString();
       }
       
       const { error } = await supabase
@@ -327,6 +352,7 @@ export const TaskManagement: React.FC = () => {
                   <Input
                     id="dueDate"
                     type="date"
+                    min={new Date().toISOString().split('T')[0]}
                     value={formData.dueDate}
                     onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
                   />
