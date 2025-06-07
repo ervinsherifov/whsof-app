@@ -123,14 +123,13 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Create user in Supabase Auth using admin API (doesn't auto-login)
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            name: formData.name
-          }
+        email_confirm: true, // Skip email confirmation
+        user_metadata: {
+          name: formData.name
         }
       });
 
@@ -209,20 +208,10 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // First delete the user's profile and role (the auth user will be handled by RLS)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', userId);
+      // Delete user from Supabase Auth (this will cascade to profiles/roles via triggers)
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
 
-      if (profileError) throw profileError;
-
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (roleError) throw roleError;
+      if (authError) throw authError;
 
       toast({
         title: 'User deleted',
