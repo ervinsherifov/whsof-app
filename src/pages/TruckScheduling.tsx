@@ -293,14 +293,9 @@ export const TruckScheduling: React.FC = () => {
   };
 
   const getRampOccupancy = (rampNumber: number) => {
-    const now = new Date();
+    // A ramp is occupied if there's an ARRIVED truck assigned to it
     const currentTruck = trucks.find(truck => {
-      if (truck.ramp_number !== rampNumber || truck.status === 'DONE') return false;
-      
-      const arrivalTime = new Date(`${truck.arrival_date}T${truck.arrival_time}`);
-      const endTime = new Date(arrivalTime.getTime() + 50 * 60 * 1000);
-      
-      return now >= arrivalTime && now <= endTime;
+      return truck.ramp_number === rampNumber && truck.status === 'ARRIVED';
     });
     
     return currentTruck;
