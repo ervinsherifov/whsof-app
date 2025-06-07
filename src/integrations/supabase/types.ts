@@ -150,7 +150,15 @@ export type Database = {
           truck_id?: string
           uploaded_by_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_truck_completion_photos_truck_id"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trucks: {
         Row: {

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { Search, Download } from 'lucide-react';
@@ -23,6 +24,11 @@ export const Reports: React.FC = () => {
   const [truckSearchQuery, setTruckSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Check if user has access to all reports (super admin) or limited access (office staff)
+  const hasFullAccess = user?.role === 'SUPER_ADMIN';
+  const hasOfficeAccess = user?.role === 'OFFICE_ADMIN' || user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     fetchData();
@@ -240,30 +246,31 @@ export const Reports: React.FC = () => {
         </p>
       </div>
 
-      {/* Report Generation */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Report</CardTitle>
-          <CardDescription>
-            Select report parameters and export data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            <div className="space-y-2">
-              <Label htmlFor="reportType">Report Type</Label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="time_logs">Time Logs</SelectItem>
-                  <SelectItem value="truck_activity">Truck Activity</SelectItem>
-                  <SelectItem value="task_summary">Task Summary</SelectItem>
-                  <SelectItem value="productivity">Productivity Report</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Report Generation - Role-based access */}
+      {hasOfficeAccess && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Generate Report</CardTitle>
+            <CardDescription>
+              Select report parameters and export data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              <div className="space-y-2">
+                <Label htmlFor="reportType">Report Type</Label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select report type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
+                    <SelectItem value="truck_activity">Truck Activity</SelectItem>
+                    {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
+                    {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
 
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
@@ -343,8 +350,10 @@ export const Reports: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
-      {/* Summary Statistics */}
+      {/* Summary Statistics - Only for Super Admin */}
+      {hasFullAccess && (
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
@@ -386,9 +395,10 @@ export const Reports: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
-      {/* Time Logs Report */}
-      {(reportType === 'time_logs' || reportType === '') && (
+      {/* Time Logs Report - Super Admin Only */}
+      {hasFullAccess && (reportType === 'time_logs' || reportType === '') && (
         <Card>
           <CardHeader>
             <CardTitle>Time Logs Report</CardTitle>
@@ -449,8 +459,8 @@ export const Reports: React.FC = () => {
         </Card>
       )}
 
-      {/* Truck Activity Report */}
-      {(reportType === 'truck_activity' || reportType === '') && (
+      {/* Truck Activity Report - Office staff and Super Admin */}
+      {hasOfficeAccess && (reportType === 'truck_activity' || reportType === '') && (
         <Card>
           <CardHeader>
             <CardTitle>Truck Activity Report</CardTitle>
@@ -503,66 +513,73 @@ export const Reports: React.FC = () => {
         </Card>
       )}
 
-      {/* Quick Export Buttons */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Export</CardTitle>
-          <CardDescription>
-            Export common reports with predefined settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => exportToXLSX(timeEntries.map(entry => ({
-                userName: entry.profiles?.display_name || entry.profiles?.email,
-                date: new Date(entry.check_in_time).toLocaleDateString(),
-                checkIn: new Date(entry.check_in_time).toLocaleTimeString(),
-                checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString() : 'Not checked out',
-                regularHours: entry.regular_hours || 0,
-                overtimeHours: entry.overtime_hours || 0,
-                totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
-              })), 'daily_time_report')}
-            >
-              Export Today's Time Report
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => exportToXLSX(trucks.map(truck => ({
-                licensePlate: truck.license_plate,
-                arrivalDate: truck.arrival_date,
-                arrivalTime: truck.arrival_time,
-                rampNumber: truck.ramp_number,
-                palletCount: truck.pallet_count,
-                status: truck.status,
-                assignedStaff: truck.assigned_staff_name,
-                cargoDescription: truck.cargo_description
-              })), 'daily_truck_report')}
-            >
-              Export Today's Truck Report
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                const summaryData = [{
-                  date: new Date().toISOString().split('T')[0],
-                  totalHours: summary.totalHours,
-                  overtimeHours: summary.totalOvertime,
-                  trucksProcessed: summary.totalTrucks,
-                  completedTasks: summary.totalTasks
-                }];
-                exportToXLSX(summaryData, 'daily_summary');
-              }}
-            >
-              Export Daily Summary
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Quick Export Buttons - Role-based */}
+      {hasOfficeAccess && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Export</CardTitle>
+            <CardDescription>
+              Export common reports with predefined settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {hasFullAccess && (
+                <Button 
+                  variant="outline"
+                  onClick={() => exportToXLSX(timeEntries.map(entry => ({
+                    userName: entry.profiles?.display_name || entry.profiles?.email,
+                    date: new Date(entry.check_in_time).toLocaleDateString(),
+                    checkIn: new Date(entry.check_in_time).toLocaleTimeString(),
+                    checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString() : 'Not checked out',
+                    regularHours: entry.regular_hours || 0,
+                    overtimeHours: entry.overtime_hours || 0,
+                    totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
+                  })), 'daily_time_report')}
+                >
+                  Export Today's Time Report
+                </Button>
+              )}
+              <Button 
+                variant="outline"
+                onClick={() => exportToXLSX(trucks.map(truck => ({
+                  licensePlate: truck.license_plate,
+                  arrivalDate: truck.arrival_date,
+                  arrivalTime: truck.arrival_time,
+                  rampNumber: truck.ramp_number,
+                  palletCount: truck.pallet_count,
+                  status: truck.status,
+                  assignedStaff: truck.assigned_staff_name,
+                  cargoDescription: truck.cargo_description
+                })), 'daily_truck_report')}
+              >
+                Export Today's Truck Report
+              </Button>
+              {hasFullAccess && (
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    const summaryData = [{
+                      date: new Date().toISOString().split('T')[0],
+                      totalHours: summary.totalHours,
+                      overtimeHours: summary.totalOvertime,
+                      trucksProcessed: summary.totalTrucks,
+                      completedTasks: summary.totalTasks
+                    }];
+                    exportToXLSX(summaryData, 'daily_summary');
+                  }}
+                >
+                  Export Daily Summary
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Completed Trucks with Photos */}
-      <Card>
+      {/* Completed Trucks with Photos - Office staff and Super Admin */}
+      {hasOfficeAccess && (
+        <Card>
         <CardHeader>
           <CardTitle>Completed Trucks with Photos</CardTitle>
           <CardDescription>
@@ -658,6 +675,7 @@ export const Reports: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };
