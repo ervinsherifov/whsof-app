@@ -56,6 +56,7 @@ export const TruckScheduling: React.FC = () => {
 
   const [formData, setFormData] = useState({
     licensePlate: '',
+    arrivalDate: '',
     arrivalTime: '',
     rampNumber: '',
     palletCount: '',
@@ -131,6 +132,7 @@ export const TruckScheduling: React.FC = () => {
 
     setFormData({
       licensePlate: '',
+      arrivalDate: '',
       arrivalTime: '',
       rampNumber: '',
       palletCount: '',
@@ -177,6 +179,17 @@ export const TruckScheduling: React.FC = () => {
                   value={formData.licensePlate}
                   onChange={(e) => setFormData({...formData, licensePlate: e.target.value})}
                   placeholder="ABC-123"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="arrivalDate">Arrival Date</Label>
+                <Input
+                  id="arrivalDate"
+                  type="date"
+                  value={formData.arrivalDate}
+                  onChange={(e) => setFormData({...formData, arrivalDate: e.target.value})}
                   required
                 />
               </div>

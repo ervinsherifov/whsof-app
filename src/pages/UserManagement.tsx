@@ -203,6 +203,42 @@ export const UserManagement: React.FC = () => {
     }
   };
 
+  const deleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // First delete the user's profile and role (the auth user will be handled by RLS)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (profileError) throw profileError;
+
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (roleError) throw roleError;
+
+      toast({
+        title: 'User deleted',
+        description: `${userName} has been removed from the system`,
+      });
+
+      fetchUsers(); // Refresh the list
+    } catch (error: any) {
+      toast({
+        title: 'Error deleting user',
+        description: error.message || 'Failed to delete user',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getRoleStats = () => {
     const stats = {
       SUPER_ADMIN: 0,
@@ -410,18 +446,27 @@ export const UserManagement: React.FC = () => {
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        toast({
-                          title: 'Feature not implemented',
-                          description: 'Password reset functionality will be added soon',
-                        });
-                      }}
-                    >
-                      Reset Password
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: 'Feature not implemented',
+                            description: 'Password reset functionality will be added soon',
+                          });
+                        }}
+                      >
+                        Reset Password
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
