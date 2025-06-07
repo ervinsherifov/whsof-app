@@ -247,9 +247,42 @@ export const TruckScheduling: React.FC = () => {
       .map(truck => truck.ramp_number);
   };
 
-  const isRampAvailable = (rampNumber: number) => {
-    const occupiedRamps = getOccupiedRamps();
-    return !occupiedRamps.includes(rampNumber);
+  const isRampAvailable = (rampNumber: number, newArrivalDate?: string, newArrivalTime?: string) => {
+    if (!newArrivalDate || !newArrivalTime) {
+      // If no new schedule provided, check current occupancy for display
+      const occupiedRamps = getOccupiedRamps();
+      return !occupiedRamps.includes(rampNumber);
+    }
+
+    // Check for time conflicts with existing trucks (50-minute slots)
+    const newStart = new Date(`${newArrivalDate}T${newArrivalTime}`);
+    const newEnd = new Date(newStart.getTime() + 50 * 60 * 1000); // 50 minutes later
+
+    const conflictingTrucks = trucks.filter(truck => {
+      if (truck.ramp_number !== rampNumber || truck.status === 'DONE') return false;
+      
+      const existingStart = new Date(`${truck.arrival_date}T${truck.arrival_time}`);
+      const existingEnd = new Date(existingStart.getTime() + 50 * 60 * 1000);
+      
+      // Check if time slots overlap
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+
+    return conflictingTrucks.length === 0;
+  };
+
+  const getRampOccupancy = (rampNumber: number) => {
+    const now = new Date();
+    const currentTruck = trucks.find(truck => {
+      if (truck.ramp_number !== rampNumber || truck.status === 'DONE') return false;
+      
+      const arrivalTime = new Date(`${truck.arrival_date}T${truck.arrival_time}`);
+      const endTime = new Date(arrivalTime.getTime() + 50 * 60 * 1000);
+      
+      return now >= arrivalTime && now <= endTime;
+    });
+    
+    return currentTruck;
   };
 
   return (
@@ -358,34 +391,53 @@ export const TruckScheduling: React.FC = () => {
         <CardHeader>
           <CardTitle>Ramp Status Overview</CardTitle>
           <CardDescription>
-            Current availability of loading and unloading ramps
+            Current availability of loading and unloading ramps (50-minute time slots)
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-6 gap-4">
             {availableRamps.map((ramp) => {
-              const isAvailable = isRampAvailable(ramp.number);
-              const occupyingTruck = trucks.find(t => t.ramp_number === ramp.number && t.status !== 'DONE');
+              const currentlyOccupying = getRampOccupancy(ramp.number);
+              const isCurrentlyBusy = !!currentlyOccupying;
+              const nextTruck = trucks.find(t => 
+                t.ramp_number === ramp.number && 
+                t.status !== 'DONE' && 
+                new Date(`${t.arrival_date}T${t.arrival_time}`) > new Date()
+              );
               
               return (
                 <div 
                   key={ramp.number}
                   className={`
                     p-4 rounded-lg border text-center
-                    ${isAvailable 
-                      ? 'bg-green-50 border-green-200 text-green-700' 
-                      : 'bg-red-50 border-red-200 text-red-700'
+                    ${isCurrentlyBusy 
+                      ? 'bg-red-50 border-red-200 text-red-700' 
+                      : nextTruck
+                      ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
+                      : 'bg-green-50 border-green-200 text-green-700'
                     }
                   `}
                 >
                   <div className="font-bold text-lg">#{ramp.number}</div>
                   <div className="text-sm">{ramp.type}</div>
                   <div className="text-xs font-medium mt-1">
-                    {isAvailable ? 'Available' : 'Occupied'}
+                    {isCurrentlyBusy ? 'Occupied' : nextTruck ? 'Scheduled' : 'Available'}
                   </div>
-                  {occupyingTruck && (
+                  {currentlyOccupying && (
                     <div className="text-xs mt-1">
-                      {occupyingTruck.license_plate}
+                      {currentlyOccupying.license_plate}
+                      <br />
+                      Until: {new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000 > Date.now() 
+                        ? new Date(new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})
+                        : 'Now'
+                      }
+                    </div>
+                  )}
+                  {!currentlyOccupying && nextTruck && (
+                    <div className="text-xs mt-1">
+                      Next: {nextTruck.license_plate}
+                      <br />
+                      At: {new Date(`${nextTruck.arrival_date}T${nextTruck.arrival_time}`).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
                     </div>
                   )}
                 </div>
@@ -505,7 +557,7 @@ export const TruckScheduling: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {availableRamps
-                    .filter(ramp => isRampAvailable(ramp.number))
+                    .filter(ramp => selectedTruck ? isRampAvailable(ramp.number, selectedTruck.arrival_date, selectedTruck.arrival_time) : isRampAvailable(ramp.number))
                     .map((ramp) => (
                     <SelectItem key={ramp.number} value={ramp.number.toString()}>
                       Ramp {ramp.number} ({ramp.type})
