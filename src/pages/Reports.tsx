@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
+import { Search, Download } from 'lucide-react';
 
 export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('');
@@ -18,6 +19,8 @@ export const Reports: React.FC = () => {
   const [trucks, setTrucks] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [completedTrucks, setCompletedTrucks] = useState<any[]>([]);
+  const [truckSearchQuery, setTruckSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -79,6 +82,23 @@ export const Reports: React.FC = () => {
       
       if (taskError) throw taskError;
       setTasks(taskData || []);
+
+      // Fetch completed trucks with photos
+      const { data: completedTrucksData, error: completedTrucksError } = await supabase
+        .from('trucks')
+        .select(`
+          *,
+          truck_completion_photos(
+            id,
+            photo_url,
+            created_at
+          )
+        `)
+        .eq('status', 'DONE')
+        .order('updated_at', { ascending: false });
+      
+      if (completedTrucksError) throw completedTrucksError;
+      setCompletedTrucks(completedTrucksData || []);
 
     } catch (error: any) {
       toast({
@@ -148,6 +168,49 @@ export const Reports: React.FC = () => {
     });
   };
 
+  const downloadPhoto = async (photoUrl: string, truckLicense: string, photoIndex: number) => {
+    try {
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${truckLicense}_photo_${photoIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: 'Photo downloaded',
+        description: `Photo for truck ${truckLicense} has been downloaded`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Download failed',
+        description: 'Failed to download photo',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const downloadAllPhotosForTruck = async (truck: any) => {
+    if (!truck.truck_completion_photos || truck.truck_completion_photos.length === 0) {
+      toast({
+        title: 'No photos found',
+        description: `No photos available for truck ${truck.license_plate}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    for (let i = 0; i < truck.truck_completion_photos.length; i++) {
+      await downloadPhoto(truck.truck_completion_photos[i].photo_url, truck.license_plate, i);
+      // Add a small delay between downloads
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
+
   const getReportSummary = () => {
     const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.regular_hours || 0) + (entry.overtime_hours || 0), 0);
     const totalOvertime = timeEntries.reduce((sum, entry) => sum + (entry.overtime_hours || 0), 0);
@@ -161,6 +224,10 @@ export const Reports: React.FC = () => {
       totalTasks
     };
   };
+
+  const filteredCompletedTrucks = completedTrucks.filter(truck =>
+    truck.license_plate.toLowerCase().includes(truckSearchQuery.toLowerCase())
+  );
 
   const summary = getReportSummary();
 
@@ -490,6 +557,104 @@ export const Reports: React.FC = () => {
             >
               Export Daily Summary
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Completed Trucks with Photos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Completed Trucks with Photos</CardTitle>
+          <CardDescription>
+            View and export photos from completed truck operations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Search */}
+            <div className="flex items-center space-x-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by license plate..."
+                value={truckSearchQuery}
+                onChange={(e) => setTruckSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+
+            {loading ? (
+              <div>Loading completed trucks...</div>
+            ) : filteredCompletedTrucks.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                {truckSearchQuery ? 'No trucks found matching your search' : 'No completed trucks found'}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredCompletedTrucks.map((truck) => (
+                  <Card key={truck.id} className="border">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg">{truck.license_plate}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Completed: {new Date(truck.updated_at).toLocaleDateString()} • 
+                            Handled by: {truck.handled_by_name || 'Unknown'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {truck.pallet_count} pallets • {truck.cargo_description}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-muted-foreground">
+                            {truck.truck_completion_photos?.length || 0} photos
+                          </span>
+                          {truck.truck_completion_photos && truck.truck_completion_photos.length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => downloadAllPhotosForTruck(truck)}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download All
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {truck.truck_completion_photos && truck.truck_completion_photos.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {truck.truck_completion_photos.map((photo: any, index: number) => (
+                            <div key={photo.id} className="relative group">
+                              <img
+                                src={photo.photo_url}
+                                alt={`Completion photo ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => window.open(photo.photo_url, '_blank')}
+                              />
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => downloadPhoto(photo.photo_url, truck.license_plate, index)}
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                {new Date(photo.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No photos available for this truck
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
