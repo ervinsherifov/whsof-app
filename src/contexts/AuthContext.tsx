@@ -163,8 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (existingEntry) {
-        console.log('Already checked in');
-        return;
+        throw new Error('Already checked in today');
       }
 
       // Create new check-in entry
@@ -179,6 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Checking in at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
     } catch (error) {
       console.error('Check-in failed:', error);
+      throw error;
     }
   };
 
@@ -198,22 +198,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (!activeEntry) {
-        console.log('No active check-in found');
-        return;
+        throw new Error('No active check-in found. Please check in first.');
+      }
+
+      const checkOutTime = new Date();
+      const checkInTime = new Date(activeEntry.check_in_time);
+      
+      // Calculate worked hours and overtime
+      const workedHours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+      const dayOfWeek = checkOutTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      let regularHours = 0;
+      let overtimeHours = 0;
+      
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        // Monday to Friday: 9 hours standard, rest is overtime
+        regularHours = Math.min(workedHours, 9);
+        overtimeHours = Math.max(workedHours - 9, 0);
+      } else {
+        // Saturday and Sunday: all hours are overtime
+        overtimeHours = workedHours;
       }
 
       // Update entry with check-out time
       const { error } = await supabase
         .from('time_entries')
         .update({
-          check_out_time: new Date().toISOString()
+          check_out_time: checkOutTime.toISOString(),
+          regular_hours: regularHours,
+          overtime_hours: overtimeHours
         })
         .eq('id', activeEntry.id);
 
       if (error) throw error;
-      console.log('Checking out at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+      console.log('Checking out at:', checkOutTime.toLocaleTimeString('en-US', { hour12: false }));
+      console.log(`Worked: ${workedHours.toFixed(2)}h (Regular: ${regularHours.toFixed(2)}h, Overtime: ${overtimeHours.toFixed(2)}h)`);
     } catch (error) {
       console.error('Check-out failed:', error);
+      throw error;
     }
   };
 
