@@ -156,9 +156,9 @@ export const TaskManagement: React.FC = () => {
           title: formData.title,
           description: formData.description,
           priority: formData.priority,
-          assigned_to_user_id: formData.assignedTo || null,
+          assigned_to_user_id: formData.assignedTo === 'unassigned' ? null : formData.assignedTo || null,
           assigned_to_name: selectedStaff?.display_name || selectedStaff?.email,
-          truck_id: formData.truckId || null,
+          truck_id: formData.truckId === 'no-truck' ? null : formData.truckId || null,
           due_date: dueDateTime,
           created_by_user_id: user.id,
         });
@@ -294,7 +294,7 @@ export const TaskManagement: React.FC = () => {
                     <SelectValue placeholder="Select warehouse staff" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {profiles.map((staff) => (
                       <SelectItem key={staff.user_id} value={staff.user_id}>
                         {staff.display_name || staff.email}
@@ -311,7 +311,7 @@ export const TaskManagement: React.FC = () => {
                     <SelectValue placeholder="Select truck" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No truck</SelectItem>
+                    <SelectItem value="no-truck">No truck</SelectItem>
                     {trucks.map((truck) => (
                       <SelectItem key={truck.id} value={truck.id}>
                         {truck.license_plate} - {truck.arrival_date}
