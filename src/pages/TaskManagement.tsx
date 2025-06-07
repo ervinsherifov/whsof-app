@@ -10,9 +10,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
 
 export const TaskManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [trucks, setTrucks] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -489,7 +492,10 @@ export const TaskManagement: React.FC = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => updateTaskStatus(task.id, 'COMPLETED')}
+                          onClick={() => {
+                            setSelectedTask(task);
+                            setCompletionDialogOpen(true);
+                          }}
                         >
                           Mark Complete
                         </Button>
@@ -502,6 +508,17 @@ export const TaskManagement: React.FC = () => {
           )}
         </div>
       )}
+
+      <TaskCompletionDialog
+        taskId={selectedTask?.id || ''}
+        taskTitle={selectedTask?.title || ''}
+        isOpen={completionDialogOpen}
+        onClose={() => {
+          setCompletionDialogOpen(false);
+          setSelectedTask(null);
+        }}
+        onComplete={fetchTasks}
+      />
     </div>
   );
 };

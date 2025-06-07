@@ -42,6 +42,7 @@ export type Database = {
           assigned_to_user_id: string | null
           completed_at: string | null
           completed_by_user_id: string | null
+          completion_comment: string | null
           created_at: string
           created_by_user_id: string
           description: string | null
@@ -58,6 +59,7 @@ export type Database = {
           assigned_to_user_id?: string | null
           completed_at?: string | null
           completed_by_user_id?: string | null
+          completion_comment?: string | null
           created_at?: string
           created_by_user_id: string
           description?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           assigned_to_user_id?: string | null
           completed_at?: string | null
           completed_by_user_id?: string | null
+          completion_comment?: string | null
           created_at?: string
           created_by_user_id?: string
           description?: string | null
