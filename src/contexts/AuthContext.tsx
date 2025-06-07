@@ -59,20 +59,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string, currentToken: string) => {
     try {
+      // Get current session to get user email
+      const { data: { user: sessionUser } } = await supabase.auth.getUser();
+      
       // Get user role and profile data
       const [roleResult, profileResult] = await Promise.all([
         supabase.rpc('get_user_role', { _user_id: userId }),
         supabase.from('profiles').select('display_name').eq('user_id', userId).maybeSingle()
       ]);
 
-      // Create updated user object with fetched data
+      // Create complete user object with fetched data
       const updatedUser: User = {
         id: userId,
-        email: state.user?.email || '',
-        name: profileResult.data?.display_name || state.user?.email?.split('@')[0] || '',
+        email: sessionUser?.email || '',
+        name: profileResult.data?.display_name || sessionUser?.email?.split('@')[0] || '',
         role: roleResult.data || 'WAREHOUSE_STAFF',
         isActive: true,
-        createdAt: state.user?.createdAt || '',
+        createdAt: sessionUser?.created_at || '',
       };
       
       dispatch({ 
@@ -81,7 +84,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // Don't dispatch error here as basic auth already succeeded
+      // Create fallback user in case of error
+      const { data: { user: sessionUser } } = await supabase.auth.getUser();
+      const fallbackUser: User = {
+        id: userId,
+        email: sessionUser?.email || '',
+        name: sessionUser?.email?.split('@')[0] || '',
+        role: 'WAREHOUSE_STAFF',
+        isActive: true,
+        createdAt: sessionUser?.created_at || '',
+      };
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { user: fallbackUser, token: currentToken } 
+      });
     }
   };
 
@@ -90,18 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
-          // Create basic user object - set auth state immediately
-          const user: User = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.email?.split('@')[0] || '',
-            role: 'WAREHOUSE_STAFF', // Default role
-            isActive: true,
-            createdAt: session.user.created_at,
-          };
-          dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
+          // Keep loading state while fetching user profile
+          dispatch({ type: 'SET_LOADING', payload: true });
           
-          // Fetch additional user data asynchronously after auth state is set
+          // Fetch user profile data immediately
           setTimeout(() => {
             fetchUserProfile(session.user.id, session.access_token);
           }, 0);
@@ -114,15 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        const user: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.email?.split('@')[0] || '',
-          role: 'WAREHOUSE_STAFF',
-          isActive: true,
-          createdAt: session.user.created_at,
-        };
-        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
+        dispatch({ type: 'SET_LOADING', payload: true });
         fetchUserProfile(session.user.id, session.access_token);
       }
     });
