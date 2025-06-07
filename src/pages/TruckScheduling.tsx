@@ -124,15 +124,36 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
+    // Validate form data
+    if (!formData.licensePlate.trim() || !formData.arrivalDate || !formData.arrivalTime || 
+        !formData.palletCount || !formData.cargoDescription.trim()) {
+      toast({
+        title: 'Validation error',
+        description: 'All fields are required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const palletCount = parseInt(formData.palletCount);
+    if (isNaN(palletCount) || palletCount <= 0) {
+      toast({
+        title: 'Validation error',
+        description: 'Pallet count must be a valid positive number',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('trucks')
         .insert({
-          license_plate: formData.licensePlate,
+          license_plate: formData.licensePlate.trim(),
           arrival_date: formData.arrivalDate,
           arrival_time: formData.arrivalTime,
-          pallet_count: parseInt(formData.palletCount),
-          cargo_description: formData.cargoDescription,
+          pallet_count: palletCount,
+          cargo_description: formData.cargoDescription.trim(),
           created_by_user_id: user.id,
         });
 
