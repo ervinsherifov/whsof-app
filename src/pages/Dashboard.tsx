@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCheckInStatus } from '@/hooks/useCheckInStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export const Dashboard: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
+  const { isCheckedIn } = useCheckInStatus();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     trucks: { scheduled: 0, active: 0, completed: 0 },
     tasks: { total: 0, urgent: 0, assigned: 0 },
@@ -88,6 +94,44 @@ export const Dashboard: React.FC = () => {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  };
+
+  const handleCheckIn = async () => {
+    setIsCheckingIn(true);
+    try {
+      await checkIn();
+      toast({
+        title: "Checked In",
+        description: `Welcome! You checked in at ${getCurrentTime()}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Check-in Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    setIsCheckingOut(true);
+    try {
+      await checkOut();
+      toast({
+        title: "Checked Out",
+        description: `See you tomorrow! You checked out at ${getCurrentTime()}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Check-out Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -176,11 +220,30 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={checkIn} className="flex-1" size="sm">
-                  Check In
+                <Button 
+                  onClick={handleCheckIn} 
+                  disabled={isCheckedIn || isCheckingIn}
+                  className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95" 
+                  size="sm"
+                >
+                  {isCheckingIn ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                  ) : (
+                    "Check In"
+                  )}
                 </Button>
-                <Button onClick={checkOut} variant="outline" className="flex-1" size="sm">
-                  Check Out
+                <Button 
+                  onClick={handleCheckOut} 
+                  disabled={!isCheckedIn || isCheckingOut}
+                  variant="outline" 
+                  className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95" 
+                  size="sm"
+                >
+                  {isCheckingOut ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                  ) : (
+                    "Check Out"
+                  )}
                 </Button>
               </div>
               <div className="text-xs sm:text-sm text-muted-foreground">

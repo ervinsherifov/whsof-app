@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCheckInStatus } from '@/hooks/useCheckInStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 interface TimeEntry {
   id: string;
@@ -19,9 +21,10 @@ interface TimeEntry {
 
 export const TimeTracking: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
+  const { isCheckedIn, currentEntry } = useCheckInStatus();
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
-  const [currentEntry, setCurrentEntry] = useState<TimeEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -44,36 +47,16 @@ export const TimeTracking: React.FC = () => {
     }
   };
 
-  const fetchCurrentEntry = async () => {
-    if (!user?.id) return;
-    
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const { data, error } = await supabase
-        .from('time_entries')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('check_in_time', `${today}T00:00:00.000Z`)
-        .is('check_out_time', null)
-        .maybeSingle();
-
-      if (error) throw error;
-      setCurrentEntry(data);
-    } catch (error) {
-      console.error('Error fetching current entry:', error);
-    }
-  };
-
   useEffect(() => {
     if (user?.id) {
-      Promise.all([fetchTimeEntries(), fetchCurrentEntry()]).finally(() => {
+      fetchTimeEntries().finally(() => {
         setIsLoading(false);
       });
     }
   }, [user?.id]);
 
   const refreshData = async () => {
-    await Promise.all([fetchTimeEntries(), fetchCurrentEntry()]);
+    await fetchTimeEntries();
   };
 
   const handleCheckIn = async () => {
@@ -81,6 +64,16 @@ export const TimeTracking: React.FC = () => {
     try {
       await checkIn();
       await refreshData();
+      toast({
+        title: "Checked In",
+        description: `Welcome! You checked in at ${getCurrentTime()}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Check-in Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsCheckingIn(false);
     }
@@ -91,6 +84,16 @@ export const TimeTracking: React.FC = () => {
     try {
       await checkOut();
       await refreshData();
+      toast({
+        title: "Checked Out",
+        description: `See you tomorrow! You checked out at ${getCurrentTime()}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Check-out Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsCheckingOut(false);
     }
@@ -146,7 +149,7 @@ export const TimeTracking: React.FC = () => {
     const overtimeMinutes = Math.floor((hours.overtime - overtimeHoursCalc) * 60);
 
     return {
-      checkedIn: !currentEntry.check_out_time,
+      checkedIn: isCheckedIn,
       checkInTime: formatTime(currentEntry.check_in_time),
       currentHours: `${currentHours}:${currentMinutes.toString().padStart(2, '0')}`,
       overtimeHours: `${overtimeHoursCalc}:${overtimeMinutes.toString().padStart(2, '0')}`
@@ -254,7 +257,7 @@ export const TimeTracking: React.FC = () => {
           <div className="flex space-x-4">
             <Button 
               onClick={handleCheckIn}
-              disabled={workingTime.checkedIn || isLoading || isCheckingIn}
+              disabled={isCheckedIn || isLoading || isCheckingIn}
               className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95"
             >
               {isCheckingIn ? (
@@ -265,7 +268,7 @@ export const TimeTracking: React.FC = () => {
             </Button>
             <Button 
               onClick={handleCheckOut}
-              disabled={!workingTime.checkedIn || isLoading || isCheckingOut}
+              disabled={!isCheckedIn || isLoading || isCheckingOut}
               variant="outline"
               className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95"
             >
