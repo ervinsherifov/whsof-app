@@ -64,18 +64,28 @@ export const TruckScheduling: React.FC = () => {
 
   const fetchWarehouseStaff = async () => {
     try {
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'WAREHOUSE_STAFF');
+      // First get user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'WAREHOUSE_STAFF');
 
-      if (userError) throw userError;
-      setWarehouseStaff(userData || []);
+      if (rolesError) throw rolesError;
+
+      if (userRoles && userRoles.length > 0) {
+        const userIds = userRoles.map(role => role.user_id);
+        
+        // Then get profiles for those users
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', userIds);
+
+        if (userError) throw userError;
+        setWarehouseStaff(userData || []);
+      } else {
+        setWarehouseStaff([]);
+      }
     } catch (error) {
       console.error('Error fetching warehouse staff:', error);
     }
@@ -104,18 +114,28 @@ export const TruckScheduling: React.FC = () => {
 
   const fetchProfiles = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'WAREHOUSE_STAFF');
+      // First get user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'WAREHOUSE_STAFF');
 
-      if (error) throw error;
-      setProfiles(data || []);
+      if (rolesError) throw rolesError;
+
+      if (userRoles && userRoles.length > 0) {
+        const userIds = userRoles.map(role => role.user_id);
+        
+        // Then get profiles for those users
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', userIds);
+
+        if (error) throw error;
+        setProfiles(data || []);
+      } else {
+        setProfiles([]);
+      }
     } catch (error: any) {
       toast({
         title: 'Error fetching staff',

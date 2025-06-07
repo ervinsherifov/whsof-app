@@ -60,6 +60,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_task_completion_photos_task"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "task_completion_photos_task_id_fkey"
             columns: ["task_id"]
             isOneToOne: false
@@ -122,7 +129,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "tasks_truck_id_fkey"
+            foreignKeyName: "fk_tasks_truck"
             columns: ["truck_id"]
             isOneToOne: false
             referencedRelation: "trucks"
@@ -187,7 +194,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_truck_completion_photos_truck_id"
+            foreignKeyName: "fk_truck_completion_photos_truck"
             columns: ["truck_id"]
             isOneToOne: false
             referencedRelation: "trucks"
@@ -218,6 +225,13 @@ export type Database = {
           truck_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_truck_handlers_truck"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "truck_handlers_truck_id_fkey"
             columns: ["truck_id"]

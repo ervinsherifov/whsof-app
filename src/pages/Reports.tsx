@@ -68,18 +68,28 @@ export const Reports: React.FC = () => {
       setTrucks(truckData || []);
 
       // Fetch users (profiles with warehouse staff role)
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'WAREHOUSE_STAFF');
-      
-      if (userError) throw userError;
-      setUsers(userData || []);
+      // First get user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'WAREHOUSE_STAFF');
+
+      if (rolesError) throw rolesError;
+
+      if (userRoles && userRoles.length > 0) {
+        const userIds = userRoles.map(role => role.user_id);
+        
+        // Then get profiles for those users
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', userIds);
+
+        if (userError) throw userError;
+        setUsers(userData || []);
+      } else {
+        setUsers([]);
+      }
 
       // Fetch tasks
       const { data: taskData, error: taskError } = await supabase
