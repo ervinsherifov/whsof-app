@@ -53,7 +53,7 @@ export const Header: React.FC = () => {
     <header className="border-b bg-card">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold">Warehouse Management System</h1>
+          <h1 className="text-xl font-bold text-primary">DHL SOF-WH</h1>
           <div className="text-sm text-muted-foreground">
             {getCurrentTime()}
           </div>
