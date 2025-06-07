@@ -99,22 +99,34 @@ export const Reports: React.FC = () => {
       if (taskError) throw taskError;
       setTasks(taskData || []);
 
-      // Fetch completed trucks with photos
+      // Fetch completed trucks separately to avoid foreign key conflicts
       const { data: completedTrucksData, error: completedTrucksError } = await supabase
         .from('trucks')
-        .select(`
-          *,
-          truck_completion_photos(
-            id,
-            photo_url,
-            created_at
-          )
-        `)
+        .select('*')
         .eq('status', 'DONE')
         .order('updated_at', { ascending: false });
       
       if (completedTrucksError) throw completedTrucksError;
-      setCompletedTrucks(completedTrucksData || []);
+
+      let enrichedCompletedTrucks = completedTrucksData || [];
+
+      // Fetch completion photos separately if we have trucks
+      if (completedTrucksData && completedTrucksData.length > 0) {
+        const truckIds = completedTrucksData.map(truck => truck.id);
+        
+        const { data: photosData } = await supabase
+          .from('truck_completion_photos')
+          .select('id, photo_url, created_at, truck_id')
+          .in('truck_id', truckIds);
+
+        // Attach photos to trucks
+        enrichedCompletedTrucks = completedTrucksData.map(truck => ({
+          ...truck,
+          truck_completion_photos: photosData?.filter(photo => photo.truck_id === truck.id) || []
+        }));
+      }
+
+      setCompletedTrucks(enrichedCompletedTrucks);
 
     } catch (error: any) {
       toast({
