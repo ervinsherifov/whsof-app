@@ -41,7 +41,7 @@ export const TaskManagement: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: tasksData, error } = await supabase
         .from('tasks')
         .select(`
           *,
@@ -50,14 +50,41 @@ export const TaskManagement: React.FC = () => {
             id,
             photo_url,
             created_at
-          ),
-          assigned_profile:profiles!assigned_to_user_id(display_name, email),
-          completed_profile:profiles!completed_by_user_id(display_name, email)
+          )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks(data || []);
+
+      // Fetch user profiles for assigned and completed users
+      if (tasksData && tasksData.length > 0) {
+        const userIds = [
+          ...new Set([
+            ...tasksData.filter(task => task.assigned_to_user_id).map(task => task.assigned_to_user_id),
+            ...tasksData.filter(task => task.completed_by_user_id).map(task => task.completed_by_user_id)
+          ])
+        ];
+
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, email')
+            .in('user_id', userIds);
+
+          // Attach profile data to tasks
+          const enrichedTasks = tasksData.map(task => ({
+            ...task,
+            assigned_profile: task.assigned_to_user_id ? profilesData?.find(p => p.user_id === task.assigned_to_user_id) : null,
+            completed_profile: task.completed_by_user_id ? profilesData?.find(p => p.user_id === task.completed_by_user_id) : null
+          }));
+
+          setTasks(enrichedTasks);
+        } else {
+          setTasks(tasksData);
+        }
+      } else {
+        setTasks([]);
+      }
     } catch (error: any) {
       toast({
         title: 'Error fetching tasks',
