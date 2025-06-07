@@ -29,12 +29,12 @@ export const Reports: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch time entries
+      // Fetch time entries with profile data
       const { data: timeData, error: timeError } = await supabase
         .from('time_entries')
         .select(`
           *,
-          profiles!inner(display_name, email)
+          profiles!time_entries_user_id_profiles_user_id_fkey(display_name, email)
         `);
       
       if (timeError) throw timeError;
@@ -216,11 +216,11 @@ export const Reports: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All users</SelectItem>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
+                   {users.map((user) => (
+                     <SelectItem key={user.user_id} value={user.user_id}>
+                       {user.display_name || user.email}
+                     </SelectItem>
+                   ))}
                 </SelectContent>
               </Select>
             </div>
