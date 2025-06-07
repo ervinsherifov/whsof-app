@@ -141,6 +141,7 @@ export const TruckCompletionPhotos: React.FC<TruckCompletionPhotosProps> = ({
             id="photos"
             type="file"
             accept="image/jpeg,image/jpg,image/png"
+            capture="environment"
             multiple
             onChange={handleFileSelect}
             disabled={uploading}
