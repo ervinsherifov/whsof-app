@@ -101,6 +101,8 @@ export type Database = {
           check_out_time: string | null
           created_at: string
           id: string
+          overtime_hours: number | null
+          regular_hours: number | null
           updated_at: string
           user_id: string
         }
@@ -109,6 +111,8 @@ export type Database = {
           check_out_time?: string | null
           created_at?: string
           id?: string
+          overtime_hours?: number | null
+          regular_hours?: number | null
           updated_at?: string
           user_id: string
         }
@@ -117,6 +121,8 @@ export type Database = {
           check_out_time?: string | null
           created_at?: string
           id?: string
+          overtime_hours?: number | null
+          regular_hours?: number | null
           updated_at?: string
           user_id?: string
         }

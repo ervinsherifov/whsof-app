@@ -23,6 +23,8 @@ export const TimeTracking: React.FC = () => {
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [currentEntry, setCurrentEntry] = useState<TimeEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const fetchTimeEntries = async () => {
     if (!user?.id) return;
@@ -75,13 +77,23 @@ export const TimeTracking: React.FC = () => {
   };
 
   const handleCheckIn = async () => {
-    await checkIn();
-    await refreshData();
+    setIsCheckingIn(true);
+    try {
+      await checkIn();
+      await refreshData();
+    } finally {
+      setIsCheckingIn(false);
+    }
   };
 
   const handleCheckOut = async () => {
-    await checkOut();
-    await refreshData();
+    setIsCheckingOut(true);
+    try {
+      await checkOut();
+      await refreshData();
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const getCurrentTime = () => {
@@ -242,18 +254,26 @@ export const TimeTracking: React.FC = () => {
           <div className="flex space-x-4">
             <Button 
               onClick={handleCheckIn}
-              disabled={workingTime.checkedIn || isLoading}
-              className="flex-1"
+              disabled={workingTime.checkedIn || isLoading || isCheckingIn}
+              className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95"
             >
-              Check In
+              {isCheckingIn ? (
+                <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              ) : (
+                "Check In"
+              )}
             </Button>
             <Button 
               onClick={handleCheckOut}
-              disabled={!workingTime.checkedIn || isLoading}
+              disabled={!workingTime.checkedIn || isLoading || isCheckingOut}
               variant="outline"
-              className="flex-1"
+              className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95"
             >
-              Check Out
+              {isCheckingOut ? (
+                <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              ) : (
+                "Check Out"
+              )}
             </Button>
           </div>
           
