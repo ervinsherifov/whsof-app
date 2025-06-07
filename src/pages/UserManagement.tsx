@@ -123,17 +123,29 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // Create user in Supabase Auth using admin API (doesn't auto-login)
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // Get current session to restore it after signup
+      const { data: currentSession } = await supabase.auth.getSession();
+      
+      // Create user using regular signup
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        email_confirm: true, // Skip email confirmation
-        user_metadata: {
-          name: formData.name
+        options: {
+          data: {
+            name: formData.name
+          }
         }
       });
 
       if (authError) throw authError;
+
+      // Immediately sign out the new user to prevent auto-login
+      await supabase.auth.signOut();
+      
+      // Restore the original session
+      if (currentSession?.session) {
+        await supabase.auth.setSession(currentSession.session);
+      }
 
       if (authData.user) {
         // Update the user's role if it's different from default
@@ -208,10 +220,20 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // Delete user from Supabase Auth (this will cascade to profiles/roles via triggers)
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      // First delete the user's profile and role (we can't delete auth users from client)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
 
-      if (authError) throw authError;
+      if (profileError) throw profileError;
+
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (roleError) throw roleError;
 
       toast({
         title: 'User deleted',
