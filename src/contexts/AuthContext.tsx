@@ -57,101 +57,90 @@ const initialState: AuthState = {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const fetchUserProfile = async (userId: string, currentToken: string) => {
+    try {
+      // Get user role and profile data
+      const [roleResult, profileResult] = await Promise.all([
+        supabase.rpc('get_user_role', { _user_id: userId }),
+        supabase.from('profiles').select('display_name').eq('user_id', userId).maybeSingle()
+      ]);
+
+      // Create updated user object with fetched data
+      const updatedUser: User = {
+        id: userId,
+        email: state.user?.email || '',
+        name: profileResult.data?.display_name || state.user?.email?.split('@')[0] || '',
+        role: roleResult.data || 'WAREHOUSE_STAFF',
+        isActive: true,
+        createdAt: state.user?.createdAt || '',
+      };
+      
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { user: updatedUser, token: currentToken } 
+      });
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Don't dispatch error here as basic auth already succeeded
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        dispatch({ type: 'SET_LOADING', payload: true });
-        
+      (event, session) => {
         if (session?.user) {
-          try {
-            // Get user role from database
-            const { data: roleData } = await supabase
-              .rpc('get_user_role', { _user_id: session.user.id });
-
-            // Get user profile for display name
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('display_name')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-
-            const user: User = {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: profileData?.display_name || session.user.email?.split('@')[0] || '',
-              role: roleData || 'WAREHOUSE_STAFF',
-              isActive: true,
-              createdAt: session.user.created_at,
-            };
-            dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-            dispatch({ type: 'LOGIN_ERROR' });
-          }
-        } else {
-          dispatch({ type: 'LOGOUT' });
-        }
-        
-        dispatch({ type: 'SET_LOADING', payload: false });
-      }
-    );
-
-    // Check for existing session
-    dispatch({ type: 'SET_LOADING', payload: true });
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        try {
-          // Get user role from database
-          const { data: roleData } = await supabase
-            .rpc('get_user_role', { _user_id: session.user.id });
-
-          // Get user profile for display name
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-
+          // Create basic user object - set auth state immediately
           const user: User = {
             id: session.user.id,
             email: session.user.email || '',
-            name: profileData?.display_name || session.user.email?.split('@')[0] || '',
-            role: roleData || 'WAREHOUSE_STAFF',
+            name: session.user.email?.split('@')[0] || '',
+            role: 'WAREHOUSE_STAFF', // Default role
             isActive: true,
             createdAt: session.user.created_at,
           };
           dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-          dispatch({ type: 'LOGIN_ERROR' });
+          
+          // Fetch additional user data asynchronously after auth state is set
+          setTimeout(() => {
+            fetchUserProfile(session.user.id, session.access_token);
+          }, 0);
+        } else {
+          dispatch({ type: 'LOGOUT' });
         }
       }
-      dispatch({ type: 'SET_LOADING', payload: false });
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const user: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.email?.split('@')[0] || '',
+          role: 'WAREHOUSE_STAFF',
+          isActive: true,
+          createdAt: session.user.created_at,
+        };
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
+        fetchUserProfile(session.user.id, session.access_token);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    dispatch({ type: 'LOGIN_START' });
-    
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-      if (error) {
-        dispatch({ type: 'LOGIN_ERROR' });
-        throw new Error(error.message);
-      }
-
-      // Auth state change will handle the login success
-    } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR' });
-      throw error;
+    if (error) {
+      throw new Error(error.message);
     }
+
+    // Auth state change will handle the login success
   };
 
   const logout = async () => {
