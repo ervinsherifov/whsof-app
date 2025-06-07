@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, User, LoginCredentials } from '@/types/auth';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@supabase/supabase-js';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -56,53 +58,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        const user = JSON.parse(userData);
-        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
-      } catch (error) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const user: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+            role: session.user.user_metadata?.role || 'WAREHOUSE_STAFF',
+            isActive: true,
+            createdAt: session.user.created_at,
+          };
+          dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
+        } else {
+          dispatch({ type: 'LOGOUT' });
+        }
       }
-    }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const user: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+          role: session.user.user_metadata?.role || 'WAREHOUSE_STAFF',
+          isActive: true,
+          createdAt: session.user.created_at,
+        };
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: session.access_token } });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'LOGIN_START' });
     
     try {
-      // Mock API call - replace with actual API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data based on email
-      const mockUser: User = {
-        id: '1',
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
-        name: credentials.email.split('@')[0],
-        role: credentials.email.includes('admin') ? 'SUPER_ADMIN' : 
-              credentials.email.includes('office') ? 'OFFICE_ADMIN' : 'WAREHOUSE_STAFF',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      };
-      
-      const mockToken = 'mock-jwt-token';
-      
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: mockUser, token: mockToken } });
+        password: credentials.password,
+      });
+
+      if (error) {
+        dispatch({ type: 'LOGIN_ERROR' });
+        throw new Error(error.message);
+      }
+
+      // Auth state change will handle the login success
     } catch (error) {
       dispatch({ type: 'LOGIN_ERROR' });
-      throw new Error('Login failed');
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const logout = async () => {
+    await supabase.auth.signOut();
     dispatch({ type: 'LOGOUT' });
   };
 
