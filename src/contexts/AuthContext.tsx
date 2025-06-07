@@ -148,10 +148,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Auth state change will handle the login success
-      // But also reset loading after a short delay as fallback
-      setTimeout(() => {
-        dispatch({ type: 'SET_LOADING', payload: false });
-      }, 3000);
     } catch (error) {
       dispatch({ type: 'LOGIN_ERROR' });
       throw error;

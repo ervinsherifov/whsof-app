@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading, isAuthenticated } = useAuth();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -24,6 +25,7 @@ export const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setIsSigningIn(true);
     try {
       await login({ email, password });
       toast({
@@ -37,6 +39,8 @@ export const LoginForm: React.FC = () => {
         description: 'Please check your credentials and try again',
         variant: 'destructive',
       });
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -77,9 +81,9 @@ export const LoginForm: React.FC = () => {
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading}
+              disabled={isSigningIn}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isSigningIn ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
           
