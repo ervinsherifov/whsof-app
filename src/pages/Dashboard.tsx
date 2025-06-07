@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const Dashboard: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
-  const { isCheckedIn } = useCheckInStatus();
+  const { isCheckedIn, refreshStatus } = useCheckInStatus();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -100,6 +100,7 @@ export const Dashboard: React.FC = () => {
     setIsCheckingIn(true);
     try {
       await checkIn();
+      await refreshStatus();
       toast({
         title: "Checked In",
         description: `Welcome! You checked in at ${getCurrentTime()}`,
@@ -119,6 +120,7 @@ export const Dashboard: React.FC = () => {
     setIsCheckingOut(true);
     try {
       await checkOut();
+      await refreshStatus();
       toast({
         title: "Checked Out",
         description: `See you tomorrow! You checked out at ${getCurrentTime()}`,

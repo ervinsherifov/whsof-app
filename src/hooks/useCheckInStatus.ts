@@ -2,15 +2,19 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-interface CheckInStatus {
+interface CheckInState {
   isCheckedIn: boolean;
   currentEntry: any | null;
   isLoading: boolean;
 }
 
+interface CheckInStatus extends CheckInState {
+  refreshStatus: () => Promise<void>;
+}
+
 export const useCheckInStatus = (): CheckInStatus => {
   const { user } = useAuth();
-  const [status, setStatus] = useState<CheckInStatus>({
+  const [status, setStatus] = useState<CheckInState>({
     isCheckedIn: false,
     currentEntry: null,
     isLoading: true
@@ -72,5 +76,5 @@ export const useCheckInStatus = (): CheckInStatus => {
     };
   }, [user?.id]);
 
-  return status;
+  return { ...status, refreshStatus: fetchCurrentStatus };
 };

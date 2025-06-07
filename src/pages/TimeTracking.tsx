@@ -21,7 +21,7 @@ interface TimeEntry {
 
 export const TimeTracking: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
-  const { isCheckedIn, currentEntry } = useCheckInStatus();
+  const { isCheckedIn, currentEntry, refreshStatus } = useCheckInStatus();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
@@ -63,7 +63,7 @@ export const TimeTracking: React.FC = () => {
     setIsCheckingIn(true);
     try {
       await checkIn();
-      await refreshData();
+      await Promise.all([refreshData(), refreshStatus()]);
       toast({
         title: "Checked In",
         description: `Welcome! You checked in at ${getCurrentTime()}`,
@@ -83,7 +83,7 @@ export const TimeTracking: React.FC = () => {
     setIsCheckingOut(true);
     try {
       await checkOut();
-      await refreshData();
+      await Promise.all([refreshData(), refreshStatus()]);
       toast({
         title: "Checked Out",
         description: `See you tomorrow! You checked out at ${getCurrentTime()}`,
