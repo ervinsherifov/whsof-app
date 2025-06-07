@@ -145,6 +145,19 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
+    // Check if the scheduled date/time is in the past
+    const scheduledDateTime = new Date(`${formData.arrivalDate}T${formData.arrivalTime}`);
+    const now = new Date();
+    
+    if (scheduledDateTime <= now) {
+      toast({
+        title: 'Validation error',
+        description: 'Cannot schedule trucks for past dates or times',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('trucks')
@@ -342,6 +355,7 @@ export const TruckScheduling: React.FC = () => {
                   type="date"
                   value={formData.arrivalDate}
                   onChange={(e) => setFormData({...formData, arrivalDate: e.target.value})}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
@@ -353,6 +367,9 @@ export const TruckScheduling: React.FC = () => {
                   type="time"
                   value={formData.arrivalTime}
                   onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
+                  min={formData.arrivalDate === new Date().toISOString().split('T')[0] 
+                    ? new Date().toTimeString().slice(0, 5) 
+                    : undefined}
                   required
                 />
               </div>
