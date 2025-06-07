@@ -36,6 +36,38 @@ export type Database = {
         }
         Relationships: []
       }
+      task_completion_photos: {
+        Row: {
+          created_at: string
+          id: string
+          photo_url: string
+          task_id: string
+          uploaded_by_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_url: string
+          task_id: string
+          uploaded_by_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_url?: string
+          task_id?: string
+          uploaded_by_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_completion_photos_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to_name: string | null

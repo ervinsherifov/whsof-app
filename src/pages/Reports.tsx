@@ -266,6 +266,7 @@ export const Reports: React.FC = () => {
                   <SelectContent>
                     {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
                     <SelectItem value="truck_activity">Truck Activity</SelectItem>
+                    {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
                     {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
                     {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
                   </SelectContent>
@@ -339,6 +340,18 @@ export const Reports: React.FC = () => {
                         assignedStaff: truck.assigned_staff_name,
                         cargoDescription: truck.cargo_description
                       })), 'truck_activity');
+                    } else if (reportType === 'task_management') {
+                      exportToXLSX(tasks.map(task => ({
+                        title: task.title,
+                        description: task.description,
+                        priority: task.priority,
+                        status: task.status,
+                        assignedTo: task.assigned_to_name || 'Unassigned',
+                        dueDate: task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline',
+                        createdAt: new Date(task.created_at).toLocaleDateString(),
+                        completedAt: task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '',
+                        completionComment: task.completion_comment || ''
+                      })), 'task_management');
                     }
                   }}
                   disabled={!reportType}
@@ -503,6 +516,75 @@ export const Reports: React.FC = () => {
                         <span className={truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}>
                           {truck.status}
                         </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Task Management Report - Office staff and Super Admin */}
+      {hasOfficeAccess && (reportType === 'task_management' || reportType === '') && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Task Management Report</CardTitle>
+            <CardDescription>
+              Task completion status and performance tracking
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div>Loading task data...</div>
+            ) : tasks.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                No task data found
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Assigned To</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Completed</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tasks.map((task) => (
+                    <TableRow key={task.id}>
+                      <TableCell className="font-medium">{task.title}</TableCell>
+                      <TableCell>
+                        <span className={
+                          task.priority === 'URGENT' ? 'text-red-600 font-medium' :
+                          task.priority === 'HIGH' ? 'text-orange-600' :
+                          task.priority === 'MEDIUM' ? 'text-yellow-600' :
+                          'text-green-600'
+                        }>
+                          {task.priority}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={
+                          task.status === 'COMPLETED' ? 'text-green-600' :
+                          task.status === 'IN_PROGRESS' ? 'text-blue-600' :
+                          'text-gray-600'
+                        }>
+                          {task.status.replace('_', ' ')}
+                        </span>
+                      </TableCell>
+                      <TableCell>{task.assigned_to_name || 'Unassigned'}</TableCell>
+                      <TableCell>
+                        {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
+                      </TableCell>
+                      <TableCell>{new Date(task.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
                       </TableCell>
                     </TableRow>
                   ))}

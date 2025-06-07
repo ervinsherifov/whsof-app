@@ -45,7 +45,12 @@ export const TaskManagement: React.FC = () => {
         .from('tasks')
         .select(`
           *,
-          trucks(license_plate)
+          trucks(license_plate),
+          task_completion_photos(
+            id,
+            photo_url,
+            created_at
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -477,6 +482,32 @@ export const TaskManagement: React.FC = () => {
                         <div>{new Date(task.created_at).toLocaleDateString()}</div>
                       </div>
                     </div>
+
+                    {task.status === 'COMPLETED' && task.completion_comment && (
+                      <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <div>
+                          <span className="font-medium text-sm">Completion Comment:</span>
+                          <p className="text-sm text-muted-foreground mt-1">{task.completion_comment}</p>
+                        </div>
+                        
+                        {task.task_completion_photos && task.task_completion_photos.length > 0 && (
+                          <div className="space-y-2">
+                            <span className="font-medium text-sm">Completion Photos:</span>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {task.task_completion_photos.map((photo: any, index: number) => (
+                                <img
+                                  key={photo.id}
+                                  src={photo.photo_url}
+                                  alt={`Task completion photo ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80"
+                                  onClick={() => window.open(photo.photo_url, '_blank')}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex space-x-2">
                       {task.status === 'PENDING' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (

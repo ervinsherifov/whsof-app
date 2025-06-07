@@ -120,8 +120,20 @@ export const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({
 
       if (updateError) throw updateError;
 
-      // TODO: Save task completion photos to a separate table if needed
-      // For now, we're just uploading them to storage
+      // Save task completion photos to database
+      if (photoUrls.length > 0) {
+        const photoInserts = photoUrls.map(url => ({
+          task_id: taskId,
+          photo_url: url,
+          uploaded_by_user_id: user.id
+        }));
+
+        const { error: photoError } = await supabase
+          .from('task_completion_photos')
+          .insert(photoInserts);
+
+        if (photoError) throw photoError;
+      }
 
       toast({
         title: 'Task completed',
