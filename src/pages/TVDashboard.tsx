@@ -242,9 +242,9 @@ export const TVDashboard: React.FC = () => {
                     </div>
                     <div className="text-xs lg:text-sm 4xl:text-base">
                       <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
-                      {task.due_date && (
+                        {task.due_date && (
                         <div className="font-bold">
-                          {new Date(task.due_date).toLocaleTimeString('en-US', { 
+                          {new Date(task.due_date).toLocaleTimeString('en-GB', { 
                             hour: '2-digit', 
                             minute: '2-digit',
                             hour12: false 
@@ -264,10 +264,9 @@ export const TVDashboard: React.FC = () => {
               <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Ramp Status</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
-              <div className="grid grid-cols-4 gap-1 lg:gap-2 flex-1">
-                {Array.from({ length: 12 }, (_, i) => {
+              <div className="grid grid-cols-5 lg:grid-cols-7 gap-1 flex-1">
+                {Array.from({ length: 13 }, (_, i) => {
                   const rampNumber = i + 1;
-                  const isUnloading = rampNumber <= 6;
                   const occupyingTruck = trucks.find(truck => 
                     truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
                   );
@@ -277,30 +276,19 @@ export const TVDashboard: React.FC = () => {
                     <div 
                       key={rampNumber}
                       className={`
-                        aspect-square rounded border flex flex-col items-center justify-center text-center p-1
+                        aspect-square rounded border flex items-center justify-center text-center p-1
                         ${isOccupied 
-                          ? 'bg-destructive/10 border-destructive text-destructive' 
-                          : 'bg-green-100 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
+                          ? 'bg-destructive border-destructive text-destructive-foreground' 
+                          : 'bg-green-600 border-green-600 text-white'
                         }
                       `}
                     >
-                      <div className="text-sm lg:text-lg 4xl:text-xl font-bold">#{rampNumber}</div>
-                      <div className="text-xs font-medium">
-                        {isUnloading ? 'UL' : 'LD'}
-                      </div>
-                      <div className="text-xs font-bold">
-                        {isOccupied ? 'BUSY' : 'FREE'}
-                      </div>
-                      {occupyingTruck && (
-                        <div className="text-xs truncate w-full">
-                          {occupyingTruck.license_plate.substring(0, 6)}
-                        </div>
-                      )}
+                      <div className="text-xs lg:text-sm 4xl:text-lg font-bold">#{rampNumber}</div>
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-1 lg:mt-2 flex justify-center space-x-2 text-xs flex-shrink-0">
+              <div className="mt-1 lg:mt-2 flex justify-center space-x-3 text-xs flex-shrink-0">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-destructive rounded"></div>
                   <span>Busy</span>

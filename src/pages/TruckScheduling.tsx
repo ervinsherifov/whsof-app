@@ -629,7 +629,7 @@ export const TruckScheduling: React.FC = () => {
                       {currentlyOccupying.license_plate}
                       <br />
                       Until: {new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000 > Date.now() 
-                        ? new Date(new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})
+                        ? new Date(new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', hour12: false})
                         : 'Now'
                       }
                     </div>
@@ -638,7 +638,7 @@ export const TruckScheduling: React.FC = () => {
                     <div className="text-xs mt-1">
                       Next: {nextTruck.license_plate}
                       <br />
-                      At: {new Date(`${nextTruck.arrival_date}T${nextTruck.arrival_time}`).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
+                      At: {new Date(`${nextTruck.arrival_date}T${nextTruck.arrival_time}`).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', hour12: false})}
                     </div>
                   )}
                 </div>
