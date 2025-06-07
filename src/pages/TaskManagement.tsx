@@ -118,8 +118,10 @@ export const TaskManagement: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('trucks')
-        .select('*')
-        .order('arrival_date', { ascending: true });
+        .select('id, license_plate, arrival_date, arrival_time, status')
+        .in('status', ['SCHEDULED', 'ARRIVED'])
+        .order('arrival_date', { ascending: true })
+        .order('arrival_time', { ascending: true });
 
       if (error) throw error;
       setTrucks(data || []);
@@ -424,7 +426,7 @@ export const TaskManagement: React.FC = () => {
                     <SelectItem value="no-truck">No truck</SelectItem>
                     {trucks.map((truck) => (
                       <SelectItem key={truck.id} value={truck.id}>
-                        {truck.license_plate} - {truck.arrival_date}
+                        {truck.license_plate} - {truck.arrival_date} {truck.arrival_time.substring(0, 5)}
                       </SelectItem>
                     ))}
                   </SelectContent>

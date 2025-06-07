@@ -33,11 +33,15 @@ export const TVDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch trucks
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch trucks - only for today and only SCHEDULED or ARRIVED
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
-        .order('arrival_date', { ascending: true })
+        .eq('arrival_date', today)
+        .in('status', ['SCHEDULED', 'ARRIVED'])
         .order('arrival_time', { ascending: true });
 
       if (trucksError) throw trucksError;
@@ -165,139 +169,150 @@ export const TVDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 lg:gap-4 4xl:gap-6 min-h-0">
-        {/* Trucks Status */}
-        <Card className="flex flex-col min-h-0">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0">
+        {/* Trucks Status - Primary Focus */}
+        <Card className="xl:col-span-1 flex flex-col min-h-0">
           <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Truck Status</CardTitle>
+            <CardTitle className="text-2xl lg:text-3xl 4xl:text-5xl">Today's Trucks</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
-            <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
-              {trucks.slice(0, 6).map((truck) => (
+            <div className="space-y-3 lg:space-y-4 4xl:space-y-6">
+              {trucks.map((truck) => (
                 <div 
                   key={truck.id}
-                  className="border border-border rounded-lg p-2 lg:p-3 4xl:p-4 bg-card"
+                  className="border border-border rounded-lg p-3 lg:p-4 4xl:p-6 bg-card"
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-base lg:text-xl 4xl:text-2xl font-bold">{truck.license_plate}</div>
-                    <Badge className={`text-xs lg:text-sm 4xl:text-lg px-2 py-1 ${getStatusColor(truck.status)}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xl lg:text-2xl 4xl:text-3xl font-bold">{truck.license_plate}</div>
+                    <Badge className={`text-sm lg:text-lg 4xl:text-xl px-3 py-1 ${getStatusColor(truck.status)}`}>
                       {truck.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 lg:gap-2 text-xs lg:text-sm 4xl:text-lg">
+                  <div className="grid grid-cols-3 gap-2 lg:gap-3 text-sm lg:text-lg 4xl:text-xl">
+                    <div>
+                      <span className="text-muted-foreground">Time:</span>
+                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
+                        {truck.arrival_time.substring(0, 5)}
+                      </div>
+                    </div>
                     <div>
                       <span className="text-muted-foreground">Ramp:</span>
-                      <div className="font-bold text-sm lg:text-lg 4xl:text-xl">
+                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
                         {truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}
                       </div>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Pallets:</span>
-                      <div className="font-bold text-sm lg:text-lg 4xl:text-xl">{truck.pallet_count}</div>
+                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">{truck.pallet_count}</div>
                     </div>
                   </div>
-                  <div className="mt-1 text-xs lg:text-sm 4xl:text-lg truncate">
+                  <div className="mt-2 text-sm lg:text-lg 4xl:text-xl">
                     <span className="text-muted-foreground">Cargo:</span> {truck.cargo_description}
                   </div>
                 </div>
               ))}
+              {trucks.length === 0 && (
+                <div className="text-center text-muted-foreground text-lg lg:text-xl 4xl:text-2xl py-8">
+                  No trucks scheduled for today
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Urgent Tasks */}
-        <Card className="flex flex-col min-h-0">
-          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Urgent Tasks</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto">
-            <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
-              {tasks.map((task) => (
-                <div 
-                  key={task.id}
-                  className="border border-border rounded-lg p-2 lg:p-3 4xl:p-4 bg-card"
-                >
-                  <div className="flex items-start justify-between mb-1">
-                    <div className="text-sm lg:text-lg 4xl:text-xl font-bold line-clamp-2 flex-1 mr-2">{task.title}</div>
-                    <Badge className={`text-xs lg:text-sm 4xl:text-lg px-2 py-1 ${getPriorityColor(task.priority)}`}>
-                      {task.priority}
-                    </Badge>
-                  </div>
-                  <div className="text-xs lg:text-sm 4xl:text-lg">
-                    <div className="text-muted-foreground">Assigned to:</div>
-                    <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
-                    {task.due_date && (
-                      <div className="mt-1">
-                        <span className="text-muted-foreground">Due: </span>
-                        <span className="font-bold">
+        {/* Secondary Info Column */}
+        <div className="xl:col-span-1 flex flex-col gap-2 lg:gap-4 4xl:gap-6">
+          {/* Urgent Tasks - Smaller */}
+          <Card className="flex flex-col min-h-0 flex-1">
+            <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
+              <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Urgent Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto">
+              <div className="space-y-1 lg:space-y-2 4xl:space-y-3">
+                {tasks.slice(0, 3).map((task) => (
+                  <div 
+                    key={task.id}
+                    className="border border-border rounded p-1 lg:p-2 4xl:p-3 bg-card"
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <div className="text-xs lg:text-sm 4xl:text-lg font-bold line-clamp-1 flex-1 mr-2">{task.title}</div>
+                      <Badge className={`text-xs px-1 py-0.5 ${getPriorityColor(task.priority)}`}>
+                        {task.priority}
+                      </Badge>
+                    </div>
+                    <div className="text-xs lg:text-sm 4xl:text-base">
+                      <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
+                      {task.due_date && (
+                        <div className="font-bold">
                           {new Date(task.due_date).toLocaleTimeString('en-US', { 
                             hour: '2-digit', 
-                            minute: '2-digit' 
+                            minute: '2-digit',
+                            hour12: false 
                           })}
-                        </span>
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Ramp Status Grid */}
-        <Card className="flex flex-col min-h-0">
-          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-            <CardTitle className="text-xl lg:text-2xl 4xl:text-4xl">Ramp Status</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col">
-            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2 4xl:gap-3 flex-1">
-              {Array.from({ length: 12 }, (_, i) => {
-                const rampNumber = i + 1;
-                const isUnloading = rampNumber <= 6;
-                const occupyingTruck = trucks.find(truck => 
-                  truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
-                );
-                const isOccupied = !!occupyingTruck;
-                
-                return (
-                  <div 
-                    key={rampNumber}
-                    className={`
-                      aspect-square rounded-lg border-2 flex flex-col items-center justify-center text-center p-1 lg:p-2 4xl:p-3
-                      ${isOccupied 
-                        ? 'bg-destructive/10 border-destructive text-destructive' 
-                        : 'bg-green-100 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
-                      }
-                    `}
-                  >
-                    <div className="text-lg lg:text-2xl 4xl:text-4xl font-bold">#{rampNumber}</div>
-                    <div className="text-xs lg:text-sm 4xl:text-lg font-medium">
-                      {isUnloading ? 'Unloading' : 'Loading'}
-                    </div>
-                    <div className="text-xs lg:text-sm 4xl:text-lg font-bold">
-                      {isOccupied ? 'BUSY' : 'FREE'}
-                    </div>
-                    {occupyingTruck && (
-                      <div className="text-xs lg:text-sm 4xl:text-base truncate w-full">
-                        {occupyingTruck.license_plate}
+          {/* Ramp Status Grid - Smaller */}
+          <Card className="flex flex-col min-h-0 flex-1">
+            <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
+              <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Ramp Status</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="grid grid-cols-4 gap-1 lg:gap-2 flex-1">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const rampNumber = i + 1;
+                  const isUnloading = rampNumber <= 6;
+                  const occupyingTruck = trucks.find(truck => 
+                    truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
+                  );
+                  const isOccupied = !!occupyingTruck;
+                  
+                  return (
+                    <div 
+                      key={rampNumber}
+                      className={`
+                        aspect-square rounded border flex flex-col items-center justify-center text-center p-1
+                        ${isOccupied 
+                          ? 'bg-destructive/10 border-destructive text-destructive' 
+                          : 'bg-green-100 dark:bg-green-900/20 border-green-600 text-green-700 dark:text-green-400'
+                        }
+                      `}
+                    >
+                      <div className="text-sm lg:text-lg 4xl:text-xl font-bold">#{rampNumber}</div>
+                      <div className="text-xs font-medium">
+                        {isUnloading ? 'UL' : 'LD'}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-2 lg:mt-4 flex justify-center space-x-3 lg:space-x-6 text-xs lg:text-sm 4xl:text-lg flex-shrink-0">
-              <div className="flex items-center space-x-1 lg:space-x-2">
-                <div className="w-2 h-2 lg:w-3 lg:h-3 4xl:w-4 4xl:h-4 bg-destructive rounded"></div>
-                <span>Occupied</span>
+                      <div className="text-xs font-bold">
+                        {isOccupied ? 'BUSY' : 'FREE'}
+                      </div>
+                      {occupyingTruck && (
+                        <div className="text-xs truncate w-full">
+                          {occupyingTruck.license_plate.substring(0, 6)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex items-center space-x-1 lg:space-x-2">
-                <div className="w-2 h-2 lg:w-3 lg:h-3 4xl:w-4 4xl:h-4 bg-green-600 rounded"></div>
-                <span>Available</span>
+              <div className="mt-1 lg:mt-2 flex justify-center space-x-2 text-xs flex-shrink-0">
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-destructive rounded"></div>
+                  <span>Busy</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-600 rounded"></div>
+                  <span>Free</span>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Auto-refresh indicator */}
