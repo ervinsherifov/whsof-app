@@ -43,25 +43,47 @@ export const TaskManagement: React.FC = () => {
     try {
       const { data: tasksData, error } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          trucks(license_plate),
-          task_completion_photos(
-            id,
-            photo_url,
-            created_at
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Fetch user profiles for assigned and completed users
+      let enrichedTasksData = tasksData || [];
+
+      // Fetch related data separately to avoid foreign key conflicts
       if (tasksData && tasksData.length > 0) {
+        // Get unique truck IDs
+        const truckIds = [...new Set(tasksData.filter(task => task.truck_id).map(task => task.truck_id))];
+        
+        // Fetch trucks data
+        let trucksData: any[] = [];
+        if (truckIds.length > 0) {
+          const { data: trucks } = await supabase
+            .from('trucks')
+            .select('id, license_plate')
+            .in('id', truckIds);
+          trucksData = trucks || [];
+        }
+
+        // Fetch task completion photos
+        const taskIds = tasksData.map(task => task.id);
+        const { data: photosData } = await supabase
+          .from('task_completion_photos')
+          .select('id, photo_url, created_at, task_id')
+          .in('task_id', taskIds);
+
+        // Attach related data to tasks
+        enrichedTasksData = tasksData.map(task => ({
+          ...task,
+          trucks: task.truck_id ? trucksData.find(truck => truck.id === task.truck_id) : null,
+          task_completion_photos: photosData?.filter(photo => photo.task_id === task.id) || []
+        }));
+
+        // Fetch user profiles for assigned and completed users
         const userIds = [
           ...new Set([
-            ...tasksData.filter(task => task.assigned_to_user_id).map(task => task.assigned_to_user_id),
-            ...tasksData.filter(task => task.completed_by_user_id).map(task => task.completed_by_user_id)
+            ...enrichedTasksData.filter(task => task.assigned_to_user_id).map(task => task.assigned_to_user_id),
+            ...enrichedTasksData.filter(task => task.completed_by_user_id).map(task => task.completed_by_user_id)
           ])
         ];
 
@@ -72,19 +94,15 @@ export const TaskManagement: React.FC = () => {
             .in('user_id', userIds);
 
           // Attach profile data to tasks
-          const enrichedTasks = tasksData.map(task => ({
+          enrichedTasksData = enrichedTasksData.map(task => ({
             ...task,
             assigned_profile: task.assigned_to_user_id ? profilesData?.find(p => p.user_id === task.assigned_to_user_id) : null,
             completed_profile: task.completed_by_user_id ? profilesData?.find(p => p.user_id === task.completed_by_user_id) : null
           }));
-
-          setTasks(enrichedTasks);
-        } else {
-          setTasks(tasksData);
         }
-      } else {
-        setTasks([]);
       }
+
+      setTasks(enrichedTasksData);
     } catch (error: any) {
       toast({
         title: 'Error fetching tasks',

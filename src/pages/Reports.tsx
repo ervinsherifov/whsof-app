@@ -323,11 +323,12 @@ export const Reports: React.FC = () => {
             <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
               <Label>&nbsp;</Label>
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <Button onClick={generateReport} className="flex-1">
+                <Button onClick={generateReport} className="flex-1 min-w-0">
                   Generate
                 </Button>
                 <Button
                   variant="outline" 
+                  className="flex-1 min-w-0 text-xs sm:text-sm"
                   onClick={() => {
                     if (reportType === 'time_logs') {
                       exportToXLSX(timeEntries.map(entry => ({
