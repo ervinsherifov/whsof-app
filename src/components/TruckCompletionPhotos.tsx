@@ -25,10 +25,10 @@ export const TruckCompletionPhotos: React.FC<TruckCompletionPhotosProps> = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
-    if (files.length > 2) {
+    if (files.length > 3) {
       toast({
         title: 'Too many files',
-        description: 'You can only upload up to 2 photos',
+        description: 'You can only upload up to 3 photos',
         variant: 'destructive',
       });
       return;
@@ -131,12 +131,12 @@ export const TruckCompletionPhotos: React.FC<TruckCompletionPhotosProps> = ({
           Completion Photos
         </CardTitle>
         <CardDescription>
-          Upload up to 2 photos to document truck completion
+          Upload up to 3 photos to document truck completion
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="photos">Select Photos (max 2)</Label>
+          <Label htmlFor="photos">Select Photos (max 3)</Label>
           <Input
             id="photos"
             type="file"

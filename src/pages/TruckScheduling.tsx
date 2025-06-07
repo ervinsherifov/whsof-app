@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
 
 export const TruckScheduling: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRampDialogOpen, setIsRampDialogOpen] = useState(false);
+  const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<any>(null);
   const [trucks, setTrucks] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -198,6 +200,16 @@ export const TruckScheduling: React.FC = () => {
   const updateTruckStatus = async (truckId: string, newStatus: string) => {
     if (!user?.id) return;
 
+    // If marking as done, check for photos first
+    if (newStatus === 'DONE') {
+      const truck = trucks.find(t => t.id === truckId);
+      if (truck) {
+        setSelectedTruck(truck);
+        setIsCompletionDialogOpen(true);
+        return;
+      }
+    }
+
     try {
       const updateData: any = { status: newStatus };
       
@@ -222,6 +234,52 @@ export const TruckScheduling: React.FC = () => {
     } catch (error: any) {
       toast({
         title: 'Error updating truck status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const checkPhotosAndComplete = async () => {
+    if (!selectedTruck) return;
+
+    try {
+      // Check if photos exist
+      const { data: photos, error: photoError } = await supabase
+        .from('truck_completion_photos')
+        .select('id')
+        .eq('truck_id', selectedTruck.id);
+
+      if (photoError) throw photoError;
+
+      if (!photos || photos.length === 0) {
+        toast({
+          title: 'Photos required',
+          description: 'At least one completion photo is required before marking truck as done',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Mark truck as complete
+      const { error } = await supabase
+        .from('trucks')
+        .update({ status: 'DONE' })
+        .eq('id', selectedTruck.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Truck marked as complete',
+        description: `Truck ${selectedTruck.license_plate} has been completed`,
+      });
+
+      setIsCompletionDialogOpen(false);
+      setSelectedTruck(null);
+      fetchTrucks();
+    } catch (error: any) {
+      toast({
+        title: 'Error completing truck',
         description: error.message,
         variant: 'destructive',
       });
@@ -627,6 +685,48 @@ export const TruckScheduling: React.FC = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Truck Completion Dialog */}
+      <Dialog open={isCompletionDialogOpen} onOpenChange={setIsCompletionDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Complete Truck Processing</DialogTitle>
+            <DialogDescription>
+              Upload completion photos for truck {selectedTruck?.license_plate} before marking as done
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTruck && (
+            <div className="space-y-4">
+              <TruckCompletionPhotos 
+                truckId={selectedTruck.id}
+                onPhotosUploaded={() => {
+                  // Photos uploaded successfully, now we can allow completion
+                }}
+              />
+              
+              <div className="flex space-x-2 pt-4">
+                <Button 
+                  onClick={checkPhotosAndComplete}
+                  className="flex-1"
+                >
+                  Mark Truck as Complete
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsCompletionDialogOpen(false);
+                    setSelectedTruck(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
