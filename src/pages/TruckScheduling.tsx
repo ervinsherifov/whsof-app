@@ -463,18 +463,18 @@ export const TruckScheduling: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Truck Scheduling</h1>
-          <p className="text-muted-foreground">
+    <div className="w-full max-w-none overflow-hidden space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">Truck Scheduling</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Manage truck arrivals and ramp assignments
           </p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Schedule New Truck</Button>
+            <Button variant="secondary" className="w-full sm:w-auto">Schedule New Truck</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -638,11 +638,15 @@ export const TruckScheduling: React.FC = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div>Loading trucks...</div>
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading trucks...</p>
+            </div>
           ) : (
-            <div className="overflow-hidden">
-              <ScrollArea className="h-[400px]">
-                <Table>
+            <div className="w-full overflow-hidden">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="min-w-[800px]">
+                  <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>License Plate</TableHead>
@@ -725,10 +729,11 @@ export const TruckScheduling: React.FC = () => {
                   </TableRow>
                 ))}
                 </TableBody>
-              </Table>
+                  </Table>
+                </div>
               </ScrollArea>
             </div>
-            )}
+          )}
         </CardContent>
       </Card>
 

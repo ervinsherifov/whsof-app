@@ -21,8 +21,8 @@
     --secondary: 49 100% 50%; /* #FFCC00 */
     --secondary-foreground: 0 0% 0%; /* #000000 */
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 97%;
+    --muted-foreground: 0 0% 40%;
 
     --accent: 49 100% 50%; /* #FFCC00 */
     --accent-foreground: 0 0% 0%; /* #000000 */
@@ -30,15 +30,15 @@
     --destructive: 0 84% 41%; /* #D40511 */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: 0 0% 92%;
+    --input: 0 0% 96%;
     --ring: 0 84% 41%; /* #D40511 */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 99%;
 
-    --sidebar-foreground: 0 0% 20%;
+    --sidebar-foreground: 0 0% 15%;
 
     --sidebar-primary: 0 84% 41%; /* #D40511 */
 
@@ -48,7 +48,7 @@
 
     --sidebar-accent-foreground: 0 0% 0%; /* #000000 */
 
-    --sidebar-border: 0 0% 85%;
+    --sidebar-border: 0 0% 90%;
 
     --sidebar-ring: 0 84% 41%; /* #D40511 */
   }
@@ -98,6 +98,99 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Enhanced shadows and modern styling */
+  .shadow-soft {
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  }
+
+  .shadow-bold {
+    box-shadow: 0 4px 16px -2px rgba(212, 5, 17, 0.15), 0 8px 32px -8px rgba(212, 5, 17, 0.1);
+  }
+
+  .shadow-yellow {
+    box-shadow: 0 4px 16px -2px rgba(255, 204, 0, 0.25), 0 8px 32px -8px rgba(255, 204, 0, 0.15);
+  }
+
+  /* Smooth transitions */
+  .transition-all-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Modern button hover effects */
+  .btn-primary-modern {
+    @apply bg-primary text-primary-foreground rounded-xl px-6 py-3 font-semibold transition-all-smooth shadow-soft hover:shadow-bold hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary-modern {
+    @apply bg-secondary text-secondary-foreground rounded-xl px-6 py-3 font-semibold transition-all-smooth shadow-soft hover:shadow-yellow hover:scale-105 active:scale-95;
+  }
+
+  /* Card styling */
+  .card-modern {
+    @apply bg-card rounded-2xl shadow-soft border-0 transition-all-smooth hover:shadow-bold;
+  }
+
+  /* Large screen optimizations */
+  @media (min-width: 1920px) {
+    body {
+      font-size: 1.125rem;
+    }
+    
+    .text-4xl {
+      font-size: 3rem;
+    }
+    
+    .text-3xl {
+      font-size: 2.5rem;
+    }
+    
+    .text-2xl {
+      font-size: 2rem;
+    }
+    
+    .text-xl {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Ultra-large screen optimizations (80" TV) */
+  @media (min-width: 2560px) {
+    body {
+      font-size: 1.25rem;
+    }
+    
+    .text-4xl {
+      font-size: 4rem;
+    }
+    
+    .text-3xl {
+      font-size: 3.5rem;
+    }
+    
+    .text-2xl {
+      font-size: 2.5rem;
+    }
+    
+    .text-xl {
+      font-size: 2rem;
+    }
+    
+    .btn-primary-modern,
+    .btn-secondary-modern {
+      @apply px-8 py-4 text-lg;
+    }
+  }
+
+  /* Enhanced contrast for accessibility */
+  .contrast-high {
+    filter: contrast(1.1);
+  }
+
+  /* Focus styles for accessibility */
+  .focus-visible:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }

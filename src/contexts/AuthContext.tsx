@@ -102,17 +102,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Set initial loading state
+    dispatch({ type: 'SET_LOADING', payload: true });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
-          // Keep loading state while fetching user profile
-          dispatch({ type: 'SET_LOADING', payload: true });
+          // Only set loading if we don't already have a user
+          if (!state.user) {
+            dispatch({ type: 'SET_LOADING', payload: true });
+          }
           
-          // Fetch user profile data immediately
-          setTimeout(() => {
-            fetchUserProfile(session.user.id, session.access_token);
-          }, 0);
+          // Fetch user profile data
+          fetchUserProfile(session.user.id, session.access_token);
         } else {
           dispatch({ type: 'LOGOUT' });
         }
@@ -122,8 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        dispatch({ type: 'SET_LOADING', payload: true });
         fetchUserProfile(session.user.id, session.access_token);
+      } else {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     });
 

@@ -291,18 +291,18 @@ export const TaskManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Task Management</h1>
-          <p className="text-muted-foreground">
+    <div className="w-full max-w-none overflow-hidden space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">Task Management</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Create and assign tasks to warehouse staff
           </p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Create New Task</Button>
+            <Button variant="secondary" className="w-full sm:w-auto">Create New Task</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
