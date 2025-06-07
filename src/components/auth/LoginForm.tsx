@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,16 @@ import { useToast } from '@/hooks/use-toast';
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect to dashboard when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +30,7 @@ export const LoginForm: React.FC = () => {
         title: 'Login successful',
         description: 'Welcome to the Warehouse Management System',
       });
-      navigate('/dashboard');
+      // Navigation will be handled by the auth context redirect
     } catch (error) {
       toast({
         title: 'Login failed',
@@ -76,13 +83,6 @@ export const LoginForm: React.FC = () => {
             </Button>
           </form>
           
-          <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-            <p className="font-medium">Demo Accounts:</p>
-            <p>• admin@warehouse.com (Super Admin)</p>
-            <p>• office@warehouse.com (Office Admin)</p>
-            <p>• staff@warehouse.com (Warehouse Staff)</p>
-            <p className="text-xs">Password: any value</p>
-          </div>
         </CardContent>
       </Card>
     </div>
