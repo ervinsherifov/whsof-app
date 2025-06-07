@@ -45,8 +45,8 @@ export const TVDashboard: React.FC = () => {
 
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-      fetchData(); // Refresh data every 30 seconds
-    }, 30000);
+      fetchData(); // Refresh data every 10 seconds
+    }, 10000);
 
     // Set up realtime subscriptions
     const trucksChannel = supabase
@@ -279,7 +279,7 @@ export const TVDashboard: React.FC = () => {
 
       {/* Auto-refresh indicator */}
       <div className="fixed bottom-2 lg:bottom-4 right-2 lg:right-4 text-muted-foreground text-sm lg:text-lg">
-        Auto-refresh: 30s • Realtime updates
+        Auto-refresh: 10s • Realtime updates
       </div>
     </div>
   );
