@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,79 +8,97 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const TaskManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [trucks, setTrucks] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  // Mock task data
-  const tasks = [
-    {
-      id: '1',
-      title: 'Unload Truck ABC-123',
-      description: 'Priority unloading of electronics shipment from Truck ABC-123 at Ramp 3',
-      priority: 'URGENT',
-      assignedUserId: '1',
-      assignedUserName: 'John Smith',
-      status: 'IN_PROGRESS',
-      dueDate: '2024-06-07',
-      dueTime: '10:00',
-      createdAt: '2024-06-07T08:30:00Z',
-    },
-    {
-      id: '2',
-      title: 'Inventory Check - Section A',
-      description: 'Complete inventory count for Section A warehouse storage',
-      priority: 'MEDIUM',
-      assignedUserId: '2',
-      assignedUserName: 'Mike Johnson',
-      status: 'PENDING',
-      dueDate: '2024-06-07',
-      dueTime: '15:00',
-      createdAt: '2024-06-07T09:00:00Z',
-    },
-    {
-      id: '3',
-      title: 'Prepare Outbound Shipment',
-      description: 'Load pallets for customer XYZ Corp onto Truck DEF-456',
-      priority: 'HIGH',
-      assignedUserId: '3',
-      assignedUserName: 'Sarah Wilson',
-      status: 'PENDING',
-      dueDate: '2024-06-07',
-      dueTime: '16:30',
-      createdAt: '2024-06-07T07:45:00Z',
-    },
-    {
-      id: '4',
-      title: 'Equipment Maintenance',
-      description: 'Monthly maintenance check on forklift units 1-3',
-      priority: 'LOW',
-      assignedUserId: '4',
-      assignedUserName: 'David Brown',
-      status: 'COMPLETED',
-      dueDate: '2024-06-07',
-      dueTime: '12:00',
-      createdAt: '2024-06-07T06:00:00Z',
-    }
-  ];
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    priority: '',
-    assignedUserId: '',
+    priority: 'MEDIUM',
+    assignedTo: '',
+    truckId: '',
     dueDate: '',
     dueTime: ''
   });
 
-  const warehouseStaff = [
-    { id: '1', name: 'John Smith' },
-    { id: '2', name: 'Mike Johnson' },
-    { id: '3', name: 'Sarah Wilson' },
-    { id: '4', name: 'David Brown' },
-    { id: '5', name: 'Lisa Davis' },
-  ];
+  useEffect(() => {
+    fetchTasks();
+    fetchTrucks();
+    fetchProfiles();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          trucks(license_plate)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching tasks',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTrucks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trucks')
+        .select('*')
+        .order('arrival_date', { ascending: true });
+
+      if (error) throw error;
+      setTrucks(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching trucks',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          display_name,
+          email,
+          user_roles!inner(role)
+        `)
+        .eq('user_roles.role', 'WAREHOUSE_STAFF');
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching staff',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -110,41 +128,99 @@ export const TaskManagement: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate time format (24-hour)
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (formData.dueTime && !timeRegex.test(formData.dueTime)) {
+    if (!user?.id) {
       toast({
-        title: 'Invalid time format',
-        description: 'Please use 24-hour format (e.g., 14:30)',
+        title: 'Authentication error',
+        description: 'You must be logged in to create tasks',
         variant: 'destructive',
       });
       return;
     }
 
-    toast({
-      title: 'Task created successfully',
-      description: `Task "${formData.title}" has been assigned`,
-    });
+    try {
+      const selectedStaff = profiles.find(p => p.user_id === formData.assignedTo);
+      
+      let dueDateTime = null;
+      if (formData.dueDate && formData.dueTime) {
+        dueDateTime = new Date(`${formData.dueDate}T${formData.dueTime}`).toISOString();
+      } else if (formData.dueDate) {
+        dueDateTime = new Date(formData.dueDate).toISOString();
+      }
+      
+      const { error } = await supabase
+        .from('tasks')
+        .insert({
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          assigned_to_user_id: formData.assignedTo || null,
+          assigned_to_name: selectedStaff?.display_name || selectedStaff?.email,
+          truck_id: formData.truckId || null,
+          due_date: dueDateTime,
+          created_by_user_id: user.id,
+        });
 
-    setFormData({
-      title: '',
-      description: '',
-      priority: '',
-      assignedUserId: '',
-      dueDate: '',
-      dueTime: ''
-    });
-    setIsDialogOpen(false);
+      if (error) throw error;
+
+      toast({
+        title: 'Task created successfully',
+        description: `Task "${formData.title}" created successfully`,
+      });
+
+      setFormData({
+        title: '',
+        description: '',
+        priority: 'MEDIUM',
+        assignedTo: '',
+        truckId: '',
+        dueDate: '',
+        dueTime: ''
+      });
+      setIsDialogOpen(false);
+      fetchTasks();
+    } catch (error: any) {
+      toast({
+        title: 'Error creating task',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const updateTaskStatus = (taskId: string, newStatus: string) => {
-    toast({
-      title: 'Task status updated',
-      description: `Task status changed to ${newStatus}`,
-    });
+  const updateTaskStatus = async (taskId: string, newStatus: string) => {
+    if (!user?.id) return;
+
+    try {
+      const updateData: any = { status: newStatus };
+      
+      if (newStatus === 'COMPLETED') {
+        updateData.completed_by_user_id = user.id;
+        updateData.completed_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('tasks')
+        .update(updateData)
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Task status updated',
+        description: `Status changed to ${newStatus}`,
+      });
+      
+      fetchTasks();
+    } catch (error: any) {
+      toast({
+        title: 'Error updating task status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   const getPriorityCount = (priority: string) => {
@@ -212,15 +288,33 @@ export const TaskManagement: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="assignedUserId">Assign to Staff</Label>
-                <Select value={formData.assignedUserId} onValueChange={(value) => setFormData({...formData, assignedUserId: value})}>
+                <Label htmlFor="assignedTo">Assign to</Label>
+                <Select value={formData.assignedTo} onValueChange={(value) => setFormData({...formData, assignedTo: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select staff member" />
+                    <SelectValue placeholder="Select warehouse staff" />
                   </SelectTrigger>
                   <SelectContent>
-                    {warehouseStaff.map((staff) => (
-                      <SelectItem key={staff.id} value={staff.id}>
-                        {staff.name}
+                    <SelectItem value="">Unassigned</SelectItem>
+                    {profiles.map((staff) => (
+                      <SelectItem key={staff.user_id} value={staff.user_id}>
+                        {staff.display_name || staff.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="truckId">Related Truck (Optional)</Label>
+                <Select value={formData.truckId} onValueChange={(value) => setFormData({...formData, truckId: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select truck" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No truck</SelectItem>
+                    {trucks.map((truck) => (
+                      <SelectItem key={truck.id} value={truck.id}>
+                        {truck.license_plate} - {truck.arrival_date}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -304,78 +398,84 @@ export const TaskManagement: React.FC = () => {
       </div>
 
       {/* Tasks List */}
-      <div className="space-y-4">
-        {tasks.map((task) => (
-          <Card key={task.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{task.title}</CardTitle>
-                <div className="flex space-x-2">
-                  <Badge variant={getPriorityColor(task.priority)}>
-                    {task.priority}
-                  </Badge>
-                  <Badge variant={getStatusColor(task.status)}>
-                    {task.status}
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  {task.description}
-                </p>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Assigned to:</span>
-                    <div>{task.assignedUserName}</div>
+      {loading ? (
+        <div>Loading tasks...</div>
+      ) : (
+        <div className="space-y-4">
+          {tasks.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center text-muted-foreground">
+                No tasks found. Create your first task!
+              </CardContent>
+            </Card>
+          ) : (
+            tasks.map((task) => (
+              <Card key={task.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{task.title}</CardTitle>
+                    <div className="flex space-x-2">
+                      <Badge variant={getPriorityColor(task.priority)}>
+                        {task.priority}
+                      </Badge>
+                      <Badge variant={getStatusColor(task.status)}>
+                        {task.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-medium">Due date:</span>
-                    <div>{new Date(task.dueDate).toLocaleDateString()}</div>
-                  </div>
-                  <div>
-                    <span className="font-medium">Due time:</span>
-                    <div>{task.dueTime}</div>
-                  </div>
-                  <div>
-                    <span className="font-medium">Created:</span>
-                    <div>{new Date(task.createdAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      {task.description}
+                    </p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Assigned to:</span>
+                        <div>{task.assigned_to_name || 'Unassigned'}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Related truck:</span>
+                        <div>{task.trucks?.license_plate || 'None'}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Due date:</span>
+                        <div>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}</div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Created:</span>
+                        <div>{new Date(task.created_at).toLocaleDateString()}</div>
+                      </div>
+                    </div>
 
-                <div className="flex space-x-2">
-                  {task.status === 'PENDING' && (
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => updateTaskStatus(task.id, 'IN_PROGRESS')}
-                    >
-                      Start Task
-                    </Button>
-                  )}
-                  {task.status === 'IN_PROGRESS' && (
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => updateTaskStatus(task.id, 'COMPLETED')}
-                    >
-                      Mark Complete
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost">
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                    <div className="flex space-x-2">
+                      {task.status === 'PENDING' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => updateTaskStatus(task.id, 'IN_PROGRESS')}
+                        >
+                          Start Task
+                        </Button>
+                      )}
+                      {task.status === 'IN_PROGRESS' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => updateTaskStatus(task.id, 'COMPLETED')}
+                        >
+                          Mark Complete
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };

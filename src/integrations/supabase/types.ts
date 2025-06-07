@@ -36,6 +36,65 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to_name: string | null
+          assigned_to_user_id: string | null
+          completed_at: string | null
+          completed_by_user_id: string | null
+          created_at: string
+          created_by_user_id: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+          truck_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to_name?: string | null
+          assigned_to_user_id?: string | null
+          completed_at?: string | null
+          completed_by_user_id?: string | null
+          created_at?: string
+          created_by_user_id: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+          truck_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to_name?: string | null
+          assigned_to_user_id?: string | null
+          completed_at?: string | null
+          completed_by_user_id?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          truck_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_entries: {
         Row: {
           check_in_time: string
@@ -60,6 +119,60 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      trucks: {
+        Row: {
+          arrival_date: string
+          arrival_time: string
+          assigned_staff_id: string | null
+          assigned_staff_name: string | null
+          cargo_description: string
+          created_at: string
+          created_by_user_id: string
+          handled_by_name: string | null
+          handled_by_user_id: string | null
+          id: string
+          license_plate: string
+          pallet_count: number
+          ramp_number: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          arrival_date: string
+          arrival_time: string
+          assigned_staff_id?: string | null
+          assigned_staff_name?: string | null
+          cargo_description: string
+          created_at?: string
+          created_by_user_id: string
+          handled_by_name?: string | null
+          handled_by_user_id?: string | null
+          id?: string
+          license_plate: string
+          pallet_count: number
+          ramp_number?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          arrival_date?: string
+          arrival_time?: string
+          assigned_staff_id?: string | null
+          assigned_staff_name?: string | null
+          cargo_description?: string
+          created_at?: string
+          created_by_user_id?: string
+          handled_by_name?: string | null
+          handled_by_user_id?: string | null
+          id?: string
+          license_plate?: string
+          pallet_count?: number
+          ramp_number?: number | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }

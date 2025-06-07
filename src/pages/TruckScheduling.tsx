@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,83 +9,95 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const TruckScheduling: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRampDialogOpen, setIsRampDialogOpen] = useState(false);
+  const [selectedTruck, setSelectedTruck] = useState<any>(null);
+  const [trucks, setTrucks] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  // Mock truck data
-  const trucks = [
-    {
-      id: '1',
-      licensePlate: 'ABC-123',
-      arrivalTime: '09:30',
-      rampNumber: 3,
-      palletCount: 24,
-      cargoDescription: 'Electronics - TVs and computers',
-      assignedStaffId: '1',
-      assignedStaffName: 'John Smith',
-      status: 'ARRIVED',
-      createdAt: '2024-06-07T08:00:00Z',
-    },
-    {
-      id: '2',
-      licensePlate: 'XYZ-789',
-      arrivalTime: '11:00',
-      rampNumber: 8,
-      palletCount: 18,
-      cargoDescription: 'Furniture - Office chairs and desks',
-      assignedStaffId: '2',
-      assignedStaffName: 'Mike Johnson',
-      status: 'SCHEDULED',
-      createdAt: '2024-06-07T07:30:00Z',
-    },
-    {
-      id: '3',
-      licensePlate: 'DEF-456',
-      arrivalTime: '14:00',
-      rampNumber: 5,
-      palletCount: 32,
-      cargoDescription: 'Clothing - Winter collection',
-      assignedStaffId: '3',
-      assignedStaffName: 'Sarah Wilson',
-      status: 'SCHEDULED',
-      createdAt: '2024-06-07T09:15:00Z',
-    }
-  ];
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     licensePlate: '',
     arrivalDate: '',
     arrivalTime: '',
-    rampNumber: '',
     palletCount: '',
-    cargoDescription: '',
+    cargoDescription: ''
+  });
+
+  const [rampFormData, setRampFormData] = useState({
+    rampNumber: '',
     assignedStaffId: ''
   });
 
   const availableRamps = [
-    { number: 1, type: 'Unloading', available: true },
-    { number: 2, type: 'Unloading', available: true },
-    { number: 3, type: 'Unloading', available: false },
-    { number: 4, type: 'Unloading', available: true },
-    { number: 5, type: 'Unloading', available: false },
-    { number: 6, type: 'Unloading', available: true },
-    { number: 8, type: 'Loading', available: false },
-    { number: 9, type: 'Loading', available: true },
-    { number: 10, type: 'Loading', available: true },
-    { number: 11, type: 'Loading', available: true },
-    { number: 12, type: 'Loading', available: true },
-    { number: 13, type: 'Loading', available: true },
+    { number: 1, type: 'Unloading' },
+    { number: 2, type: 'Unloading' },
+    { number: 3, type: 'Unloading' },
+    { number: 4, type: 'Unloading' },
+    { number: 5, type: 'Unloading' },
+    { number: 6, type: 'Unloading' },
+    { number: 8, type: 'Loading' },
+    { number: 9, type: 'Loading' },
+    { number: 10, type: 'Loading' },
+    { number: 11, type: 'Loading' },
+    { number: 12, type: 'Loading' },
+    { number: 13, type: 'Loading' },
   ];
 
-  const warehouseStaff = [
-    { id: '1', name: 'John Smith' },
-    { id: '2', name: 'Mike Johnson' },
-    { id: '3', name: 'Sarah Wilson' },
-    { id: '4', name: 'David Brown' },
-    { id: '5', name: 'Lisa Davis' },
-  ];
+  useEffect(() => {
+    fetchTrucks();
+    fetchProfiles();
+  }, []);
+
+  const fetchTrucks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trucks')
+        .select('*')
+        .order('arrival_date', { ascending: true })
+        .order('arrival_time', { ascending: true });
+
+      if (error) throw error;
+      setTrucks(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching trucks',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          display_name,
+          email,
+          user_roles!inner(role)
+        `)
+        .eq('user_roles.role', 'WAREHOUSE_STAFF');
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching staff',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -100,53 +112,137 @@ export const TruckScheduling: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate time format (24-hour)
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(formData.arrivalTime)) {
+    if (!user?.id) {
       toast({
-        title: 'Invalid time format',
-        description: 'Please use 24-hour format (e.g., 14:30)',
+        title: 'Authentication error',
+        description: 'You must be logged in to schedule trucks',
         variant: 'destructive',
       });
       return;
     }
 
-    // Check ramp availability
-    const selectedRamp = availableRamps.find(r => r.number.toString() === formData.rampNumber);
-    if (!selectedRamp?.available) {
+    try {
+      const { error } = await supabase
+        .from('trucks')
+        .insert({
+          license_plate: formData.licensePlate,
+          arrival_date: formData.arrivalDate,
+          arrival_time: formData.arrivalTime,
+          pallet_count: parseInt(formData.palletCount),
+          cargo_description: formData.cargoDescription,
+          created_by_user_id: user.id,
+        });
+
+      if (error) throw error;
+
       toast({
-        title: 'Ramp not available',
-        description: 'The selected ramp is already occupied',
+        title: 'Truck scheduled successfully',
+        description: `Truck ${formData.licensePlate} scheduled for ${formData.arrivalDate} at ${formData.arrivalTime}`,
+      });
+
+      setFormData({
+        licensePlate: '',
+        arrivalDate: '',
+        arrivalTime: '',
+        palletCount: '',
+        cargoDescription: ''
+      });
+      setIsDialogOpen(false);
+      fetchTrucks();
+    } catch (error: any) {
+      toast({
+        title: 'Error scheduling truck',
+        description: error.message,
         variant: 'destructive',
       });
-      return;
     }
-
-    toast({
-      title: 'Truck scheduled successfully',
-      description: `Truck ${formData.licensePlate} scheduled for ${formData.arrivalTime} at ramp ${formData.rampNumber}`,
-    });
-
-    setFormData({
-      licensePlate: '',
-      arrivalDate: '',
-      arrivalTime: '',
-      rampNumber: '',
-      palletCount: '',
-      cargoDescription: '',
-      assignedStaffId: ''
-    });
-    setIsDialogOpen(false);
   };
 
-  const updateTruckStatus = (truckId: string, newStatus: string) => {
-    toast({
-      title: 'Truck status updated',
-      description: `Status changed to ${newStatus}`,
-    });
+  const updateTruckStatus = async (truckId: string, newStatus: string) => {
+    if (!user?.id) return;
+
+    try {
+      const updateData: any = { status: newStatus };
+      
+      if (newStatus === 'ARRIVED') {
+        updateData.handled_by_user_id = user.id;
+        updateData.handled_by_name = user.name;
+      }
+
+      const { error } = await supabase
+        .from('trucks')
+        .update(updateData)
+        .eq('id', truckId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Truck status updated',
+        description: `Status changed to ${newStatus}`,
+      });
+      
+      fetchTrucks();
+    } catch (error: any) {
+      toast({
+        title: 'Error updating truck status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const assignRamp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedTruck || !user?.id) return;
+
+    try {
+      const selectedStaff = profiles.find(p => p.user_id === rampFormData.assignedStaffId);
+      
+      const { error } = await supabase
+        .from('trucks')
+        .update({
+          ramp_number: parseInt(rampFormData.rampNumber),
+          assigned_staff_id: rampFormData.assignedStaffId,
+          assigned_staff_name: selectedStaff?.display_name || selectedStaff?.email,
+        })
+        .eq('id', selectedTruck.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Ramp assigned successfully',
+        description: `Truck ${selectedTruck.license_plate} assigned to ramp ${rampFormData.rampNumber}`,
+      });
+
+      setRampFormData({
+        rampNumber: '',
+        assignedStaffId: ''
+      });
+      setIsRampDialogOpen(false);
+      setSelectedTruck(null);
+      fetchTrucks();
+    } catch (error: any) {
+      toast({
+        title: 'Error assigning ramp',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getOccupiedRamps = () => {
+    return trucks
+      .filter(truck => truck.ramp_number && truck.status !== 'DONE')
+      .map(truck => truck.ramp_number);
+  };
+
+  const isRampAvailable = (rampNumber: number) => {
+    const occupiedRamps = getOccupiedRamps();
+    return !occupiedRamps.includes(rampNumber);
   };
 
   return (
@@ -206,24 +302,6 @@ export const TruckScheduling: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="rampNumber">Ramp Number</Label>
-                <Select value={formData.rampNumber} onValueChange={(value) => setFormData({...formData, rampNumber: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ramp" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableRamps
-                      .filter(ramp => ramp.available)
-                      .map((ramp) => (
-                      <SelectItem key={ramp.number} value={ramp.number.toString()}>
-                        Ramp {ramp.number} ({ramp.type})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="palletCount">Number of Pallets</Label>
                 <Input
                   id="palletCount"
@@ -247,21 +325,15 @@ export const TruckScheduling: React.FC = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="assignedStaffId">Assigned Staff</Label>
-                <Select value={formData.assignedStaffId} onValueChange={(value) => setFormData({...formData, assignedStaffId: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select staff member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {warehouseStaff.map((staff) => (
-                      <SelectItem key={staff.id} value={staff.id}>
-                        {staff.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {user?.role !== 'OFFICE_ADMIN' && (
+                <>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Note: Ramp and staff assignment will be done by warehouse staff after scheduling.
+                    </p>
+                  </div>
+                </>
+              )}
 
               <div className="flex space-x-2">
                 <Button type="submit" className="flex-1">Schedule Truck</Button>
@@ -284,24 +356,34 @@ export const TruckScheduling: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-6 gap-4">
-            {availableRamps.map((ramp) => (
-              <div 
-                key={ramp.number}
-                className={`
-                  p-4 rounded-lg border text-center
-                  ${ramp.available 
-                    ? 'bg-green-50 border-green-200 text-green-700' 
-                    : 'bg-red-50 border-red-200 text-red-700'
-                  }
-                `}
-              >
-                <div className="font-bold text-lg">#{ramp.number}</div>
-                <div className="text-sm">{ramp.type}</div>
-                <div className="text-xs font-medium mt-1">
-                  {ramp.available ? 'Available' : 'Occupied'}
+            {availableRamps.map((ramp) => {
+              const isAvailable = isRampAvailable(ramp.number);
+              const occupyingTruck = trucks.find(t => t.ramp_number === ramp.number && t.status !== 'DONE');
+              
+              return (
+                <div 
+                  key={ramp.number}
+                  className={`
+                    p-4 rounded-lg border text-center
+                    ${isAvailable 
+                      ? 'bg-green-50 border-green-200 text-green-700' 
+                      : 'bg-red-50 border-red-200 text-red-700'
+                    }
+                  `}
+                >
+                  <div className="font-bold text-lg">#{ramp.number}</div>
+                  <div className="text-sm">{ramp.type}</div>
+                  <div className="text-xs font-medium mt-1">
+                    {isAvailable ? 'Available' : 'Occupied'}
+                  </div>
+                  {occupyingTruck && (
+                    <div className="text-xs mt-1">
+                      {occupyingTruck.license_plate}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -315,67 +397,146 @@ export const TruckScheduling: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>License Plate</TableHead>
-                <TableHead>Arrival Time</TableHead>
-                <TableHead>Ramp</TableHead>
-                <TableHead>Pallets</TableHead>
-                <TableHead>Cargo</TableHead>
-                <TableHead>Assigned Staff</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {trucks.map((truck) => (
-                <TableRow key={truck.id}>
-                  <TableCell className="font-medium">
-                    {truck.licensePlate}
-                  </TableCell>
-                  <TableCell>{truck.arrivalTime}</TableCell>
-                  <TableCell>
-                    Ramp {truck.rampNumber}
-                  </TableCell>
-                  <TableCell>{truck.palletCount}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {truck.cargoDescription}
-                  </TableCell>
-                  <TableCell>{truck.assignedStaffName}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(truck.status)}>
-                      {truck.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-1">
-                      {truck.status === 'SCHEDULED' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => updateTruckStatus(truck.id, 'ARRIVED')}
-                        >
-                          Mark Arrived
-                        </Button>
-                      )}
-                      {truck.status === 'ARRIVED' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => updateTruckStatus(truck.id, 'DONE')}
-                        >
-                          Mark Done
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div>Loading trucks...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>License Plate</TableHead>
+                  <TableHead>Arrival Date/Time</TableHead>
+                  <TableHead>Ramp</TableHead>
+                  <TableHead>Pallets</TableHead>
+                  <TableHead>Cargo</TableHead>
+                  <TableHead>Assigned Staff</TableHead>
+                  <TableHead>Handler</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {trucks.map((truck) => (
+                  <TableRow key={truck.id}>
+                    <TableCell className="font-medium">
+                      {truck.license_plate}
+                    </TableCell>
+                    <TableCell>
+                      {truck.arrival_date} {truck.arrival_time}
+                    </TableCell>
+                    <TableCell>
+                      {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
+                    </TableCell>
+                    <TableCell>{truck.pallet_count}</TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {truck.cargo_description}
+                    </TableCell>
+                    <TableCell>{truck.assigned_staff_name || 'Not assigned'}</TableCell>
+                    <TableCell>{truck.handled_by_name || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusColor(truck.status)}>
+                        {truck.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-1">
+                        {truck.status === 'SCHEDULED' && user?.role === 'WAREHOUSE_STAFF' && !truck.ramp_number && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedTruck(truck);
+                              setIsRampDialogOpen(true);
+                            }}
+                          >
+                            Assign Ramp
+                          </Button>
+                        )}
+                        {truck.status === 'SCHEDULED' && truck.ramp_number && user?.role === 'WAREHOUSE_STAFF' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateTruckStatus(truck.id, 'ARRIVED')}
+                          >
+                            Mark Arrived
+                          </Button>
+                        )}
+                        {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateTruckStatus(truck.id, 'DONE')}
+                          >
+                            Mark Done
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {/* Ramp Assignment Dialog */}
+      <Dialog open={isRampDialogOpen} onOpenChange={setIsRampDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Ramp & Staff</DialogTitle>
+            <DialogDescription>
+              Assign ramp and staff for truck {selectedTruck?.license_plate}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={assignRamp} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="rampNumber">Ramp Number</Label>
+              <Select value={rampFormData.rampNumber} onValueChange={(value) => setRampFormData({...rampFormData, rampNumber: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select available ramp" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRamps
+                    .filter(ramp => isRampAvailable(ramp.number))
+                    .map((ramp) => (
+                    <SelectItem key={ramp.number} value={ramp.number.toString()}>
+                      Ramp {ramp.number} ({ramp.type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="assignedStaffId">Assigned Staff</Label>
+              <Select value={rampFormData.assignedStaffId} onValueChange={(value) => setRampFormData({...rampFormData, assignedStaffId: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select warehouse staff" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profiles.map((staff) => (
+                    <SelectItem key={staff.user_id} value={staff.user_id}>
+                      {staff.display_name || staff.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex space-x-2">
+              <Button type="submit" className="flex-1">Assign Ramp</Button>
+              <Button type="button" variant="outline" onClick={() => {
+                setIsRampDialogOpen(false);
+                setSelectedTruck(null);
+                setRampFormData({ rampNumber: '', assignedStaffId: '' });
+              }}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
