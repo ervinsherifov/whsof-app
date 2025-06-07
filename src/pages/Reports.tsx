@@ -238,10 +238,10 @@ export const Reports: React.FC = () => {
   const summary = getReportSummary();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary">Reports</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Generate and export warehouse operation reports
         </p>
       </div>
@@ -256,7 +256,7 @@ export const Reports: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
               <div className="space-y-2">
                 <Label htmlFor="reportType">Report Type</Label>
                 <Select value={reportType} onValueChange={setReportType}>
@@ -310,13 +310,13 @@ export const Reports: React.FC = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
               <Label>&nbsp;</Label>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button onClick={generateReport} className="flex-1">
                   Generate
                 </Button>
-                <Button 
+                <Button
                   variant="outline" 
                   onClick={() => {
                     if (reportType === 'time_logs') {
@@ -338,6 +338,7 @@ export const Reports: React.FC = () => {
                         palletCount: truck.pallet_count,
                         status: truck.status,
                         assignedStaff: truck.assigned_staff_name,
+                        handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
                         cargoDescription: truck.cargo_description
                       })), 'truck_activity');
                     } else if (reportType === 'task_management') {
@@ -347,6 +348,7 @@ export const Reports: React.FC = () => {
                         priority: task.priority,
                         status: task.status,
                         assignedTo: task.assigned_to_name || 'Unassigned',
+                        completedBy: task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : '',
                         dueDate: task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline',
                         createdAt: new Date(task.created_at).toLocaleDateString(),
                         completedAt: task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '',
@@ -367,7 +369,7 @@ export const Reports: React.FC = () => {
 
       {/* Summary Statistics - Only for Super Admin */}
       {hasFullAccess && (
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total Hours Today</CardTitle>

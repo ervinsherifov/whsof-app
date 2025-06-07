@@ -1,159 +1,151 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { AuthState, User, LoginCredentials } from '@/types/auth';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Session } from '@supabase/supabase-js';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
-interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN';
+}
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
   checkIn: () => Promise<void>;
   checkOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-type AuthAction =
-  | { type: 'LOGIN_START' }
-  | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
-  | { type: 'LOGIN_ERROR' }
-  | { type: 'LOGOUT' }
-  | { type: 'SET_LOADING'; payload: boolean };
-
-const authReducer = (state: AuthState, action: AuthAction): AuthState => {
-  switch (action.type) {
-    case 'LOGIN_START':
-      return { ...state, isLoading: true };
-    case 'LOGIN_SUCCESS':
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        isLoading: false,
-      };
-    case 'LOGIN_ERROR':
-      return { ...state, isLoading: false };
-    case 'LOGOUT':
-      return {
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        token: null,
-      };
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-    default:
-      return state;
-  }
-};
-
-const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  token: null,
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const fetchUserProfile = async (userId: string, currentToken: string) => {
+  const getUserProfile = async (userId: string) => {
     try {
-      // Get current session to get user email
-      const { data: { user: sessionUser } } = await supabase.auth.getUser();
-      
       // Get user role and profile data
       const [roleResult, profileResult] = await Promise.all([
         supabase.rpc('get_user_role', { _user_id: userId }),
-        supabase.from('profiles').select('display_name').eq('user_id', userId).maybeSingle()
+        supabase.from('profiles').select('display_name, email').eq('user_id', userId).maybeSingle()
       ]);
 
-      // Create complete user object with fetched data
-      const updatedUser: User = {
-        id: userId,
-        email: sessionUser?.email || '',
-        name: profileResult.data?.display_name || sessionUser?.email?.split('@')[0] || '',
+      if (roleResult.error) throw roleResult.error;
+
+      return {
         role: roleResult.data || 'WAREHOUSE_STAFF',
-        isActive: true,
-        createdAt: sessionUser?.created_at || '',
+        display_name: profileResult.data?.display_name,
+        email: profileResult.data?.email
       };
-      
-      dispatch({ 
-        type: 'LOGIN_SUCCESS', 
-        payload: { user: updatedUser, token: currentToken } 
-      });
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // Create fallback user in case of error
-      const { data: { user: sessionUser } } = await supabase.auth.getUser();
-      const fallbackUser: User = {
-        id: userId,
-        email: sessionUser?.email || '',
-        name: sessionUser?.email?.split('@')[0] || '',
-        role: 'WAREHOUSE_STAFF',
-        isActive: true,
-        createdAt: sessionUser?.created_at || '',
-      };
-      dispatch({ 
-        type: 'LOGIN_SUCCESS', 
-        payload: { user: fallbackUser, token: currentToken } 
-      });
+      return null;
     }
   };
 
   useEffect(() => {
-    // Set initial loading state
-    dispatch({ type: 'SET_LOADING', payload: true });
-
-    // Set up auth state listener
+    let mounted = true;
+    
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, session?.user?.id);
+        
         if (session?.user) {
-          // Only set loading if we don't already have a user
-          if (!state.user) {
-            dispatch({ type: 'SET_LOADING', payload: true });
-          }
+          setSession(session);
+          setIsAuthenticated(true);
           
-          // Fetch user profile data
-          fetchUserProfile(session.user.id, session.access_token);
+          // Get user profile and role
+          const profile = await getUserProfile(session.user.id);
+          if (mounted && profile) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: profile.display_name || profile.email || session.user.email || '',
+              role: profile.role
+            });
+          }
         } else {
-          dispatch({ type: 'LOGOUT' });
+          setSession(null);
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+        
+        if (mounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user.id, session.access_token);
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      if (!mounted) return;
+      
+      if (existingSession?.user) {
+        setSession(existingSession);
+        setIsAuthenticated(true);
+        
+        // Get user profile and role
+        getUserProfile(existingSession.user.id).then(profile => {
+          if (mounted && profile) {
+            setUser({
+              id: existingSession.user.id,
+              email: existingSession.user.email || '',
+              name: profile.display_name || profile.email || existingSession.user.email || '',
+              role: profile.role
+            });
+          }
+          if (mounted) {
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+        });
       } else {
-        dispatch({ type: 'SET_LOADING', payload: false });
+        if (mounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
-      email: credentials.email,
-      password: credentials.password,
+      email,
+      password,
     });
 
     if (error) {
-      throw new Error(error.message);
+      return { error: error.message };
     }
 
-    // Auth state change will handle the login success
+    return {};
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
-    dispatch({ type: 'LOGOUT' });
+    setSession(null);
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const checkIn = async () => {
-    if (!state.user?.id) return;
+    if (!user?.id) return;
     
     try {
       // Check if user is already checked in today
@@ -161,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: existingEntry } = await supabase
         .from('time_entries')
         .select('*')
-        .eq('user_id', state.user.id)
+        .eq('user_id', user.id)
         .gte('check_in_time', `${today}T00:00:00.000Z`)
         .is('check_out_time', null)
         .maybeSingle();
@@ -174,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase
         .from('time_entries')
         .insert({
-          user_id: state.user.id,
+          user_id: user.id,
           check_in_time: new Date().toISOString()
         });
 
@@ -187,7 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const checkOut = async () => {
-    if (!state.user?.id) return;
+    if (!user?.id) return;
     
     try {
       // Find the latest uncompleted check-in for today
@@ -195,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: activeEntry } = await supabase
         .from('time_entries')
         .select('*')
-        .eq('user_id', state.user.id)
+        .eq('user_id', user.id)
         .gte('check_in_time', `${today}T00:00:00.000Z`)
         .is('check_out_time', null)
         .order('check_in_time', { ascending: false })
@@ -216,9 +208,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let overtimeHours = 0;
       
       if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        // Monday to Friday: 9 hours standard, rest is overtime
-        regularHours = Math.min(workedHours, 9);
-        overtimeHours = Math.max(workedHours - 9, 0);
+        // Monday to Friday: 8 hours standard, rest is overtime
+        regularHours = Math.min(workedHours, 8);
+        overtimeHours = Math.max(workedHours - 8, 0);
       } else {
         // Saturday and Sunday: all hours are overtime
         overtimeHours = workedHours;
@@ -244,15 +236,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        logout,
-        checkIn,
-        checkOut,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      session,
+      isLoading: isLoading || !isInitialized,
+      isAuthenticated,
+      login,
+      logout,
+      checkIn,
+      checkOut
+    }}>
       {children}
     </AuthContext.Provider>
   );

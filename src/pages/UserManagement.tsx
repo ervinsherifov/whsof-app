@@ -277,18 +277,18 @@ export const UserManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">User Management</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Manage system users and permissions
           </p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add New User</Button>
+            <Button className="w-full sm:w-auto">Add New User</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -372,7 +372,7 @@ export const UserManagement: React.FC = () => {
       </div>
 
       {/* User Statistics */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -457,10 +457,11 @@ export const UserManagement: React.FC = () => {
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                       <Button 
                         size="sm" 
                         variant="outline"
+                        className="w-full sm:w-auto"
                         onClick={() => {
                           toast({
                             title: 'Feature not implemented',
@@ -473,6 +474,7 @@ export const UserManagement: React.FC = () => {
                       <Button 
                         size="sm" 
                         variant="destructive"
+                        className="w-full sm:w-auto"
                         onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
                       >
                         Delete

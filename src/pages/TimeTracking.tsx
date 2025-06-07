@@ -185,16 +185,16 @@ export const TimeTracking: React.FC = () => {
   const weeklySummary = getWeeklySummary();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Time Tracking</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary">Time Tracking</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Track work hours and manage overtime
         </p>
       </div>
 
       {/* Current Status */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Current Time</CardTitle>
@@ -254,8 +254,8 @@ export const TimeTracking: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex space-x-4">
-            <Button 
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <Button
               onClick={handleCheckIn}
               disabled={isCheckedIn || isLoading || isCheckingIn}
               className="flex-1 transition-all duration-200 hover:scale-105 active:scale-95"
@@ -377,7 +377,7 @@ export const TimeTracking: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <div className="text-center">
               <div className="text-2xl font-bold">{weeklySummary.regular}</div>
               <p className="text-sm text-muted-foreground">Regular Hours</p>

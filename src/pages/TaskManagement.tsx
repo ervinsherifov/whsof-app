@@ -50,7 +50,9 @@ export const TaskManagement: React.FC = () => {
             id,
             photo_url,
             created_at
-          )
+          ),
+          assigned_profile:profiles!assigned_to_user_id(display_name, email),
+          completed_profile:profiles!completed_by_user_id(display_name, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -497,7 +499,7 @@ export const TaskManagement: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="font-medium">Assigned to:</span>
-                        <div>{task.assigned_to_name || 'Unassigned'}</div>
+                        <div>{task.assigned_profile?.display_name || task.assigned_profile?.email || task.assigned_to_name || 'Unassigned'}</div>
                       </div>
                       <div>
                         <span className="font-medium">Related truck:</span>
@@ -511,6 +513,18 @@ export const TaskManagement: React.FC = () => {
                         <span className="font-medium">Created:</span>
                         <div>{new Date(task.created_at).toLocaleDateString()}</div>
                       </div>
+                      {task.status === 'IN_PROGRESS' && task.assigned_profile && (
+                        <div>
+                          <span className="font-medium">Working on it:</span>
+                          <div className="text-blue-600 font-semibold">{task.assigned_profile.display_name || task.assigned_profile.email}</div>
+                        </div>
+                      )}
+                      {task.status === 'COMPLETED' && task.completed_profile && (
+                        <div>
+                          <span className="font-medium">Completed by:</span>
+                          <div className="text-green-600 font-semibold">{task.completed_profile.display_name || task.completed_profile.email}</div>
+                        </div>
+                      )}
                     </div>
 
                     {task.status === 'COMPLETED' && task.completion_comment && (

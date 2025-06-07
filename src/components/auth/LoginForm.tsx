@@ -27,7 +27,10 @@ export const LoginForm: React.FC = () => {
     
     setIsSigningIn(true);
     try {
-      await login({ email, password });
+      const result = await login(email, password);
+      if (result.error) {
+        throw new Error(result.error);
+      }
       toast({
         title: 'Login successful',
         description: 'Welcome to the Warehouse Management System',
