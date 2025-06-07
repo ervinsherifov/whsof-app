@@ -25,7 +25,7 @@ const sidebarItems: SidebarItem[] = [
   {
     label: 'Truck Scheduling',
     path: '/trucks',
-    roles: ['OFFICE_ADMIN', 'SUPER_ADMIN'],
+    roles: ['WAREHOUSE_STAFF', 'OFFICE_ADMIN', 'SUPER_ADMIN'],
   },
   {
     label: 'Task Management',

@@ -51,7 +51,7 @@ const App = () => (
             } />
             
             <Route path="/trucks" element={
-              <ProtectedRoute allowedRoles={['OFFICE_ADMIN', 'SUPER_ADMIN']}>
+              <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF', 'OFFICE_ADMIN', 'SUPER_ADMIN']}>
                 <Layout>
                   <TruckScheduling />
                 </Layout>
