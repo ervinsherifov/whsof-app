@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +19,8 @@ export const TruckScheduling: React.FC = () => {
   const [isRampDialogOpen, setIsRampDialogOpen] = useState(false);
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<any>(null);
+  const [warehouseStaff, setWarehouseStaff] = useState<any[]>([]);
+  const [selectedHandlers, setSelectedHandlers] = useState<string[]>([]);
   const [trucks, setTrucks] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +58,27 @@ export const TruckScheduling: React.FC = () => {
   useEffect(() => {
     fetchTrucks();
     fetchProfiles();
+    fetchWarehouseStaff();
   }, []);
+
+  const fetchWarehouseStaff = async () => {
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          display_name,
+          email,
+          user_roles!inner(role)
+        `)
+        .eq('user_roles.role', 'WAREHOUSE_STAFF');
+
+      if (userError) throw userError;
+      setWarehouseStaff(userData || []);
+    } catch (error) {
+      console.error('Error fetching warehouse staff:', error);
+    }
+  };
 
   const fetchTrucks = async () => {
     try {
@@ -243,6 +266,25 @@ export const TruckScheduling: React.FC = () => {
   const checkPhotosAndComplete = async () => {
     if (!selectedTruck) return;
 
+    // Validate handler selection
+    if (selectedHandlers.length === 0) {
+      toast({
+        title: 'Handler selection required',
+        description: 'Please select at least one warehouse staff member who handled this truck',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (selectedHandlers.length > 2) {
+      toast({
+        title: 'Too many handlers selected',
+        description: 'You can select up to 2 warehouse staff members only',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       // Check if photos exist
       const { data: photos, error: photoError } = await supabase
@@ -261,6 +303,22 @@ export const TruckScheduling: React.FC = () => {
         return;
       }
 
+      // Save truck handlers
+      const selectedStaffData = selectedHandlers.map(userId => {
+        const staff = warehouseStaff.find(s => s.user_id === userId);
+        return {
+          truck_id: selectedTruck.id,
+          handler_user_id: userId,
+          handler_name: staff?.display_name || staff?.email || 'Unknown'
+        };
+      });
+
+      const { error: handlersError } = await supabase
+        .from('truck_handlers')
+        .insert(selectedStaffData);
+
+      if (handlersError) throw handlersError;
+
       // Mark truck as complete
       const { error } = await supabase
         .from('trucks')
@@ -276,6 +334,7 @@ export const TruckScheduling: React.FC = () => {
 
       setIsCompletionDialogOpen(false);
       setSelectedTruck(null);
+      setSelectedHandlers([]);
       fetchTrucks();
     } catch (error: any) {
       toast({
@@ -694,12 +753,12 @@ export const TruckScheduling: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Complete Truck Processing</DialogTitle>
             <DialogDescription>
-              Upload completion photos for truck {selectedTruck?.license_plate} before marking as done
+              Upload completion photos and select warehouse staff who handled truck {selectedTruck?.license_plate}
             </DialogDescription>
           </DialogHeader>
           
           {selectedTruck && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <TruckCompletionPhotos 
                 truckId={selectedTruck.id}
                 onPhotosUploaded={() => {
@@ -707,10 +766,61 @@ export const TruckScheduling: React.FC = () => {
                 }}
               />
               
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-medium">
+                    Select Warehouse Staff Who Handled This Truck
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Select 1-2 warehouse staff members who unloaded/loaded this truck
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto">
+                  {warehouseStaff.map((staff) => (
+                    <div key={staff.user_id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={staff.user_id}
+                        checked={selectedHandlers.includes(staff.user_id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            if (selectedHandlers.length < 2) {
+                              setSelectedHandlers([...selectedHandlers, staff.user_id]);
+                            }
+                          } else {
+                            setSelectedHandlers(selectedHandlers.filter(id => id !== staff.user_id));
+                          }
+                        }}
+                        disabled={!selectedHandlers.includes(staff.user_id) && selectedHandlers.length >= 2}
+                      />
+                      <Label
+                        htmlFor={staff.user_id}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {staff.display_name || staff.email}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                
+                {selectedHandlers.length === 0 && (
+                  <p className="text-sm text-destructive">
+                    Please select at least one warehouse staff member
+                  </p>
+                )}
+                
+                {selectedHandlers.length >= 2 && (
+                  <p className="text-sm text-muted-foreground">
+                    Maximum 2 staff members can be selected
+                  </p>
+                )}
+              </div>
+              
               <div className="flex space-x-2 pt-4">
                 <Button 
                   onClick={checkPhotosAndComplete}
                   className="flex-1"
+                  disabled={selectedHandlers.length === 0}
                 >
                   Mark Truck as Complete
                 </Button>
@@ -720,6 +830,7 @@ export const TruckScheduling: React.FC = () => {
                   onClick={() => {
                     setIsCompletionDialogOpen(false);
                     setSelectedTruck(null);
+                    setSelectedHandlers([]);
                   }}
                 >
                   Cancel

@@ -163,6 +163,38 @@ export type Database = {
           },
         ]
       }
+      truck_handlers: {
+        Row: {
+          created_at: string
+          handler_name: string
+          handler_user_id: string
+          id: string
+          truck_id: string
+        }
+        Insert: {
+          created_at?: string
+          handler_name: string
+          handler_user_id: string
+          id?: string
+          truck_id: string
+        }
+        Update: {
+          created_at?: string
+          handler_name?: string
+          handler_user_id?: string
+          id?: string
+          truck_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "truck_handlers_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trucks: {
         Row: {
           arrival_date: string
