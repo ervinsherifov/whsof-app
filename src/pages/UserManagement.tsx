@@ -39,24 +39,28 @@ export const UserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          user_id,
-          display_name,
-          email,
-          created_at,
-          user_roles!inner(role)
-        `);
+        .select('id, user_id, display_name, email, created_at');
 
-      if (error) throw error;
+      if (profilesError) throw profilesError;
 
-      // Transform the data to include role at the top level
-      const usersWithRoles = data?.map((user: any) => ({
-        ...user,
-        role: (user.user_roles?.[0]?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN'
-      })) || [];
+      // Then get all user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Combine the data
+      const usersWithRoles = profiles?.map((profile: any) => {
+        const userRole = roles?.find((role: any) => role.user_id === profile.user_id);
+        return {
+          ...profile,
+          role: (userRole?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN'
+        };
+      }) || [];
 
       setUsers(usersWithRoles);
     } catch (error) {
