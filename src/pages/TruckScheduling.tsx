@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -575,7 +576,7 @@ export const TruckScheduling: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {availableRamps.map((ramp) => {
               const currentlyOccupying = getRampOccupancy(ramp.number);
               const isCurrentlyBusy = !!currentlyOccupying;
@@ -639,7 +640,9 @@ export const TruckScheduling: React.FC = () => {
           {loading ? (
             <div>Loading trucks...</div>
           ) : (
-            <Table>
+            <div className="overflow-hidden">
+              <ScrollArea className="h-[400px]">
+                <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>License Plate</TableHead>
@@ -677,7 +680,7 @@ export const TruckScheduling: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-1">
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1">
                         {truck.status === 'SCHEDULED' && user?.role === 'WAREHOUSE_STAFF' && !truck.ramp_number && (
                           <Button 
                             size="sm" 
@@ -721,9 +724,11 @@ export const TruckScheduling: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          )}
+                </TableBody>
+              </Table>
+              </ScrollArea>
+            </div>
+            )}
         </CardContent>
       </Card>
 
@@ -815,7 +820,8 @@ export const TruckScheduling: React.FC = () => {
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto">
+                <ScrollArea className="h-48">
+                  <div className="grid grid-cols-1 gap-3 pr-4">
                   {warehouseStaff.map((staff) => (
                     <div key={staff.user_id} className="flex items-center space-x-2">
                       <Checkbox
@@ -839,8 +845,9 @@ export const TruckScheduling: React.FC = () => {
                         {staff.display_name || staff.email}
                       </Label>
                     </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </ScrollArea>
                 
                 {selectedHandlers.length === 0 && (
                   <p className="text-sm text-destructive">

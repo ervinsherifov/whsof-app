@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -151,6 +152,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               </Button>
             </div>
           )}
+
+          <ThemeToggle />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

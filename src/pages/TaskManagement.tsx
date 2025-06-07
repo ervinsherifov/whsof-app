@@ -419,7 +419,7 @@ export const TaskManagement: React.FC = () => {
       </div>
 
       {/* Priority Overview */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Urgent Tasks</CardTitle>
@@ -494,7 +494,7 @@ export const TaskManagement: React.FC = () => {
                       {task.description}
                     </p>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="font-medium">Assigned to:</span>
                         <div>{task.assigned_to_name || 'Unassigned'}</div>
@@ -523,7 +523,7 @@ export const TaskManagement: React.FC = () => {
                         {task.task_completion_photos && task.task_completion_photos.length > 0 && (
                           <div className="space-y-2">
                             <span className="font-medium text-sm">Completion Photos:</span>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                               {task.task_completion_photos.map((photo: any, index: number) => (
                                 <img
                                   key={photo.id}
