@@ -169,7 +169,7 @@ export const TruckScheduling: React.FC = () => {
       
       if (newStatus === 'ARRIVED') {
         updateData.handled_by_user_id = user.id;
-        updateData.handled_by_name = user.name;
+        updateData.handled_by_name = user.email;
       }
 
       const { error } = await supabase
@@ -197,7 +197,14 @@ export const TruckScheduling: React.FC = () => {
   const assignRamp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedTruck || !user?.id) return;
+    if (!selectedTruck || !user?.id || !rampFormData.rampNumber || !rampFormData.assignedStaffId) {
+      toast({
+        title: 'Missing information',
+        description: 'Please select both a ramp and staff member',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
       const selectedStaff = profiles.find(p => p.user_id === rampFormData.assignedStaffId);
@@ -206,7 +213,7 @@ export const TruckScheduling: React.FC = () => {
         .from('trucks')
         .update({
           ramp_number: parseInt(rampFormData.rampNumber),
-          assigned_staff_id: rampFormData.assignedStaffId,
+          assigned_staff_id: rampFormData.assignedStaffId || null,
           assigned_staff_name: selectedStaff?.display_name || selectedStaff?.email,
         })
         .eq('id', selectedTruck.id);
