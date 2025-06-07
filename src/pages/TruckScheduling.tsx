@@ -345,6 +345,36 @@ export const TruckScheduling: React.FC = () => {
     }
   };
 
+  const deleteTruck = async (truckId: string, licensePlate: string) => {
+    if (!user?.id || user.role !== 'SUPER_ADMIN') return;
+
+    if (!confirm(`Are you sure you want to delete truck "${licensePlate}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('trucks')
+        .delete()
+        .eq('id', truckId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Truck deleted',
+        description: `Truck "${licensePlate}" has been deleted`,
+      });
+      
+      fetchTrucks();
+    } catch (error: any) {
+      toast({
+        title: 'Error deleting truck',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   const assignRamp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -676,6 +706,15 @@ export const TruckScheduling: React.FC = () => {
                             onClick={() => updateTruckStatus(truck.id, 'DONE')}
                           >
                             Mark Done
+                          </Button>
+                        )}
+                        {user?.role === 'SUPER_ADMIN' && (
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => deleteTruck(truck.id, truck.license_plate)}
+                          >
+                            Delete
                           </Button>
                         )}
                       </div>

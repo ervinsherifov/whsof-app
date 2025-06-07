@@ -256,6 +256,36 @@ export const TaskManagement: React.FC = () => {
     }
   };
 
+  const deleteTask = async (taskId: string, taskTitle: string) => {
+    if (!user?.id || user.role !== 'SUPER_ADMIN') return;
+
+    if (!confirm(`Are you sure you want to delete the task "${taskTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Task deleted',
+        description: `Task "${taskTitle}" has been deleted`,
+      });
+      
+      fetchTasks();
+    } catch (error: any) {
+      toast({
+        title: 'Error deleting task',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getPriorityCount = (priority: string) => {
     return tasks.filter(task => task.priority === priority && task.status !== 'COMPLETED').length;
   };
@@ -529,6 +559,15 @@ export const TaskManagement: React.FC = () => {
                           }}
                         >
                           Mark Complete
+                        </Button>
+                      )}
+                      {user?.role === 'SUPER_ADMIN' && (
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => deleteTask(task.id, task.title)}
+                        >
+                          Delete
                         </Button>
                       )}
                     </div>
