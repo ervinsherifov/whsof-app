@@ -34,7 +34,7 @@ export const Reports: React.FC = () => {
         .from('time_entries')
         .select(`
           *,
-          profiles!time_entries_user_id_profiles_user_id_fkey(display_name, email)
+          profiles(display_name, email)
         `);
       
       if (timeError) throw timeError;
