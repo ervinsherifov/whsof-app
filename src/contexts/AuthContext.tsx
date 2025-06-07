@@ -149,13 +149,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const checkIn = async () => {
-    // Mock check-in functionality
-    console.log('Checking in at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+    if (!state.user?.id) return;
+    
+    try {
+      // Check if user is already checked in today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existingEntry } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', state.user.id)
+        .gte('check_in_time', `${today}T00:00:00.000Z`)
+        .is('check_out_time', null)
+        .maybeSingle();
+
+      if (existingEntry) {
+        console.log('Already checked in');
+        return;
+      }
+
+      // Create new check-in entry
+      const { error } = await supabase
+        .from('time_entries')
+        .insert({
+          user_id: state.user.id,
+          check_in_time: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      console.log('Checking in at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+    } catch (error) {
+      console.error('Check-in failed:', error);
+    }
   };
 
   const checkOut = async () => {
-    // Mock check-out functionality
-    console.log('Checking out at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+    if (!state.user?.id) return;
+    
+    try {
+      // Find the latest uncompleted check-in for today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: activeEntry } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', state.user.id)
+        .gte('check_in_time', `${today}T00:00:00.000Z`)
+        .is('check_out_time', null)
+        .order('check_in_time', { ascending: false })
+        .maybeSingle();
+
+      if (!activeEntry) {
+        console.log('No active check-in found');
+        return;
+      }
+
+      // Update entry with check-out time
+      const { error } = await supabase
+        .from('time_entries')
+        .update({
+          check_out_time: new Date().toISOString()
+        })
+        .eq('id', activeEntry.id);
+
+      if (error) throw error;
+      console.log('Checking out at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+    } catch (error) {
+      console.error('Check-out failed:', error);
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,40 +8,81 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+interface TimeEntry {
+  id: string;
+  user_id: string;
+  check_in_time: string;
+  check_out_time: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const TimeTracking: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+  const [currentEntry, setCurrentEntry] = useState<TimeEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock time log data
-  const timeLogs = [
-    {
-      id: '1',
-      date: '2024-06-07',
-      checkIn: '08:00',
-      checkOut: '17:15',
-      regularHours: 8,
-      overtimeHours: 1.25,
-      notes: 'Truck unloading overtime'
-    },
-    {
-      id: '2',
-      date: '2024-06-06',
-      checkIn: '08:05',
-      checkOut: '17:00',
-      regularHours: 8,
-      overtimeHours: 0,
-      notes: ''
-    },
-    {
-      id: '3',
-      date: '2024-06-05',
-      checkIn: '07:45',
-      checkOut: '18:30',
-      regularHours: 8,
-      overtimeHours: 2.75,
-      notes: 'Emergency shipment processing'
+  const fetchTimeEntries = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('check_in_time', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setTimeEntries(data || []);
+    } catch (error) {
+      console.error('Error fetching time entries:', error);
     }
-  ];
+  };
+
+  const fetchCurrentEntry = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('check_in_time', `${today}T00:00:00.000Z`)
+        .is('check_out_time', null)
+        .maybeSingle();
+
+      if (error) throw error;
+      setCurrentEntry(data);
+    } catch (error) {
+      console.error('Error fetching current entry:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      Promise.all([fetchTimeEntries(), fetchCurrentEntry()]).finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [user?.id]);
+
+  const refreshData = async () => {
+    await Promise.all([fetchTimeEntries(), fetchCurrentEntry()]);
+  };
+
+  const handleCheckIn = async () => {
+    await checkIn();
+    await refreshData();
+  };
+
+  const handleCheckOut = async () => {
+    await checkOut();
+    await refreshData();
+  };
 
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString('en-US', { 
@@ -50,17 +92,82 @@ export const TimeTracking: React.FC = () => {
     });
   };
 
-  const getWorkingTime = () => {
-    // Mock calculation
+  const calculateHours = (checkInTime: string, checkOutTime?: string | null) => {
+    const checkIn = new Date(checkInTime);
+    const checkOut = checkOutTime ? new Date(checkOutTime) : new Date();
+    const diffMs = checkOut.getTime() - checkIn.getTime();
+    const hours = diffMs / (1000 * 60 * 60);
+    
+    const standardHours = 8;
+    const regularHours = Math.min(hours, standardHours);
+    const overtimeHours = Math.max(0, hours - standardHours);
+    
     return {
-      checkedIn: true,
-      checkInTime: '08:15',
-      currentHours: '8:45',
-      overtimeHours: '0:45'
+      total: hours,
+      regular: regularHours,
+      overtime: overtimeHours
+    };
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getWorkingTime = () => {
+    if (!currentEntry) {
+      return {
+        checkedIn: false,
+        checkInTime: '',
+        currentHours: '0:00',
+        overtimeHours: '0:00'
+      };
+    }
+
+    const hours = calculateHours(currentEntry.check_in_time, currentEntry.check_out_time);
+    const currentHours = Math.floor(hours.regular);
+    const currentMinutes = Math.floor((hours.regular - currentHours) * 60);
+    const overtimeHoursCalc = Math.floor(hours.overtime);
+    const overtimeMinutes = Math.floor((hours.overtime - overtimeHoursCalc) * 60);
+
+    return {
+      checkedIn: !currentEntry.check_out_time,
+      checkInTime: formatTime(currentEntry.check_in_time),
+      currentHours: `${currentHours}:${currentMinutes.toString().padStart(2, '0')}`,
+      overtimeHours: `${overtimeHoursCalc}:${overtimeMinutes.toString().padStart(2, '0')}`
+    };
+  };
+
+  const getWeeklySummary = () => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const weeklyEntries = timeEntries.filter(entry => {
+      const entryDate = new Date(entry.check_in_time);
+      return entryDate >= oneWeekAgo && entry.check_out_time; // Only completed entries
+    });
+
+    let totalRegular = 0;
+    let totalOvertime = 0;
+
+    weeklyEntries.forEach(entry => {
+      const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+      totalRegular += hours.regular;
+      totalOvertime += hours.overtime;
+    });
+
+    return {
+      regular: Math.round(totalRegular),
+      overtime: Math.round(totalOvertime),
+      total: Math.round(totalRegular + totalOvertime)
     };
   };
 
   const workingTime = getWorkingTime();
+  const weeklySummary = getWeeklySummary();
 
   return (
     <div className="space-y-6">
@@ -134,15 +241,15 @@ export const TimeTracking: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="flex space-x-4">
             <Button 
-              onClick={checkIn}
-              disabled={workingTime.checkedIn}
+              onClick={handleCheckIn}
+              disabled={workingTime.checkedIn || isLoading}
               className="flex-1"
             >
               Check In
             </Button>
             <Button 
-              onClick={checkOut}
-              disabled={!workingTime.checkedIn}
+              onClick={handleCheckOut}
+              disabled={!workingTime.checkedIn || isLoading}
               variant="outline"
               className="flex-1"
             >
@@ -191,28 +298,47 @@ export const TimeTracking: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {timeLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-medium">
-                      {new Date(log.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{log.checkIn}</TableCell>
-                    <TableCell>{log.checkOut}</TableCell>
-                    <TableCell>{log.regularHours}h</TableCell>
-                    <TableCell>
-                      {log.overtimeHours > 0 ? (
-                        <span className="text-orange-600 font-medium">
-                          {log.overtimeHours}h
-                        </span>
-                      ) : (
-                        '0h'
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {log.notes || '-'}
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">
+                      Loading...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : timeEntries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                      No time entries found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  timeEntries.map((entry) => {
+                    const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+                    return (
+                      <TableRow key={entry.id}>
+                        <TableCell className="font-medium">
+                          {new Date(entry.check_in_time).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{formatTime(entry.check_in_time)}</TableCell>
+                        <TableCell>
+                          {entry.check_out_time ? formatTime(entry.check_out_time) : 'Still working'}
+                        </TableCell>
+                        <TableCell>{hours.regular.toFixed(1)}h</TableCell>
+                        <TableCell>
+                          {hours.overtime > 0 ? (
+                            <span className="text-orange-600 font-medium">
+                              {hours.overtime.toFixed(1)}h
+                            </span>
+                          ) : (
+                            '0h'
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          -
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </div>
@@ -230,15 +356,15 @@ export const TimeTracking: React.FC = () => {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
-              <div className="text-2xl font-bold">32</div>
+              <div className="text-2xl font-bold">{weeklySummary.regular}</div>
               <p className="text-sm text-muted-foreground">Regular Hours</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">4</div>
+              <div className="text-2xl font-bold text-orange-600">{weeklySummary.overtime}</div>
               <p className="text-sm text-muted-foreground">Overtime Hours</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">36</div>
+              <div className="text-2xl font-bold">{weeklySummary.total}</div>
               <p className="text-sm text-muted-foreground">Total Hours</p>
             </div>
           </div>
