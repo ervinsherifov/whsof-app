@@ -11,7 +11,7 @@ export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedUser, setSelectedUser] = useState('all');
   const { toast } = useToast();
 
   // Mock data for reports
@@ -218,7 +218,7 @@ export const Reports: React.FC = () => {
                   <SelectValue placeholder="All users" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All users</SelectItem>
+                  <SelectItem value="all">All users</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name}
