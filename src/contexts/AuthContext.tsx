@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .from('profiles')
             .select('display_name')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
 
           const user: User = {
             id: session.user.id,
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('profiles')
           .select('display_name')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
 
         const user: User = {
           id: session.user.id,
