@@ -62,11 +62,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
+          // Get user role from database
+          const { data: roleData } = await supabase
+            .rpc('get_user_role', { _user_id: session.user.id });
+
+          // Get user profile for display name
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('user_id', session.user.id)
+            .single();
+
           const user: User = {
             id: session.user.id,
             email: session.user.email || '',
-            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
-            role: session.user.user_metadata?.role || 'WAREHOUSE_STAFF',
+            name: profileData?.display_name || session.user.email?.split('@')[0] || '',
+            role: roleData || 'WAREHOUSE_STAFF',
             isActive: true,
             createdAt: session.user.created_at,
           };
@@ -78,13 +89,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
+        // Get user role from database
+        const { data: roleData } = await supabase
+          .rpc('get_user_role', { _user_id: session.user.id });
+
+        // Get user profile for display name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', session.user.id)
+          .single();
+
         const user: User = {
           id: session.user.id,
           email: session.user.email || '',
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
-          role: session.user.user_metadata?.role || 'WAREHOUSE_STAFF',
+          name: profileData?.display_name || session.user.email?.split('@')[0] || '',
+          role: roleData || 'WAREHOUSE_STAFF',
           isActive: true,
           createdAt: session.user.created_at,
         };

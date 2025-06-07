@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,61 +7,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface UserProfile {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  email: string | null;
+  created_at: string;
+  role: 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN';
+}
 
 export const UserManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
-  // Mock user data
-  const users = [
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@warehouse.com',
-      role: 'WAREHOUSE_STAFF',
-      isActive: true,
-      createdAt: '2024-01-15T09:00:00Z',
-      lastLogin: '2024-06-07T08:30:00Z',
-    },
-    {
-      id: '2',
-      name: 'Mike Johnson',
-      email: 'mike.johnson@warehouse.com',
-      role: 'WAREHOUSE_STAFF',
-      isActive: true,
-      createdAt: '2024-02-01T10:00:00Z',
-      lastLogin: '2024-06-07T08:15:00Z',
-    },
-    {
-      id: '3',
-      name: 'Sarah Wilson',
-      email: 'sarah.wilson@warehouse.com',
-      role: 'OFFICE_ADMIN',
-      isActive: true,
-      createdAt: '2024-01-10T08:00:00Z',
-      lastLogin: '2024-06-07T07:45:00Z',
-    },
-    {
-      id: '4',
-      name: 'David Brown',
-      email: 'david.brown@warehouse.com',
-      role: 'WAREHOUSE_STAFF',
-      isActive: false,
-      createdAt: '2024-03-15T11:00:00Z',
-      lastLogin: '2024-06-05T16:30:00Z',
-    },
-    {
-      id: '5',
-      name: 'Lisa Davis',
-      email: 'lisa.davis@warehouse.com',
-      role: 'SUPER_ADMIN',
-      isActive: true,
-      createdAt: '2024-01-01T00:00:00Z',
-      lastLogin: '2024-06-07T09:00:00Z',
-    }
-  ];
 
   const [formData, setFormData] = useState({
     name: '',
@@ -70,6 +32,44 @@ export const UserManagement: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          user_id,
+          display_name,
+          email,
+          created_at,
+          user_roles!inner(role)
+        `);
+
+      if (error) throw error;
+
+      // Transform the data to include role at the top level
+      const usersWithRoles = data?.map((user: any) => ({
+        ...user,
+        role: (user.user_roles?.[0]?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN'
+      })) || [];
+
+      setUsers(usersWithRoles);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch users',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -97,7 +97,7 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -118,41 +118,85 @@ export const UserManagement: React.FC = () => {
       return;
     }
 
-    toast({
-      title: 'User created successfully',
-      description: `User ${formData.name} has been added to the system`,
-    });
+    try {
+      // Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name
+          }
+        }
+      });
 
-    setFormData({
-      name: '',
-      email: '',
-      role: '',
-      password: '',
-      confirmPassword: ''
-    });
-    setIsDialogOpen(false);
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Update the user's role if it's different from default
+        if (formData.role !== 'WAREHOUSE_STAFF') {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .update({ role: formData.role as any })
+            .eq('user_id', authData.user.id);
+
+          if (roleError) throw roleError;
+        }
+
+        // Update the profile with the display name
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ display_name: formData.name })
+          .eq('user_id', authData.user.id);
+
+        if (profileError) throw profileError;
+      }
+
+      toast({
+        title: 'User created successfully',
+        description: `User ${formData.name} has been added to the system`,
+      });
+
+      setFormData({
+        name: '',
+        email: '',
+        role: '',
+        password: '',
+        confirmPassword: ''
+      });
+      setIsDialogOpen(false);
+      fetchUsers(); // Refresh the list
+    } catch (error: any) {
+      toast({
+        title: 'Error creating user',
+        description: error.message || 'An error occurred while creating the user',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const toggleUserStatus = (userId: string, currentStatus: boolean) => {
-    toast({
-      title: 'User status updated',
-      description: `User ${currentStatus ? 'deactivated' : 'activated'}`,
-    });
-  };
+  const updateUserRole = async (userId: string, newRole: string, userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ role: newRole as any })
+        .eq('user_id', userId);
 
-  const resetPassword = (userId: string, userName: string) => {
-    toast({
-      title: 'Password reset',
-      description: `Password has been reset for ${userName}`,
-    });
-  };
+      if (error) throw error;
 
-  const deleteUser = (userId: string, userName: string) => {
-    toast({
-      title: 'User deleted',
-      description: `User ${userName} has been removed from the system`,
-      variant: 'destructive',
-    });
+      toast({
+        title: 'Role updated',
+        description: `${userName}'s role has been updated to ${getRoleLabel(newRole)}`,
+      });
+
+      fetchUsers(); // Refresh the list
+    } catch (error: any) {
+      toast({
+        title: 'Error updating role',
+        description: error.message || 'Failed to update user role',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getRoleStats = () => {
@@ -160,16 +204,11 @@ export const UserManagement: React.FC = () => {
       SUPER_ADMIN: 0,
       OFFICE_ADMIN: 0,
       WAREHOUSE_STAFF: 0,
-      ACTIVE: 0,
-      INACTIVE: 0
     };
 
     users.forEach(user => {
-      stats[user.role as keyof typeof stats]++;
-      if (user.isActive) {
-        stats.ACTIVE++;
-      } else {
-        stats.INACTIVE++;
+      if (stats.hasOwnProperty(user.role)) {
+        stats[user.role as keyof typeof stats]++;
       }
     });
 
@@ -177,6 +216,14 @@ export const UserManagement: React.FC = () => {
   };
 
   const stats = getRoleStats();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -274,7 +321,7 @@ export const UserManagement: React.FC = () => {
       </div>
 
       {/* User Statistics */}
-      <div className="grid gap-6 md:grid-cols-5">
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -310,16 +357,6 @@ export const UserManagement: React.FC = () => {
             <div className="text-2xl font-bold text-green-600">{stats.WAREHOUSE_STAFF}</div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.ACTIVE}</div>
-            <p className="text-xs text-muted-foreground">{stats.INACTIVE} inactive</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Users Table */}
@@ -337,8 +374,6 @@ export const UserManagement: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -347,48 +382,42 @@ export const UserManagement: React.FC = () => {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
-                    {user.name}
+                    {user.display_name || 'No Name'}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                      {getRoleLabel(user.role)}
-                    </Badge>
+                    <Select 
+                      value={user.role} 
+                      onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                    >
+                      <SelectTrigger className="w-40">
+                        <Badge variant={getRoleBadgeVariant(user.role)}>
+                          {getRoleLabel(user.role)}
+                        </Badge>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                        <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={user.isActive}
-                        onCheckedChange={() => toggleUserStatus(user.id, user.isActive)}
-                      />
-                      <span className={user.isActive ? 'text-green-600' : 'text-red-600'}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
+                    {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-1">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => resetPassword(user.id, user.name)}
-                      >
-                        Reset Password
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => deleteUser(user.id, user.name)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        toast({
+                          title: 'Feature not implemented',
+                          description: 'Password reset functionality will be added soon',
+                        });
+                      }}
+                    >
+                      Reset Password
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
