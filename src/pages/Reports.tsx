@@ -29,16 +29,26 @@ export const Reports: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch time entries with profile data
+      // Fetch time entries and profiles separately
       const { data: timeData, error: timeError } = await supabase
         .from('time_entries')
-        .select(`
-          *,
-          profiles(display_name, email)
-        `);
+        .select('*');
       
       if (timeError) throw timeError;
-      setTimeEntries(timeData || []);
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email');
+      
+      if (profilesError) throw profilesError;
+
+      // Join time entries with profiles data
+      const timeEntriesWithProfiles = (timeData || []).map(entry => ({
+        ...entry,
+        profiles: profilesData?.find(profile => profile.user_id === entry.user_id) || null
+      }));
+      
+      setTimeEntries(timeEntriesWithProfiles);
 
       // Fetch trucks
       const { data: truckData, error: truckError } = await supabase
