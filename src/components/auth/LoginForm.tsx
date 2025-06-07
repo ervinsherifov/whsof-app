@@ -15,13 +15,6 @@ export const LoginForm: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect to dashboard when user becomes authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -32,7 +25,8 @@ export const LoginForm: React.FC = () => {
         title: 'Login successful',
         description: 'Welcome to the Warehouse Management System',
       });
-      // Navigation will be handled by the auth context redirect
+      // Navigate to dashboard on successful login
+      navigate('/dashboard');
     } catch (error) {
       toast({
         title: 'Login failed',
