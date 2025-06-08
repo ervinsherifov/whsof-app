@@ -177,7 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
       if (error) throw error;
-      console.log('Checking in at:', new Date().toLocaleTimeString('en-US', { hour12: false }));
+      console.log('Checking in at:', new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }));
     } catch (error) {
       console.error('Check-in failed:', error);
       throw error;
@@ -233,7 +233,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', activeEntry.id);
 
       if (error) throw error;
-      console.log('Checking out at:', checkOutTime.toLocaleTimeString('en-US', { hour12: false }));
+      console.log('Checking out at:', checkOutTime.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }));
       console.log(`Worked: ${workedHours.toFixed(2)}h (Regular: ${regularHours.toFixed(2)}h, Overtime: ${overtimeHours.toFixed(2)}h)`);
     } catch (error) {
       console.error('Check-out failed:', error);

@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
       await checkIn();
       toast({
         title: "Checked In Successfully",
-        description: `Check-in time: ${new Date().toLocaleTimeString('en-US', { hour12: false })}`,
+        description: `Check-in time: ${new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}`,
       });
     } catch (error) {
       toast({
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
       await checkOut();
       toast({
         title: "Checked Out Successfully",
-        description: `Check-out time: ${new Date().toLocaleTimeString('en-US', { hour12: false })}`,
+        description: `Check-out time: ${new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}`,
       });
     } catch (error) {
       toast({

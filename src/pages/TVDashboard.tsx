@@ -152,7 +152,7 @@ export const TVDashboard: React.FC = () => {
       <div className="text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0">
         <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4">Warehouse Operations</h1>
         <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground">
-          {currentTime.toLocaleTimeString('en-US', { 
+          {currentTime.toLocaleTimeString('en-GB', { 
             hour12: false,
             hour: '2-digit',
             minute: '2-digit'

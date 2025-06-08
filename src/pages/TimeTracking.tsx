@@ -100,7 +100,7 @@ export const TimeTracking: React.FC = () => {
   };
 
   const getCurrentTime = () => {
-    return new Date().toLocaleTimeString('en-US', { 
+    return new Date().toLocaleTimeString('en-GB', { 
       hour12: false,
       hour: '2-digit',
       minute: '2-digit'
@@ -113,9 +113,21 @@ export const TimeTracking: React.FC = () => {
     const diffMs = checkOut.getTime() - checkIn.getTime();
     const hours = diffMs / (1000 * 60 * 60);
     
-    const standardHours = 8;
-    const regularHours = Math.min(hours, standardHours);
-    const overtimeHours = Math.max(0, hours - standardHours);
+    // Check if it's weekend (Saturday = 6, Sunday = 0)
+    const dayOfWeek = checkIn.getDay();
+    
+    let regularHours = 0;
+    let overtimeHours = 0;
+    
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      // Monday to Friday: 8 hours standard, rest is overtime
+      const standardHours = 8;
+      regularHours = Math.min(hours, standardHours);
+      overtimeHours = Math.max(0, hours - standardHours);
+    } else {
+      // Saturday and Sunday: all hours are overtime
+      overtimeHours = hours;
+    }
     
     return {
       total: hours,
@@ -125,7 +137,7 @@ export const TimeTracking: React.FC = () => {
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
+    return new Date(dateString).toLocaleTimeString('en-GB', {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit'

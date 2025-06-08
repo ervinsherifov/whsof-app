@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   };
 
   const getCurrentTime = () => {
-    return new Date().toLocaleTimeString('en-US', { 
+    return new Date().toLocaleTimeString('en-GB', { 
       hour12: false,
       hour: '2-digit',
       minute: '2-digit'

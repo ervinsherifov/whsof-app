@@ -82,7 +82,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const getCurrentTime = () => {
-    return currentTime.toLocaleTimeString('en-US', { 
+    return currentTime.toLocaleTimeString('en-GB', { 
       hour12: false,
       hour: '2-digit',
       minute: '2-digit'
