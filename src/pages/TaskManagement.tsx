@@ -340,7 +340,7 @@ export const TaskManagement: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-none overflow-hidden space-y-6">
+    <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold text-primary">Task Management</h1>
@@ -353,7 +353,7 @@ export const TaskManagement: React.FC = () => {
           <DialogTrigger asChild>
             <Button variant="secondary" className="w-full sm:w-auto">Create New Task</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4">
             <DialogHeader>
               <DialogTitle>Create New Task</DialogTitle>
               <DialogDescription>

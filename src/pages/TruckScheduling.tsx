@@ -483,7 +483,7 @@ export const TruckScheduling: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-none overflow-hidden space-y-6">
+    <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold text-primary">Truck Scheduling</h1>
@@ -496,7 +496,7 @@ export const TruckScheduling: React.FC = () => {
           <DialogTrigger asChild>
             <Button variant="secondary" className="w-full sm:w-auto">Schedule New Truck</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4">
             <DialogHeader>
               <DialogTitle>Schedule New Truck</DialogTitle>
               <DialogDescription>
@@ -590,7 +590,7 @@ export const TruckScheduling: React.FC = () => {
       </div>
 
       {/* Ramp Status Overview */}
-      <Card>
+      <Card className="mx-2 sm:mx-0">
         <CardHeader>
           <CardTitle>Ramp Status Overview</CardTitle>
           <CardDescription>
@@ -598,7 +598,7 @@ export const TruckScheduling: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {availableRamps.map((ramp) => {
               const currentlyOccupying = getRampOccupancy(ramp.number);
               const isCurrentlyBusy = !!currentlyOccupying;
@@ -651,7 +651,7 @@ export const TruckScheduling: React.FC = () => {
       </Card>
 
       {/* Scheduled Trucks */}
-      <Card>
+      <Card className="mx-2 sm:mx-0">
         <CardHeader>
           <CardTitle>Scheduled Trucks</CardTitle>
           <CardDescription>
