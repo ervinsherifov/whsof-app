@@ -346,8 +346,8 @@ export const Reports: React.FC = () => {
                       exportToXLSX(timeEntries.map(entry => ({
                         userName: entry.profiles?.display_name || entry.profiles?.email,
                         date: new Date(entry.check_in_time).toLocaleDateString(),
-                        checkIn: new Date(entry.check_in_time).toLocaleTimeString(),
-                        checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString() : 'Not checked out',
+                        checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                        checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
                         regularHours: entry.regular_hours || 0,
                         overtimeHours: entry.overtime_hours || 0,
                         totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
@@ -471,9 +471,9 @@ export const Reports: React.FC = () => {
                         {entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}
                       </TableCell>
                       <TableCell>{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(entry.check_in_time).toLocaleTimeString()}</TableCell>
+                      <TableCell>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
                       <TableCell>
-                        {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString() : 'Not checked out'}
+                        {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out'}
                       </TableCell>
                       <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
                       <TableCell>
@@ -637,8 +637,8 @@ export const Reports: React.FC = () => {
                   onClick={() => exportToXLSX(timeEntries.map(entry => ({
                     userName: entry.profiles?.display_name || entry.profiles?.email,
                     date: new Date(entry.check_in_time).toLocaleDateString(),
-                    checkIn: new Date(entry.check_in_time).toLocaleTimeString(),
-                    checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString() : 'Not checked out',
+                    checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                    checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
                     regularHours: entry.regular_hours || 0,
                     overtimeHours: entry.overtime_hours || 0,
                     totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)

@@ -533,8 +533,10 @@ export const TruckScheduling: React.FC = () => {
                 <Input
                   id="arrivalTime"
                   type="time"
+                  step="300"
                   value={formData.arrivalTime}
                   onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
+                  placeholder="HH:MM"
                   min={formData.arrivalDate === new Date().toISOString().split('T')[0] 
                     ? new Date().toTimeString().slice(0, 5) 
                     : undefined}

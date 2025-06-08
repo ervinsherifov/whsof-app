@@ -450,8 +450,10 @@ export const TaskManagement: React.FC = () => {
                   <Input
                     id="dueTime"
                     type="time"
+                    step="300"
                     value={formData.dueTime}
                     onChange={(e) => setFormData({...formData, dueTime: e.target.value})}
+                    placeholder="HH:MM"
                   />
                 </div>
               </div>

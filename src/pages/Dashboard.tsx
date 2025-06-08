@@ -499,7 +499,7 @@ export const Dashboard: React.FC = () => {
       {/* Auto-refresh indicator */}
       <div className="text-center">
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Auto-refresh: 10s • Last updated: {currentTime.toLocaleTimeString()}
+          Auto-refresh: 10s • Last updated: {currentTime.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
     </div>
