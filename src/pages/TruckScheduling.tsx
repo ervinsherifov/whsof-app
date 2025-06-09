@@ -667,7 +667,107 @@ export const TruckScheduling: React.FC = () => {
           ) : (
             <div className="w-full overflow-hidden">
               <ScrollArea className="h-[400px] w-full">
-                <div className="min-w-[800px]">
+                <div className="block sm:hidden space-y-4">
+                  {/* Mobile card layout */}
+                  {trucks.map((truck) => (
+                    <Card key={truck.id} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="font-medium text-lg">{truck.license_plate}</div>
+                          <Badge variant={getStatusColor(truck.status)}>
+                            {truck.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Arrival:</span>
+                            <div className="font-medium">{truck.arrival_date}</div>
+                            <div className="font-medium">{truck.arrival_time}</div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Ramp:</span>
+                            <div className="font-medium">
+                              {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Pallets:</span>
+                            <div className="font-medium">{truck.pallet_count}</div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Staff:</span>
+                            <div className="font-medium text-xs truncate">
+                              {truck.assigned_staff_name || 'Not assigned'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-muted-foreground text-xs">Cargo:</span>
+                            <div className="text-sm break-words">{truck.cargo_description}</div>
+                          </div>
+                          {truck.handled_by_name && (
+                            <div>
+                              <span className="text-muted-foreground text-xs">Handler:</span>
+                              <div className="text-sm">{truck.handled_by_name}</div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {truck.status === 'SCHEDULED' && user?.role === 'WAREHOUSE_STAFF' && !truck.ramp_number && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => {
+                                setSelectedTruck(truck);
+                                setIsRampDialogOpen(true);
+                              }}
+                            >
+                              Assign Ramp
+                            </Button>
+                          )}
+                          {truck.status === 'SCHEDULED' && truck.ramp_number && user?.role === 'WAREHOUSE_STAFF' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => updateTruckStatus(truck.id, 'ARRIVED')}
+                            >
+                              Mark Arrived
+                            </Button>
+                          )}
+                          {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => updateTruckStatus(truck.id, 'DONE')}
+                            >
+                              Mark Done
+                            </Button>
+                          )}
+                          {user?.role === 'SUPER_ADMIN' && (
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              className="text-xs"
+                              onClick={() => deleteTruck(truck.id, truck.license_plate)}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                
+                {/* Desktop table layout */}
+                <div className="hidden sm:block min-w-[800px]">
                   <Table>
               <TableHeader>
                 <TableRow>
@@ -749,7 +849,7 @@ export const TruckScheduling: React.FC = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                 ))}
                 </TableBody>
                   </Table>
                 </div>
