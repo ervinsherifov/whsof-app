@@ -419,33 +419,33 @@ export const UserManagement: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[120px]">Name</TableHead>
-                  <TableHead className="min-w-[200px]">Email</TableHead>
-                  <TableHead className="min-w-[140px]">Role</TableHead>
-                  <TableHead className="min-w-[100px]">Created</TableHead>
-                  <TableHead className="min-w-[200px]">Actions</TableHead>
+                  <TableHead className="w-[100px] sm:w-auto">Name</TableHead>
+                  <TableHead className="w-[150px] sm:w-auto">Email</TableHead>
+                  <TableHead className="w-[120px] sm:w-auto">Role</TableHead>
+                  <TableHead className="w-[80px] sm:w-auto">Created</TableHead>
+                  <TableHead className="w-[120px] sm:w-auto">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium min-w-[120px]">
-                      <div className="truncate">{user.display_name || 'No Name'}</div>
+                    <TableCell className="font-medium w-[100px] sm:w-auto">
+                      <div className="truncate max-w-[90px] sm:max-w-none">{user.display_name || 'No Name'}</div>
                     </TableCell>
-                    <TableCell className="min-w-[200px]">
-                      <div className="truncate">{user.email}</div>
+                    <TableCell className="w-[150px] sm:w-auto">
+                      <div className="truncate max-w-[130px] sm:max-w-none text-xs sm:text-sm">{user.email}</div>
                     </TableCell>
-                    <TableCell className="min-w-[140px]">
+                    <TableCell className="w-[120px] sm:w-auto">
                       <Select 
                         value={user.role} 
                         onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
                       >
-                        <SelectTrigger className="w-full min-w-[130px]">
-                          <Badge variant={getRoleBadgeVariant(user.role)} className="truncate">
+                        <SelectTrigger className="w-full">
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="truncate text-xs">
                             {getRoleLabel(user.role)}
                           </Badge>
                         </SelectTrigger>
@@ -456,10 +456,10 @@ export const UserManagement: React.FC = () => {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell className="min-w-[100px]">
-                      <div className="text-sm">{new Date(user.created_at).toLocaleDateString()}</div>
+                    <TableCell className="w-[80px] sm:w-auto">
+                      <div className="text-xs sm:text-sm">{new Date(user.created_at).toLocaleDateString()}</div>
                     </TableCell>
-                    <TableCell className="min-w-[200px]">
+                    <TableCell className="w-[120px] sm:w-auto">
                       <div className="flex flex-col space-y-1">
                         <Button 
                           size="sm" 
