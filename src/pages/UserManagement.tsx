@@ -419,33 +419,34 @@ export const UserManagement: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="w-full overflow-x-auto">
-            <Table className="min-w-[700px]">
+          {/* Desktop Table View */}
+          <div className="hidden md:block w-full overflow-x-auto">
+            <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[100px]">Name</TableHead>
-                  <TableHead className="min-w-[150px]">Email</TableHead>
-                  <TableHead className="min-w-[120px]">Role</TableHead>
-                  <TableHead className="min-w-[80px]">Created</TableHead>
-                  <TableHead className="min-w-[120px]">Actions</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
-                    <div className="truncate">{user.display_name || 'No Name'}</div>
+                    {user.display_name || 'No Name'}
                   </TableCell>
                   <TableCell>
-                    <div className="truncate text-xs sm:text-sm">{user.email}</div>
+                    {user.email}
                   </TableCell>
                   <TableCell>
                     <Select 
                       value={user.role} 
                       onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
                     >
-                      <SelectTrigger className="w-full min-w-[100px]">
-                        <Badge variant={getRoleBadgeVariant(user.role)} className="truncate text-xs">
+                      <SelectTrigger className="w-full">
+                        <Badge variant={getRoleBadgeVariant(user.role)}>
                           {getRoleLabel(user.role)}
                         </Badge>
                       </SelectTrigger>
@@ -457,14 +458,13 @@ export const UserManagement: React.FC = () => {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <div className="text-xs sm:text-sm">{new Date(user.created_at).toLocaleDateString()}</div>
+                    {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex space-x-2">
                       <Button 
                         size="sm" 
                         variant="outline"
-                        className="w-full text-xs min-h-[32px]"
                         onClick={() => {
                           toast({
                             title: 'Feature not implemented',
@@ -477,7 +477,6 @@ export const UserManagement: React.FC = () => {
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        className="w-full text-xs min-h-[32px]"
                         onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
                       >
                         Delete
@@ -488,6 +487,72 @@ export const UserManagement: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {users.map((user) => (
+              <Card key={user.id} className="p-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-lg">{user.display_name || 'No Name'}</h3>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                    <Badge variant={getRoleBadgeVariant(user.role)}>
+                      {getRoleLabel(user.role)}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground">
+                    Created: {new Date(user.created_at).toLocaleDateString()}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-sm font-medium">Role</Label>
+                      <Select 
+                        value={user.role} 
+                        onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                      >
+                        <SelectTrigger className="w-full mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                          <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                          <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex space-x-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          toast({
+                            title: 'Feature not implemented',
+                            description: 'Password reset functionality will be added soon',
+                          });
+                        }}
+                      >
+                        Reset Password
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>

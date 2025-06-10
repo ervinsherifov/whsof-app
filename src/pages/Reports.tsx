@@ -455,32 +455,34 @@ export const Reports: React.FC = () => {
                 No time entries found
               </div>
             ) : (
-              <div className="w-full overflow-x-auto">
-                <Table className="min-w-[700px]">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block w-full overflow-x-auto">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[120px]">Employee</TableHead>
-                      <TableHead className="min-w-[90px]">Date</TableHead>
-                      <TableHead className="min-w-[70px]">Check In</TableHead>
-                      <TableHead className="min-w-[70px]">Check Out</TableHead>
-                      <TableHead className="min-w-[70px]">Regular</TableHead>
-                      <TableHead className="min-w-[70px]">Overtime</TableHead>
-                      <TableHead className="min-w-[70px]">Total</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Check In</TableHead>
+                      <TableHead>Check Out</TableHead>
+                      <TableHead>Regular</TableHead>
+                      <TableHead>Overtime</TableHead>
+                      <TableHead>Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {timeEntries.map((entry) => (
                       <TableRow key={entry.id}>
                         <TableCell className="font-medium">
-                          <div className="truncate">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</div>
+                          {entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">
+                        <TableCell>{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
+                        <TableCell>
                           {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
-                        <TableCell className="text-xs sm:text-sm">
+                        <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
+                        <TableCell>
                           {(entry.overtime_hours || 0) > 0 ? (
                             <span className="text-orange-600 font-medium">
                               {(entry.overtime_hours || 0).toFixed(1)}h
@@ -489,7 +491,7 @@ export const Reports: React.FC = () => {
                             '0h'
                           )}
                         </TableCell>
-                        <TableCell className="font-medium text-xs sm:text-sm">
+                        <TableCell className="font-medium">
                           {((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h
                         </TableCell>
                       </TableRow>
@@ -497,6 +499,54 @@ export const Reports: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {timeEntries.map((entry) => (
+                  <Card key={entry.id} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-lg">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</h3>
+                          <p className="text-sm text-muted-foreground">{new Date(entry.check_in_time).toLocaleDateString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">{((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h</div>
+                          <div className="text-sm text-muted-foreground">Total</div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Check In</div>
+                          <div>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Check Out</div>
+                          <div>{entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Regular Hours</div>
+                          <div>{(entry.regular_hours || 0).toFixed(1)}h</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Overtime</div>
+                          <div>
+                            {(entry.overtime_hours || 0) > 0 ? (
+                              <span className="text-orange-600 font-medium">
+                                {(entry.overtime_hours || 0).toFixed(1)}h
+                              </span>
+                            ) : (
+                              '0h'
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -519,38 +569,36 @@ export const Reports: React.FC = () => {
                 No truck data found
               </div>
             ) : (
-              <div className="w-full overflow-x-auto">
-                <Table className="min-w-[750px]">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block w-full overflow-x-auto">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[100px]">License</TableHead>
-                      <TableHead className="min-w-[80px]">Date</TableHead>
-                      <TableHead className="min-w-[60px]">Time</TableHead>
-                      <TableHead className="min-w-[60px]">Ramp</TableHead>
-                      <TableHead className="min-w-[60px]">Pallets</TableHead>
-                      <TableHead className="min-w-[120px]">Cargo</TableHead>
-                      <TableHead className="min-w-[100px]">Staff</TableHead>
-                      <TableHead className="min-w-[70px]">Status</TableHead>
+                      <TableHead>License</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Ramp</TableHead>
+                      <TableHead>Pallets</TableHead>
+                      <TableHead>Cargo</TableHead>
+                      <TableHead>Staff</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {trucks.map((truck) => (
                       <TableRow key={truck.id}>
                         <TableCell className="font-medium">
-                          <div className="truncate">{truck.license_plate}</div>
+                          {truck.license_plate}
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">{truck.arrival_date}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">{truck.arrival_time?.substring(0, 5)}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">{truck.pallet_count}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div className="truncate" title={truck.cargo_description}>{truck.cargo_description}</div>
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div className="truncate">{truck.assigned_staff_name || 'Unassigned'}</div>
-                        </TableCell>
+                        <TableCell>{truck.arrival_date}</TableCell>
+                        <TableCell>{truck.arrival_time?.substring(0, 5)}</TableCell>
+                        <TableCell>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
+                        <TableCell>{truck.pallet_count}</TableCell>
+                        <TableCell title={truck.cargo_description}>{truck.cargo_description}</TableCell>
+                        <TableCell>{truck.assigned_staff_name || 'Unassigned'}</TableCell>
                         <TableCell>
-                          <span className={`text-xs sm:text-sm ${truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}`}>
+                          <span className={`${truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}`}>
                             {truck.status}
                           </span>
                         </TableCell>
@@ -559,6 +607,45 @@ export const Reports: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {trucks.map((truck) => (
+                  <Card key={truck.id} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-lg">{truck.license_plate}</h3>
+                          <p className="text-sm text-muted-foreground">{truck.arrival_date} • {truck.arrival_time?.substring(0, 5)}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-sm ${truck.status === 'DONE' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                          {truck.status}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Ramp</div>
+                          <div>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Pallets</div>
+                          <div>{truck.pallet_count}</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-muted-foreground">Cargo Description</div>
+                          <div>{truck.cargo_description}</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-muted-foreground">Assigned Staff</div>
+                          <div>{truck.assigned_staff_name || 'Unassigned'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -581,24 +668,26 @@ export const Reports: React.FC = () => {
                 No task data found
               </div>
             ) : (
-              <div className="w-full overflow-x-auto">
-                <Table className="min-w-[700px]">
+              <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block w-full overflow-x-auto">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[120px]">Title</TableHead>
-                      <TableHead className="min-w-[70px]">Priority</TableHead>
-                      <TableHead className="min-w-[80px]">Status</TableHead>
-                      <TableHead className="min-w-[100px]">Assigned</TableHead>
-                      <TableHead className="min-w-[80px]">Due</TableHead>
-                      <TableHead className="min-w-[80px]">Created</TableHead>
-                      <TableHead className="min-w-[80px]">Done</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Assigned</TableHead>
+                      <TableHead>Due</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Done</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {tasks.map((task) => (
                       <TableRow key={task.id}>
-                        <TableCell className="font-medium">
-                          <div className="truncate" title={task.title}>{task.title}</div>
+                        <TableCell className="font-medium" title={task.title}>
+                          {task.title}
                         </TableCell>
                         <TableCell>
                           <span className={`text-xs font-medium ${
@@ -619,14 +708,14 @@ export const Reports: React.FC = () => {
                             {task.status.replace('_', ' ')}
                           </span>
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div className="truncate">{task.assigned_to_name || 'Unassigned'}</div>
+                        <TableCell>
+                          {task.assigned_to_name || 'Unassigned'}
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
+                        <TableCell>
                           {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">{new Date(task.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-xs sm:text-sm">
+                        <TableCell>{new Date(task.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
                           {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
                         </TableCell>
                       </TableRow>
@@ -634,6 +723,58 @@ export const Reports: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {tasks.map((task) => (
+                  <Card key={task.id} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-lg" title={task.title}>{task.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              task.priority === 'URGENT' ? 'bg-red-100 text-red-600' :
+                              task.priority === 'HIGH' ? 'bg-orange-100 text-orange-600' :
+                              task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-green-100 text-green-600'
+                            }`}>
+                              {task.priority}
+                            </span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              task.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
+                              task.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-600' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {task.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Assigned To</div>
+                          <div>{task.assigned_to_name || 'Unassigned'}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Due Date</div>
+                          <div>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Created</div>
+                          <div>{new Date(task.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Completed</div>
+                          <div>{task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              </>
             )}
           </CardContent>
         </Card>
