@@ -420,71 +420,71 @@ export const UserManagement: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="w-full overflow-x-auto">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px] sm:w-auto">Name</TableHead>
-                  <TableHead className="w-[150px] sm:w-auto">Email</TableHead>
-                  <TableHead className="w-[120px] sm:w-auto">Role</TableHead>
-                  <TableHead className="w-[80px] sm:w-auto">Created</TableHead>
-                  <TableHead className="w-[120px] sm:w-auto">Actions</TableHead>
+                  <TableHead className="min-w-[100px]">Name</TableHead>
+                  <TableHead className="min-w-[150px]">Email</TableHead>
+                  <TableHead className="min-w-[120px]">Role</TableHead>
+                  <TableHead className="min-w-[80px]">Created</TableHead>
+                  <TableHead className="min-w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium w-[100px] sm:w-auto">
-                      <div className="truncate max-w-[90px] sm:max-w-none">{user.display_name || 'No Name'}</div>
-                    </TableCell>
-                    <TableCell className="w-[150px] sm:w-auto">
-                      <div className="truncate max-w-[130px] sm:max-w-none text-xs sm:text-sm">{user.email}</div>
-                    </TableCell>
-                    <TableCell className="w-[120px] sm:w-auto">
-                      <Select 
-                        value={user.role} 
-                        onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">
+                    <div className="truncate">{user.display_name || 'No Name'}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="truncate text-xs sm:text-sm">{user.email}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Select 
+                      value={user.role} 
+                      onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                    >
+                      <SelectTrigger className="w-full min-w-[100px]">
+                        <Badge variant={getRoleBadgeVariant(user.role)} className="truncate text-xs">
+                          {getRoleLabel(user.role)}
+                        </Badge>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                        <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs sm:text-sm">{new Date(user.created_at).toLocaleDateString()}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col space-y-1">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="w-full text-xs min-h-[32px]"
+                        onClick={() => {
+                          toast({
+                            title: 'Feature not implemented',
+                            description: 'Password reset functionality will be added soon',
+                          });
+                        }}
                       >
-                        <SelectTrigger className="w-full">
-                          <Badge variant={getRoleBadgeVariant(user.role)} className="truncate text-xs">
-                            {getRoleLabel(user.role)}
-                          </Badge>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                          <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                          <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="w-[80px] sm:w-auto">
-                      <div className="text-xs sm:text-sm">{new Date(user.created_at).toLocaleDateString()}</div>
-                    </TableCell>
-                    <TableCell className="w-[120px] sm:w-auto">
-                      <div className="flex flex-col space-y-1">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="w-full text-xs"
-                          onClick={() => {
-                            toast({
-                              title: 'Feature not implemented',
-                              description: 'Password reset functionality will be added soon',
-                            });
-                          }}
-                        >
-                          Reset Password
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          className="w-full text-xs"
-                          onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                        Reset
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        className="w-full text-xs min-h-[32px]"
+                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
                 ))}
               </TableBody>
             </Table>

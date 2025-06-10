@@ -322,15 +322,15 @@ export const TimeTracking: React.FC = () => {
             </div>
 
             <div className="w-full overflow-x-auto">
-              <Table>
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] sm:w-auto">Date</TableHead>
-                    <TableHead className="w-[70px] sm:w-auto">In</TableHead>
-                    <TableHead className="w-[70px] sm:w-auto">Out</TableHead>
-                    <TableHead className="w-[70px] sm:w-auto">Regular</TableHead>
-                    <TableHead className="w-[70px] sm:w-auto">Overtime</TableHead>
-                    <TableHead className="w-[50px] sm:w-auto">Notes</TableHead>
+                    <TableHead className="min-w-[80px]">Date</TableHead>
+                    <TableHead className="min-w-[60px]">In</TableHead>
+                    <TableHead className="min-w-[60px]">Out</TableHead>
+                    <TableHead className="min-w-[70px]">Regular</TableHead>
+                    <TableHead className="min-w-[70px]">Overtime</TableHead>
+                    <TableHead className="min-w-[50px]">Notes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -351,15 +351,15 @@ export const TimeTracking: React.FC = () => {
                       const hours = calculateHours(entry.check_in_time, entry.check_out_time);
                       return (
                         <TableRow key={entry.id}>
-                          <TableCell className="font-medium w-[80px] sm:w-auto text-xs sm:text-sm">
+                          <TableCell className="font-medium text-xs sm:text-sm">
                             {new Date(entry.check_in_time).toLocaleDateString()}
                           </TableCell>
-                          <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">{formatTime(entry.check_in_time)}</TableCell>
-                          <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">
+                          <TableCell className="text-xs sm:text-sm">{formatTime(entry.check_in_time)}</TableCell>
+                          <TableCell className="text-xs sm:text-sm">
                             {entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}
                           </TableCell>
-                          <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">{hours.regular.toFixed(1)}h</TableCell>
-                          <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">
+                          <TableCell className="text-xs sm:text-sm">{hours.regular.toFixed(1)}h</TableCell>
+                          <TableCell className="text-xs sm:text-sm">
                             {hours.overtime > 0 ? (
                               <span className="text-orange-600 font-medium">
                                 {hours.overtime.toFixed(1)}h
@@ -368,7 +368,7 @@ export const TimeTracking: React.FC = () => {
                               '0h'
                             )}
                           </TableCell>
-                          <TableCell className="w-[50px] sm:w-auto text-xs sm:text-sm text-muted-foreground">
+                          <TableCell className="text-xs sm:text-sm text-muted-foreground">
                             -
                           </TableCell>
                         </TableRow>

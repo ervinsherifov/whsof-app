@@ -456,31 +456,31 @@ export const Reports: React.FC = () => {
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <Table>
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[120px] sm:w-auto">Employee</TableHead>
-                      <TableHead className="w-[90px] sm:w-auto">Date</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Check In</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Check Out</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Regular</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Overtime</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Total</TableHead>
+                      <TableHead className="min-w-[120px]">Employee</TableHead>
+                      <TableHead className="min-w-[90px]">Date</TableHead>
+                      <TableHead className="min-w-[70px]">Check In</TableHead>
+                      <TableHead className="min-w-[70px]">Check Out</TableHead>
+                      <TableHead className="min-w-[70px]">Regular</TableHead>
+                      <TableHead className="min-w-[70px]">Overtime</TableHead>
+                      <TableHead className="min-w-[70px]">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {timeEntries.map((entry) => (
                       <TableRow key={entry.id}>
-                        <TableCell className="font-medium w-[120px] sm:w-auto">
-                          <div className="truncate max-w-[100px] sm:max-w-none">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</div>
+                        <TableCell className="font-medium">
+                          <div className="truncate">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</div>
                         </TableCell>
-                        <TableCell className="w-[90px] sm:w-auto text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
-                        <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
-                        <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">
+                        <TableCell className="text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
                           {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}
                         </TableCell>
-                        <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
-                        <TableCell className="w-[70px] sm:w-auto text-xs sm:text-sm">
+                        <TableCell className="text-xs sm:text-sm">{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
                           {(entry.overtime_hours || 0) > 0 ? (
                             <span className="text-orange-600 font-medium">
                               {(entry.overtime_hours || 0).toFixed(1)}h
@@ -489,7 +489,7 @@ export const Reports: React.FC = () => {
                             '0h'
                           )}
                         </TableCell>
-                        <TableCell className="font-medium w-[70px] sm:w-auto text-xs sm:text-sm">
+                        <TableCell className="font-medium text-xs sm:text-sm">
                           {((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h
                         </TableCell>
                       </TableRow>
@@ -520,36 +520,36 @@ export const Reports: React.FC = () => {
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <Table>
+                <Table className="min-w-[750px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px] sm:w-auto">License</TableHead>
-                      <TableHead className="w-[80px] sm:w-auto">Date</TableHead>
-                      <TableHead className="w-[60px] sm:w-auto">Time</TableHead>
-                      <TableHead className="w-[60px] sm:w-auto">Ramp</TableHead>
-                      <TableHead className="w-[60px] sm:w-auto">Pallets</TableHead>
-                      <TableHead className="w-[120px] sm:w-auto">Cargo</TableHead>
-                      <TableHead className="w-[100px] sm:w-auto">Staff</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Status</TableHead>
+                      <TableHead className="min-w-[100px]">License</TableHead>
+                      <TableHead className="min-w-[80px]">Date</TableHead>
+                      <TableHead className="min-w-[60px]">Time</TableHead>
+                      <TableHead className="min-w-[60px]">Ramp</TableHead>
+                      <TableHead className="min-w-[60px]">Pallets</TableHead>
+                      <TableHead className="min-w-[120px]">Cargo</TableHead>
+                      <TableHead className="min-w-[100px]">Staff</TableHead>
+                      <TableHead className="min-w-[70px]">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {trucks.map((truck) => (
                       <TableRow key={truck.id}>
-                        <TableCell className="font-medium w-[100px] sm:w-auto">
-                          <div className="truncate max-w-[90px] sm:max-w-none">{truck.license_plate}</div>
+                        <TableCell className="font-medium">
+                          <div className="truncate">{truck.license_plate}</div>
                         </TableCell>
-                        <TableCell className="w-[80px] sm:w-auto text-xs sm:text-sm">{truck.arrival_date}</TableCell>
-                        <TableCell className="w-[60px] sm:w-auto text-xs sm:text-sm">{truck.arrival_time?.substring(0, 5)}</TableCell>
-                        <TableCell className="w-[60px] sm:w-auto text-xs sm:text-sm">{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
-                        <TableCell className="w-[60px] sm:w-auto text-xs sm:text-sm">{truck.pallet_count}</TableCell>
-                        <TableCell className="w-[120px] sm:w-auto text-xs sm:text-sm">
-                          <div className="truncate max-w-[110px] sm:max-w-none" title={truck.cargo_description}>{truck.cargo_description}</div>
+                        <TableCell className="text-xs sm:text-sm">{truck.arrival_date}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{truck.arrival_time?.substring(0, 5)}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{truck.pallet_count}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <div className="truncate" title={truck.cargo_description}>{truck.cargo_description}</div>
                         </TableCell>
-                        <TableCell className="w-[100px] sm:w-auto text-xs sm:text-sm">
-                          <div className="truncate max-w-[90px] sm:max-w-none">{truck.assigned_staff_name || 'Unassigned'}</div>
+                        <TableCell className="text-xs sm:text-sm">
+                          <div className="truncate">{truck.assigned_staff_name || 'Unassigned'}</div>
                         </TableCell>
-                        <TableCell className="w-[70px] sm:w-auto">
+                        <TableCell>
                           <span className={`text-xs sm:text-sm ${truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}`}>
                             {truck.status}
                           </span>
@@ -582,25 +582,25 @@ export const Reports: React.FC = () => {
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <Table>
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[120px] sm:w-auto">Title</TableHead>
-                      <TableHead className="w-[70px] sm:w-auto">Priority</TableHead>
-                      <TableHead className="w-[80px] sm:w-auto">Status</TableHead>
-                      <TableHead className="w-[100px] sm:w-auto">Assigned</TableHead>
-                      <TableHead className="w-[80px] sm:w-auto">Due</TableHead>
-                      <TableHead className="w-[80px] sm:w-auto">Created</TableHead>
-                      <TableHead className="w-[80px] sm:w-auto">Done</TableHead>
+                      <TableHead className="min-w-[120px]">Title</TableHead>
+                      <TableHead className="min-w-[70px]">Priority</TableHead>
+                      <TableHead className="min-w-[80px]">Status</TableHead>
+                      <TableHead className="min-w-[100px]">Assigned</TableHead>
+                      <TableHead className="min-w-[80px]">Due</TableHead>
+                      <TableHead className="min-w-[80px]">Created</TableHead>
+                      <TableHead className="min-w-[80px]">Done</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {tasks.map((task) => (
                       <TableRow key={task.id}>
-                        <TableCell className="font-medium w-[120px] sm:w-auto">
-                          <div className="truncate max-w-[110px] sm:max-w-none" title={task.title}>{task.title}</div>
+                        <TableCell className="font-medium">
+                          <div className="truncate" title={task.title}>{task.title}</div>
                         </TableCell>
-                        <TableCell className="w-[70px] sm:w-auto">
+                        <TableCell>
                           <span className={`text-xs font-medium ${
                             task.priority === 'URGENT' ? 'text-red-600' :
                             task.priority === 'HIGH' ? 'text-orange-600' :
@@ -610,7 +610,7 @@ export const Reports: React.FC = () => {
                             {task.priority}
                           </span>
                         </TableCell>
-                        <TableCell className="w-[80px] sm:w-auto">
+                        <TableCell>
                           <span className={`text-xs ${
                             task.status === 'COMPLETED' ? 'text-green-600' :
                             task.status === 'IN_PROGRESS' ? 'text-blue-600' :
@@ -619,14 +619,14 @@ export const Reports: React.FC = () => {
                             {task.status.replace('_', ' ')}
                           </span>
                         </TableCell>
-                        <TableCell className="w-[100px] sm:w-auto text-xs sm:text-sm">
-                          <div className="truncate max-w-[90px] sm:max-w-none">{task.assigned_to_name || 'Unassigned'}</div>
+                        <TableCell className="text-xs sm:text-sm">
+                          <div className="truncate">{task.assigned_to_name || 'Unassigned'}</div>
                         </TableCell>
-                        <TableCell className="w-[80px] sm:w-auto text-xs sm:text-sm">
+                        <TableCell className="text-xs sm:text-sm">
                           {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
                         </TableCell>
-                        <TableCell className="w-[80px] sm:w-auto text-xs sm:text-sm">{new Date(task.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="w-[80px] sm:w-auto text-xs sm:text-sm">
+                        <TableCell className="text-xs sm:text-sm">{new Date(task.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
                           {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
                         </TableCell>
                       </TableRow>
