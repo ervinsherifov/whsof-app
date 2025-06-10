@@ -321,61 +321,63 @@ export const TimeTracking: React.FC = () => {
               />
             </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Check In</TableHead>
-                  <TableHead>Check Out</TableHead>
-                  <TableHead>Regular Hours</TableHead>
-                  <TableHead>Overtime</TableHead>
-                  <TableHead>Notes</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4">
-                      Loading...
-                    </TableCell>
+                    <TableHead className="min-w-[100px]">Date</TableHead>
+                    <TableHead className="min-w-[80px]">Check In</TableHead>
+                    <TableHead className="min-w-[80px]">Check Out</TableHead>
+                    <TableHead className="min-w-[80px]">Regular</TableHead>
+                    <TableHead className="min-w-[80px]">Overtime</TableHead>
+                    <TableHead className="min-w-[60px]">Notes</TableHead>
                   </TableRow>
-                ) : timeEntries.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                      No time entries found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  timeEntries.map((entry) => {
-                    const hours = calculateHours(entry.check_in_time, entry.check_out_time);
-                    return (
-                      <TableRow key={entry.id}>
-                        <TableCell className="font-medium">
-                          {new Date(entry.check_in_time).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{formatTime(entry.check_in_time)}</TableCell>
-                        <TableCell>
-                          {entry.check_out_time ? formatTime(entry.check_out_time) : 'Still working'}
-                        </TableCell>
-                        <TableCell>{hours.regular.toFixed(1)}h</TableCell>
-                        <TableCell>
-                          {hours.overtime > 0 ? (
-                            <span className="text-orange-600 font-medium">
-                              {hours.overtime.toFixed(1)}h
-                            </span>
-                          ) : (
-                            '0h'
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          -
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">
+                        Loading...
+                      </TableCell>
+                    </TableRow>
+                  ) : timeEntries.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                        No time entries found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    timeEntries.map((entry) => {
+                      const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+                      return (
+                        <TableRow key={entry.id}>
+                          <TableCell className="font-medium min-w-[100px] text-sm">
+                            {new Date(entry.check_in_time).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="min-w-[80px] text-sm">{formatTime(entry.check_in_time)}</TableCell>
+                          <TableCell className="min-w-[80px] text-sm">
+                            {entry.check_out_time ? formatTime(entry.check_out_time) : 'Still working'}
+                          </TableCell>
+                          <TableCell className="min-w-[80px] text-sm">{hours.regular.toFixed(1)}h</TableCell>
+                          <TableCell className="min-w-[80px] text-sm">
+                            {hours.overtime > 0 ? (
+                              <span className="text-orange-600 font-medium">
+                                {hours.overtime.toFixed(1)}h
+                              </span>
+                            ) : (
+                              '0h'
+                            )}
+                          </TableCell>
+                          <TableCell className="min-w-[60px] text-sm text-muted-foreground">
+                            -
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>

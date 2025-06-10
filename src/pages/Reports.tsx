@@ -278,114 +278,117 @@ export const Reports: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-              <div className="space-y-2">
-                <Label htmlFor="reportType">Report Type</Label>
-                <Select value={reportType} onValueChange={setReportType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select report type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
-                    <SelectItem value="truck_activity">Truck Activity</SelectItem>
-                    {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
-                    {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
-                    {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
-                  </SelectContent>
-                </Select>
-              </div>
-
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="selectedUser">Filter by User (Optional)</Label>
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All users" />
+              <Label htmlFor="reportType" className="text-sm">Report Type</Label>
+              <Select value={reportType} onValueChange={setReportType}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All users</SelectItem>
-                   {users.map((user) => (
-                     <SelectItem key={user.user_id} value={user.user_id}>
-                       {user.display_name || user.email}
-                     </SelectItem>
-                   ))}
+                  {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
+                  <SelectItem value="truck_activity">Truck Activity</SelectItem>
+                  {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
+                  {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
+                  {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
-              <Label>&nbsp;</Label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <Button onClick={generateReport} className="flex-1 min-w-0">
-                  Generate
-                </Button>
-                <Button
-                  variant="outline" 
-                  className="flex-1 min-w-0 text-xs sm:text-sm"
-                  onClick={() => {
-                    if (reportType === 'time_logs') {
-                      exportToXLSX(timeEntries.map(entry => ({
-                        userName: entry.profiles?.display_name || entry.profiles?.email,
-                        date: new Date(entry.check_in_time).toLocaleDateString(),
-                        checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                        checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
-                        regularHours: entry.regular_hours || 0,
-                        overtimeHours: entry.overtime_hours || 0,
-                        totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
-                      })), 'time_logs');
-                    } else if (reportType === 'truck_activity') {
-                      exportToXLSX(trucks.map(truck => ({
-                        licensePlate: truck.license_plate,
-                        arrivalDate: truck.arrival_date,
-                        arrivalTime: truck.arrival_time,
-                        rampNumber: truck.ramp_number,
-                        palletCount: truck.pallet_count,
-                        status: truck.status,
-                        assignedStaff: truck.assigned_staff_name,
-                        handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
-                        cargoDescription: truck.cargo_description
-                      })), 'truck_activity');
-                    } else if (reportType === 'task_management') {
-                      exportToXLSX(tasks.map(task => ({
-                        title: task.title,
-                        description: task.description,
-                        priority: task.priority,
-                        status: task.status,
-                        assignedTo: task.assigned_to_name || 'Unassigned',
-                        completedBy: task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : '',
-                        dueDate: task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline',
-                        createdAt: new Date(task.created_at).toLocaleDateString(),
-                        completedAt: task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '',
-                        completionComment: task.completion_comment || ''
-                      })), 'task_management');
-                    }
-                  }}
-                  disabled={!reportType}
-                >
-                  Export Excel
-                </Button>
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="startDate" className="text-sm">Start Date</Label>
+            <Input
+              id="startDate"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="endDate" className="text-sm">End Date</Label>
+            <Input
+              id="endDate"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="selectedUser" className="text-sm">Filter by User</Label>
+            <Select value={selectedUser} onValueChange={setSelectedUser}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="All users" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                 {users.map((user) => (
+                   <SelectItem key={user.user_id} value={user.user_id}>
+                     {user.display_name || user.email}
+                   </SelectItem>
+                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
+            <Label className="text-sm">&nbsp;</Label>
+            <div className="flex flex-col space-y-2">
+              <Button onClick={generateReport} className="w-full text-sm" size="sm">
+                Generate
+              </Button>
+              <Button
+                variant="outline" 
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => {
+                  if (reportType === 'time_logs') {
+                    exportToXLSX(timeEntries.map(entry => ({
+                      userName: entry.profiles?.display_name || entry.profiles?.email,
+                      date: new Date(entry.check_in_time).toLocaleDateString(),
+                      checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                      checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
+                      regularHours: entry.regular_hours || 0,
+                      overtimeHours: entry.overtime_hours || 0,
+                      totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
+                    })), 'time_logs');
+                  } else if (reportType === 'truck_activity') {
+                    exportToXLSX(trucks.map(truck => ({
+                      licensePlate: truck.license_plate,
+                      arrivalDate: truck.arrival_date,
+                      arrivalTime: truck.arrival_time,
+                      rampNumber: truck.ramp_number,
+                      palletCount: truck.pallet_count,
+                      status: truck.status,
+                      assignedStaff: truck.assigned_staff_name,
+                      handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
+                      cargoDescription: truck.cargo_description
+                    })), 'truck_activity');
+                  } else if (reportType === 'task_management') {
+                    exportToXLSX(tasks.map(task => ({
+                      title: task.title,
+                      description: task.description,
+                      priority: task.priority,
+                      status: task.status,
+                      assignedTo: task.assigned_to_name || 'Unassigned',
+                      completedBy: task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : '',
+                      dueDate: task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline',
+                      createdAt: new Date(task.created_at).toLocaleDateString(),
+                      completedAt: task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '',
+                      completionComment: task.completion_comment || ''
+                    })), 'task_management');
+                  }
+                }}
+                disabled={!reportType}
+              >
+                Export Excel
+              </Button>
             </div>
           </div>
+        </div>
         </CardContent>
       </Card>
       )}
@@ -452,46 +455,48 @@ export const Reports: React.FC = () => {
                 No time entries found
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Check In</TableHead>
-                    <TableHead>Check Out</TableHead>
-                    <TableHead>Regular Hours</TableHead>
-                    <TableHead>Overtime Hours</TableHead>
-                    <TableHead>Total Hours</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {timeEntries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-medium">
-                        {entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}
-                      </TableCell>
-                      <TableCell>{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
-                      <TableCell>
-                        {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out'}
-                      </TableCell>
-                      <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
-                      <TableCell>
-                        {(entry.overtime_hours || 0) > 0 ? (
-                          <span className="text-orange-600 font-medium">
-                            {(entry.overtime_hours || 0).toFixed(1)}h
-                          </span>
-                        ) : (
-                          '0h'
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">Employee</TableHead>
+                      <TableHead className="min-w-[100px]">Date</TableHead>
+                      <TableHead className="min-w-[80px]">Check In</TableHead>
+                      <TableHead className="min-w-[80px]">Check Out</TableHead>
+                      <TableHead className="min-w-[80px]">Regular</TableHead>
+                      <TableHead className="min-w-[80px]">Overtime</TableHead>
+                      <TableHead className="min-w-[80px]">Total</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {timeEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="font-medium min-w-[120px]">
+                          <div className="truncate">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</div>
+                        </TableCell>
+                        <TableCell className="min-w-[100px] text-sm">{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">
+                          {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}
+                        </TableCell>
+                        <TableCell className="min-w-[80px] text-sm">{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">
+                          {(entry.overtime_hours || 0) > 0 ? (
+                            <span className="text-orange-600 font-medium">
+                              {(entry.overtime_hours || 0).toFixed(1)}h
+                            </span>
+                          ) : (
+                            '0h'
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium min-w-[80px] text-sm">
+                          {((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -514,38 +519,44 @@ export const Reports: React.FC = () => {
                 No truck data found
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>License Plate</TableHead>
-                    <TableHead>Arrival Date</TableHead>
-                    <TableHead>Arrival Time</TableHead>
-                    <TableHead>Ramp</TableHead>
-                    <TableHead>Pallets</TableHead>
-                    <TableHead>Cargo</TableHead>
-                    <TableHead>Assigned Staff</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {trucks.map((truck) => (
-                    <TableRow key={truck.id}>
-                      <TableCell className="font-medium">{truck.license_plate}</TableCell>
-                      <TableCell>{truck.arrival_date}</TableCell>
-                      <TableCell>{truck.arrival_time}</TableCell>
-                      <TableCell>{truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}</TableCell>
-                      <TableCell>{truck.pallet_count}</TableCell>
-                      <TableCell>{truck.cargo_description}</TableCell>
-                      <TableCell>{truck.assigned_staff_name || 'Unassigned'}</TableCell>
-                      <TableCell>
-                        <span className={truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}>
-                          {truck.status}
-                        </span>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">License Plate</TableHead>
+                      <TableHead className="min-w-[100px]">Date</TableHead>
+                      <TableHead className="min-w-[80px]">Time</TableHead>
+                      <TableHead className="min-w-[80px]">Ramp</TableHead>
+                      <TableHead className="min-w-[80px]">Pallets</TableHead>
+                      <TableHead className="min-w-[150px]">Cargo</TableHead>
+                      <TableHead className="min-w-[120px]">Staff</TableHead>
+                      <TableHead className="min-w-[80px]">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {trucks.map((truck) => (
+                      <TableRow key={truck.id}>
+                        <TableCell className="font-medium min-w-[120px]">{truck.license_plate}</TableCell>
+                        <TableCell className="min-w-[100px] text-sm">{truck.arrival_date}</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">{truck.arrival_time?.substring(0, 5)}</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
+                        <TableCell className="min-w-[80px] text-sm">{truck.pallet_count}</TableCell>
+                        <TableCell className="min-w-[150px] text-sm">
+                          <div className="truncate max-w-[130px]" title={truck.cargo_description}>{truck.cargo_description}</div>
+                        </TableCell>
+                        <TableCell className="min-w-[120px] text-sm">
+                          <div className="truncate max-w-[100px]">{truck.assigned_staff_name || 'Unassigned'}</div>
+                        </TableCell>
+                        <TableCell className="min-w-[80px]">
+                          <span className={`text-sm ${truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}`}>
+                            {truck.status}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -568,53 +579,59 @@ export const Reports: React.FC = () => {
                 No task data found
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Completed</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tasks.map((task) => (
-                    <TableRow key={task.id}>
-                      <TableCell className="font-medium">{task.title}</TableCell>
-                      <TableCell>
-                        <span className={
-                          task.priority === 'URGENT' ? 'text-red-600 font-medium' :
-                          task.priority === 'HIGH' ? 'text-orange-600' :
-                          task.priority === 'MEDIUM' ? 'text-yellow-600' :
-                          'text-green-600'
-                        }>
-                          {task.priority}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className={
-                          task.status === 'COMPLETED' ? 'text-green-600' :
-                          task.status === 'IN_PROGRESS' ? 'text-blue-600' :
-                          'text-gray-600'
-                        }>
-                          {task.status.replace('_', ' ')}
-                        </span>
-                      </TableCell>
-                      <TableCell>{task.assigned_to_name || 'Unassigned'}</TableCell>
-                      <TableCell>
-                        {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
-                      </TableCell>
-                      <TableCell>{new Date(task.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[150px]">Title</TableHead>
+                      <TableHead className="min-w-[80px]">Priority</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[120px]">Assigned To</TableHead>
+                      <TableHead className="min-w-[100px]">Due Date</TableHead>
+                      <TableHead className="min-w-[100px]">Created</TableHead>
+                      <TableHead className="min-w-[100px]">Completed</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium min-w-[150px]">
+                          <div className="truncate max-w-[130px]" title={task.title}>{task.title}</div>
+                        </TableCell>
+                        <TableCell className="min-w-[80px]">
+                          <span className={`text-xs font-medium ${
+                            task.priority === 'URGENT' ? 'text-red-600' :
+                            task.priority === 'HIGH' ? 'text-orange-600' :
+                            task.priority === 'MEDIUM' ? 'text-yellow-600' :
+                            'text-green-600'
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </TableCell>
+                        <TableCell className="min-w-[100px]">
+                          <span className={`text-xs ${
+                            task.status === 'COMPLETED' ? 'text-green-600' :
+                            task.status === 'IN_PROGRESS' ? 'text-blue-600' :
+                            'text-gray-600'
+                          }`}>
+                            {task.status.replace('_', ' ')}
+                          </span>
+                        </TableCell>
+                        <TableCell className="min-w-[120px] text-sm">
+                          <div className="truncate max-w-[100px]">{task.assigned_to_name || 'Unassigned'}</div>
+                        </TableCell>
+                        <TableCell className="min-w-[100px] text-sm">
+                          {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
+                        </TableCell>
+                        <TableCell className="min-w-[100px] text-sm">{new Date(task.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="min-w-[100px] text-sm">
+                          {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
