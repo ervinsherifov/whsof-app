@@ -260,13 +260,14 @@ export const Reports: React.FC = () => {
   const summary = getReportSummary();
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
-      <div className="text-center sm:text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold text-primary">Reports</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Generate and export warehouse operation reports
-        </p>
-      </div>
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <div className="max-w-full mx-auto space-y-4 p-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Reports</h1>
+          <p className="text-muted-foreground text-sm">
+            Generate and export warehouse operation reports
+          </p>
+        </div>
 
       {/* Report Generation - Role-based access */}
       {hasOfficeAccess && (
@@ -279,11 +280,11 @@ export const Reports: React.FC = () => {
           </CardHeader>
           <CardContent>
           <div className="space-y-4">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reportType" className="text-sm">Report Type</Label>
                 <Select value={reportType} onValueChange={setReportType}>
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className="w-full text-sm">
                     <SelectValue placeholder="Select report type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -299,7 +300,7 @@ export const Reports: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="selectedUser" className="text-sm">Filter by User</Label>
                 <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className="w-full text-sm">
                     <SelectValue placeholder="All users" />
                   </SelectTrigger>
                   <SelectContent>
@@ -314,7 +315,7 @@ export const Reports: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="text-sm">Start Date</Label>
                 <Input
@@ -322,7 +323,7 @@ export const Reports: React.FC = () => {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="text-sm"
+                  className="w-full text-sm"
                 />
               </div>
 
@@ -333,19 +334,19 @@ export const Reports: React.FC = () => {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="text-sm"
+                  className="w-full text-sm"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button onClick={generateReport} className="flex-1 text-sm" size="sm">
+            <div className="space-y-2">
+              <Button onClick={generateReport} className="w-full text-sm" size="sm">
                 Generate
               </Button>
               <Button
                 variant="outline" 
                 size="sm"
-                className="flex-1 text-sm"
+                className="w-full text-sm"
                 onClick={() => {
                   if (reportType === 'time_logs') {
                     exportToXLSX(timeEntries.map(entry => ({
@@ -394,52 +395,52 @@ export const Reports: React.FC = () => {
       </Card>
       )}
 
-      {/* Summary Statistics - Only for Super Admin */}
-      {hasFullAccess && (
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Hours Today</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalHours}</div>
-            <p className="text-xs text-muted-foreground">All staff combined</p>
-          </CardContent>
-        </Card>
+        {/* Summary Statistics - Only for Super Admin */}
+        {hasFullAccess && (
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Hours Today</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{summary.totalHours}</div>
+              <p className="text-xs text-muted-foreground">All staff combined</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Overtime Hours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{summary.totalOvertime}</div>
-            <p className="text-xs text-muted-foreground">Beyond standard hours</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Overtime Hours</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-orange-600">{summary.totalOvertime}</div>
+              <p className="text-xs text-muted-foreground">Beyond standard hours</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Trucks Processed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalTrucks}</div>
-            <p className="text-xs text-muted-foreground">Completed today</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Trucks Processed</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{summary.totalTrucks}</div>
+              <p className="text-xs text-muted-foreground">Completed today</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalTasks}</div>
-            <p className="text-xs text-muted-foreground">Tasks completed</p>
-          </CardContent>
-        </Card>
-      </div>
-      )}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Completed Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{summary.totalTasks}</div>
+              <p className="text-xs text-muted-foreground">Tasks completed</p>
+            </CardContent>
+          </Card>
+        </div>
+        )}
 
-      {/* Time Logs Report - Super Admin Only */}
+        {/* Time Logs Report - Super Admin Only */}
       {hasFullAccess && (reportType === 'time_logs' || reportType === '') && (
         <Card>
           <CardHeader>
@@ -458,7 +459,7 @@ export const Reports: React.FC = () => {
             ) : (
               <>
               {/* Desktop Table View */}
-              <div className="hidden md:block w-full overflow-x-auto">
+              <div className="hidden sm:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -502,7 +503,7 @@ export const Reports: React.FC = () => {
               </div>
 
               {/* Mobile Card View */}
-              <div className="md:hidden space-y-4">
+              <div className="sm:hidden space-y-3">
                 {timeEntries.map((entry) => (
                   <Card key={entry.id} className="p-4">
                     <div className="space-y-3">
@@ -572,7 +573,7 @@ export const Reports: React.FC = () => {
             ) : (
               <>
               {/* Desktop Table View */}
-              <div className="hidden md:block w-full overflow-x-auto">
+              <div className="hidden sm:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -610,7 +611,7 @@ export const Reports: React.FC = () => {
               </div>
 
               {/* Mobile Card View */}
-              <div className="md:hidden space-y-4">
+              <div className="sm:hidden space-y-3">
                 {trucks.map((truck) => (
                   <Card key={truck.id} className="p-4">
                     <div className="space-y-3">
@@ -671,7 +672,7 @@ export const Reports: React.FC = () => {
             ) : (
               <>
               {/* Desktop Table View */}
-              <div className="hidden md:block w-full overflow-x-auto">
+              <div className="hidden sm:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -726,7 +727,7 @@ export const Reports: React.FC = () => {
               </div>
 
               {/* Mobile Card View */}
-              <div className="md:hidden space-y-4">
+              <div className="sm:hidden space-y-3">
                 {tasks.map((task) => (
                   <Card key={task.id} className="p-4">
                     <div className="space-y-3">
@@ -791,10 +792,12 @@ export const Reports: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
               {hasFullAccess && (
                 <Button 
                   variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto text-xs"
                   onClick={() => exportToXLSX(timeEntries.map(entry => ({
                     userName: entry.profiles?.display_name || entry.profiles?.email,
                     date: new Date(entry.check_in_time).toLocaleDateString(),
@@ -805,11 +808,13 @@ export const Reports: React.FC = () => {
                     totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
                   })), 'daily_time_report')}
                 >
-                  Export Today's Time Report
+                  Export Time Report
                 </Button>
               )}
               <Button 
                 variant="outline"
+                size="sm"
+                className="w-full sm:w-auto text-xs"
                 onClick={() => exportToXLSX(trucks.map(truck => ({
                   licensePlate: truck.license_plate,
                   arrivalDate: truck.arrival_date,
@@ -821,11 +826,13 @@ export const Reports: React.FC = () => {
                   cargoDescription: truck.cargo_description
                 })), 'daily_truck_report')}
               >
-                Export Today's Truck Report
+                Export Truck Report
               </Button>
               {hasFullAccess && (
                 <Button 
                   variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto text-xs"
                   onClick={() => {
                     const summaryData = [{
                       date: new Date().toISOString().split('T')[0],
@@ -837,7 +844,7 @@ export const Reports: React.FC = () => {
                     exportToXLSX(summaryData, 'daily_summary');
                   }}
                 >
-                  Export Daily Summary
+                  Export Summary
                 </Button>
               )}
             </div>
@@ -845,9 +852,9 @@ export const Reports: React.FC = () => {
         </Card>
       )}
 
-      {/* Completed Trucks with Photos - Office staff and Super Admin */}
-      {hasOfficeAccess && (
-        <Card>
+        {/* Completed Trucks with Photos - Office staff and Super Admin */}
+        {hasOfficeAccess && (
+          <Card>
         <CardHeader>
           <CardTitle>Completed Trucks with Photos</CardTitle>
           <CardDescription>
@@ -863,7 +870,7 @@ export const Reports: React.FC = () => {
                 placeholder="Search by license plate..."
                 value={truckSearchQuery}
                 onChange={(e) => setTruckSearchQuery(e.target.value)}
-                className="max-w-sm"
+                className="w-full max-w-sm"
               />
             </div>
 
@@ -907,7 +914,7 @@ export const Reports: React.FC = () => {
                       </div>
                       
                       {truck.truck_completion_photos && truck.truck_completion_photos.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                           {truck.truck_completion_photos.map((photo: any, index: number) => (
                             <div key={photo.id} className="relative group">
                               <img
@@ -942,8 +949,9 @@ export const Reports: React.FC = () => {
             )}
           </div>
         </CardContent>
-      </Card>
-      )}
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
