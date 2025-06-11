@@ -278,72 +278,74 @@ export const Reports: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <div className="space-y-2">
-              <Label htmlFor="reportType" className="text-sm">Report Type</Label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
-                  <SelectItem value="truck_activity">Truck Activity</SelectItem>
-                  {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
-                  {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
-                  {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
-                </SelectContent>
-              </Select>
+          <div className="space-y-4">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="reportType" className="text-sm">Report Type</Label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Select report type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
+                    <SelectItem value="truck_activity">Truck Activity</SelectItem>
+                    {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
+                    {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
+                    {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="selectedUser" className="text-sm">Filter by User</Label>
+                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="All users" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All users</SelectItem>
+                     {users.map((user) => (
+                       <SelectItem key={user.user_id} value={user.user_id}>
+                         {user.display_name || user.email}
+                       </SelectItem>
+                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="startDate" className="text-sm">Start Date</Label>
-            <Input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="startDate" className="text-sm">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="endDate" className="text-sm">End Date</Label>
-            <Input
-              id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate" className="text-sm">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="selectedUser" className="text-sm">Filter by User</Label>
-            <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className="text-sm">
-                <SelectValue placeholder="All users" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All users</SelectItem>
-                 {users.map((user) => (
-                   <SelectItem key={user.user_id} value={user.user_id}>
-                     {user.display_name || user.email}
-                   </SelectItem>
-                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-            <Label className="text-sm">&nbsp;</Label>
-            <div className="flex flex-col space-y-2">
-              <Button onClick={generateReport} className="w-full text-sm" size="sm">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={generateReport} className="flex-1 text-sm" size="sm">
                 Generate
               </Button>
               <Button
                 variant="outline" 
                 size="sm"
-                className="w-full text-xs"
+                className="flex-1 text-sm"
                 onClick={() => {
                   if (reportType === 'time_logs') {
                     exportToXLSX(timeEntries.map(entry => ({
@@ -388,7 +390,6 @@ export const Reports: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>
         </CardContent>
       </Card>
       )}
