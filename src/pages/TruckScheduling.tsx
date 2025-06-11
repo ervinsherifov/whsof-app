@@ -541,7 +541,17 @@ export const TruckScheduling: React.FC = () => {
                   onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
                   placeholder="HH:MM"
                   min={formData.arrivalDate === new Date().toISOString().split('T')[0] 
-                    ? new Date().toTimeString().slice(0, 5) 
+                    ? (() => {
+                        const now = new Date();
+                        const currentMinutes = now.getMinutes();
+                        const roundedMinutes = Math.ceil(currentMinutes / 5) * 5;
+                        const roundedTime = new Date(now);
+                        roundedTime.setMinutes(roundedMinutes, 0, 0);
+                        if (roundedMinutes >= 60) {
+                          roundedTime.setHours(roundedTime.getHours() + 1, 0, 0, 0);
+                        }
+                        return roundedTime.toTimeString().slice(0, 5);
+                      })()
                     : undefined}
                   required
                 />
