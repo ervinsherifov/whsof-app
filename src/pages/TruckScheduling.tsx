@@ -195,10 +195,13 @@ export const TruckScheduling: React.FC = () => {
     const scheduledDateTime = new Date(`${formData.arrivalDate}T${formData.arrivalTime}`);
     const now = new Date();
     
-    if (scheduledDateTime <= now) {
+    // Add 2 minute buffer to account for form filling time
+    const bufferTime = new Date(now.getTime() + 2 * 60 * 1000);
+    
+    if (scheduledDateTime <= bufferTime) {
       toast({
-        title: 'Validation error',
-        description: 'Cannot schedule trucks for past dates or times',
+        title: 'Invalid Schedule Time',
+        description: 'Please select a future date and time (at least 2 minutes from now)',
         variant: 'destructive',
       });
       return;
