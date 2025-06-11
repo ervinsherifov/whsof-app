@@ -28,7 +28,6 @@ export const TaskManagement: React.FC = () => {
     description: '',
     priority: 'MEDIUM',
     assignedTo: '',
-    truckId: '',
     dueDate: '',
     dueTime: ''
   });
@@ -240,7 +239,6 @@ export const TaskManagement: React.FC = () => {
           priority: formData.priority,
           assigned_to_user_id: formData.assignedTo === 'unassigned' ? null : formData.assignedTo || null,
           assigned_to_name: selectedStaff?.display_name || selectedStaff?.email,
-          truck_id: formData.truckId === 'no-truck' ? null : formData.truckId || null,
           due_date: dueDateTime,
           created_by_user_id: user.id,
         });
@@ -257,7 +255,6 @@ export const TaskManagement: React.FC = () => {
         description: '',
         priority: 'MEDIUM',
         assignedTo: '',
-        truckId: '',
         dueDate: '',
         dueTime: ''
       });
@@ -416,22 +413,6 @@ export const TaskManagement: React.FC = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="truckId">Related Truck (Optional)</Label>
-                <Select value={formData.truckId} onValueChange={(value) => setFormData({...formData, truckId: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select truck" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no-truck">No truck</SelectItem>
-                    {trucks.map((truck) => (
-                      <SelectItem key={truck.id} value={truck.id}>
-                        {truck.license_plate} - {truck.arrival_date} {truck.arrival_time.substring(0, 5)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -450,7 +431,6 @@ export const TaskManagement: React.FC = () => {
                   <Input
                     id="dueTime"
                     type="time"
-                    step="300"
                     value={formData.dueTime}
                     onChange={(e) => setFormData({...formData, dueTime: e.target.value})}
                     placeholder="HH:MM"
