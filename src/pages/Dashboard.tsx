@@ -450,10 +450,10 @@ export const Dashboard: React.FC = () => {
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {user?.role === 'WAREHOUSE_STAFF' && (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate('/task-management')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/tasks')}>
                   View My Tasks
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate('/truck-scheduling')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/trucks')}>
                   Check Truck Status
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/tv-dashboard')}>
@@ -463,10 +463,10 @@ export const Dashboard: React.FC = () => {
             )}
             {user?.role === 'OFFICE_ADMIN' && (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate('/truck-scheduling')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/trucks')}>
                   Schedule New Truck
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate('/task-management')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/tasks')}>
                   Create Task
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/reports')}>
@@ -479,7 +479,7 @@ export const Dashboard: React.FC = () => {
             )}
             {user?.role === 'SUPER_ADMIN' && (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate('/user-management')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/users')}>
                   Add New User
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/reports')}>
