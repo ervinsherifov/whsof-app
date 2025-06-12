@@ -34,18 +34,43 @@ export const TVDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Get today's date in YYYY-MM-DD format
-      const today = getTodayISO();
-      
-      // Fetch trucks - only for today and only show SCHEDULED, ARRIVED, IN PROGRESS
+      // Fetch all trucks with SCHEDULED, ARRIVED, IN PROGRESS statuses
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
-        .eq('arrival_date', today)
-        .in('status', ['SCHEDULED', 'ARRIVED', 'IN PROGRESS'])
-        .order('arrival_time', { ascending: true });
+        .in('status', ['SCHEDULED', 'ARRIVED', 'IN PROGRESS']);
 
       if (trucksError) throw trucksError;
+
+      // Sort trucks by status priority: IN PROGRESS > ARRIVED > SCHEDULED (by date/time)
+      const sortedTrucks = (trucksData || []).sort((a, b) => {
+        // Define status priority
+        const getStatusPriority = (status: string) => {
+          switch (status) {
+            case 'IN PROGRESS': return 1;
+            case 'ARRIVED': return 2;
+            case 'SCHEDULED': return 3;
+            default: return 4;
+          }
+        };
+
+        const aPriority = getStatusPriority(a.status);
+        const bPriority = getStatusPriority(b.status);
+
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+
+        // For same status, sort SCHEDULED trucks by date and time (earliest first)
+        if (a.status === 'SCHEDULED' && b.status === 'SCHEDULED') {
+          const aDateTime = new Date(`${a.arrival_date}T${a.arrival_time}`);
+          const bDateTime = new Date(`${b.arrival_date}T${b.arrival_time}`);
+          return aDateTime.getTime() - bDateTime.getTime();
+        }
+
+        // For other statuses, maintain original order
+        return 0;
+      });
 
       // Fetch urgent tasks - only show CREATED, ONGOING statuses
       const { data: tasksData, error: tasksError } = await supabase
@@ -58,7 +83,7 @@ export const TVDashboard: React.FC = () => {
 
       if (tasksError) throw tasksError;
 
-      setTrucks(trucksData || []);
+      setTrucks(sortedTrucks);
       setTasks(tasksData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -80,7 +105,10 @@ export const TVDashboard: React.FC = () => {
       .channel('trucks-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'trucks' }, 
-        () => fetchData()
+        (payload) => {
+          console.log('Trucks realtime update:', payload);
+          fetchData();
+        }
       )
       .subscribe();
 
@@ -88,7 +116,10 @@ export const TVDashboard: React.FC = () => {
       .channel('tasks-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'tasks' }, 
-        () => fetchData()
+        (payload) => {
+          console.log('Tasks realtime update:', payload);
+          fetchData();
+        }
       )
       .subscribe();
 
@@ -171,7 +202,7 @@ export const TVDashboard: React.FC = () => {
         {/* Trucks Status - Primary Focus */}
         <Card className="xl:col-span-1 flex flex-col min-h-0">
           <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-            <CardTitle className="text-2xl lg:text-3xl 4xl:text-5xl">Today's Trucks</CardTitle>
+            <CardTitle className="text-2xl lg:text-3xl 4xl:text-5xl">All Trucks</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
             <div className="space-y-3 lg:space-y-4 4xl:space-y-6">
@@ -186,7 +217,13 @@ export const TVDashboard: React.FC = () => {
                       {truck.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 lg:gap-3 text-sm lg:text-lg 4xl:text-xl">
+                  <div className="grid grid-cols-4 gap-2 lg:gap-3 text-sm lg:text-lg 4xl:text-xl">
+                    <div>
+                      <span className="text-muted-foreground">Date:</span>
+                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
+                        {formatDate(truck.arrival_date)}
+                      </div>
+                    </div>
                     <div>
                       <span className="text-muted-foreground">Time:</span>
                       <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
@@ -211,7 +248,7 @@ export const TVDashboard: React.FC = () => {
               ))}
               {trucks.length === 0 && (
                 <div className="text-center text-muted-foreground text-lg lg:text-xl 4xl:text-2xl py-8">
-                  No trucks scheduled for today
+                  No active trucks
                 </div>
               )}
             </div>
@@ -266,7 +303,7 @@ export const TVDashboard: React.FC = () => {
                 {Array.from({ length: 13 }, (_, i) => {
                   const rampNumber = i + 1;
                   const occupyingTruck = trucks.find(truck => 
-                    truck.ramp_number === rampNumber && truck.status === 'ARRIVED'
+                    truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN PROGRESS')
                   );
                   const isOccupied = !!occupyingTruck;
                   
