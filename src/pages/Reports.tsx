@@ -378,18 +378,19 @@ export const Reports: React.FC = () => {
                       cargoDescription: truck.cargo_description
                     })), 'truck_activity');
                   } else if (reportType === 'task_management') {
-                    exportToXLSX(tasks.map(task => ({
-                      title: task.title,
-                      description: task.description,
-                      priority: task.priority,
-                      status: task.status,
-                      assignedTo: task.assigned_to_name || 'Unassigned',
-                      completedBy: task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : '',
-                      dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
-                      createdAt: formatDate(task.created_at),
-                      completedAt: task.completed_at ? formatDate(task.completed_at) : '',
-                      completionComment: task.completion_comment || ''
-                    })), 'task_management');
+                     exportToXLSX(tasks.map(task => ({
+                       title: task.title,
+                       description: task.description,
+                       priority: task.priority,
+                       status: task.status,
+                       completedBy: task.status === 'COMPLETED' 
+                         ? (task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : 'Unknown') 
+                         : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
+                       dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
+                       createdAt: formatDate(task.created_at),
+                       completedAt: task.completed_at ? formatDate(task.completed_at) : '',
+                       completionComment: task.completion_comment || ''
+                     })), 'task_management');
                   }
                 }}
                 disabled={!reportType}
@@ -487,9 +488,10 @@ export const Reports: React.FC = () => {
                         </TableCell>
                         <TableCell>{formatDate(entry.check_in_time)}</TableCell>
                         <TableCell>{formatTime(entry.check_in_time)}</TableCell>
-                        <TableCell>
-                          {entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}
-                        </TableCell>
+                         <TableCell>
+                           {entry.check_out_time ? formatTime(entry.check_out_time) : 
+                            (!entry.check_out_time && formatDate(entry.check_in_time) === formatDate(new Date().toISOString()) ? 'Working' : 'Not completed')}
+                         </TableCell>
                         <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
                         <TableCell>
                           {(entry.overtime_hours || 0) > 0 ? (
@@ -530,10 +532,11 @@ export const Reports: React.FC = () => {
                           <div className="text-muted-foreground">Check In</div>
                           <div>{formatTime(entry.check_in_time)}</div>
                         </div>
-                        <div>
-                          <div className="text-muted-foreground">Check Out</div>
-                          <div>{entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}</div>
-                        </div>
+                         <div>
+                           <div className="text-muted-foreground">Check Out</div>
+                           <div>{entry.check_out_time ? formatTime(entry.check_out_time) : 
+                            (!entry.check_out_time && formatDate(entry.check_in_time) === formatDate(new Date().toISOString()) ? 'Working' : 'Not completed')}</div>
+                         </div>
                         <div>
                           <div className="text-muted-foreground">Regular Hours</div>
                           <div>{(entry.regular_hours || 0).toFixed(1)}h</div>
@@ -686,7 +689,7 @@ export const Reports: React.FC = () => {
                       <TableHead>Title</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Assigned</TableHead>
+                      <TableHead>Completed By</TableHead>
                       <TableHead>Due</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead>Done</TableHead>
@@ -717,9 +720,11 @@ export const Reports: React.FC = () => {
                             {task.status.replace('_', ' ')}
                           </span>
                         </TableCell>
-                        <TableCell>
-                          {task.assigned_to_name || 'Unassigned'}
-                        </TableCell>
+                         <TableCell>
+                           {task.status === 'COMPLETED' 
+                             ? (task.completed_by_user_id ? `User ID: ${task.completed_by_user_id}` : 'Unknown') 
+                             : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
+                         </TableCell>
                         <TableCell>
                           {task.due_date ? formatDate(task.due_date) : 'No deadline'}
                         </TableCell>
@@ -762,10 +767,16 @@ export const Reports: React.FC = () => {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <div className="text-muted-foreground">Assigned To</div>
-                          <div>{task.assigned_to_name || 'Unassigned'}</div>
-                        </div>
+                         <div>
+                           <div className="text-muted-foreground">
+                             {task.status === 'COMPLETED' ? 'Completed By' : 'Processing By'}
+                           </div>
+                           <div>
+                             {task.status === 'COMPLETED' 
+                               ? (task.completed_by_user_id ? `User ID: ${task.completed_by_user_id}` : 'Unknown') 
+                               : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
+                           </div>
+                         </div>
                         <div>
                           <div className="text-muted-foreground">Due Date</div>
                           <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
@@ -829,7 +840,6 @@ export const Reports: React.FC = () => {
                   rampNumber: truck.ramp_number,
                   palletCount: truck.pallet_count,
                   status: truck.status,
-                  assignedStaff: truck.assigned_staff_name,
                   cargoDescription: truck.cargo_description
                 })), 'daily_truck_report')}
               >

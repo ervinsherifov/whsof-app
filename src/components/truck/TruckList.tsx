@@ -91,12 +91,6 @@ export const TruckList: React.FC<TruckListProps> = ({
                         <span className="text-muted-foreground">Pallets:</span>
                         <div className="font-medium">{truck.pallet_count}</div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Staff:</span>
-                        <div className="font-medium text-xs truncate">
-                          {truck.assigned_staff_name || 'Not assigned'}
-                        </div>
-                      </div>
                     </div>
                     
                     <div className="space-y-2">
@@ -179,7 +173,6 @@ export const TruckList: React.FC<TruckListProps> = ({
                     <TableHead>Ramp</TableHead>
                     <TableHead>Pallets</TableHead>
                     <TableHead>Cargo</TableHead>
-                    <TableHead>Assigned Staff</TableHead>
                     <TableHead>Handler</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -201,7 +194,6 @@ export const TruckList: React.FC<TruckListProps> = ({
                       <TableCell className="max-w-xs truncate">
                         {truck.cargo_description}
                       </TableCell>
-                      <TableCell>{truck.assigned_staff_name || 'Not assigned'}</TableCell>
                       <TableCell>{truck.handled_by_name || '-'}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusColor(truck.status)}>

@@ -34,12 +34,29 @@ export const TimeTracking: React.FC = () => {
     if (!user?.id) return;
     
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('time_entries')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id);
+
+      // Apply date filter if selectedDate is valid
+      if (selectedDate && selectedDate.includes('/')) {
+        const [day, month, year] = selectedDate.split('/');
+        if (day && month && year && year.length === 4) {
+          const filterDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const nextDay = new Date(filterDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          const nextDayString = nextDay.toISOString().split('T')[0];
+          
+          query = query
+            .gte('check_in_time', `${filterDate}T00:00:00.000Z`)
+            .lt('check_in_time', `${nextDayString}T00:00:00.000Z`);
+        }
+      }
+
+      const { data, error } = await query
         .order('check_in_time', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) throw error;
       setTimeEntries(data || []);
@@ -54,7 +71,7 @@ export const TimeTracking: React.FC = () => {
         setIsLoading(false);
       });
     }
-  }, [user?.id]);
+  }, [user?.id, selectedDate]);
 
   const refreshData = async () => {
     await fetchTimeEntries();
