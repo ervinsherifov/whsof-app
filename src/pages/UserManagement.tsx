@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDate } from '@/lib/dateUtils';
 
 interface UserProfile {
   id: string;
@@ -480,7 +481,7 @@ export const UserManagement: React.FC = () => {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {new Date(user.created_at).toLocaleDateString()}
+                    {formatDate(user.created_at)}
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
@@ -528,7 +529,7 @@ export const UserManagement: React.FC = () => {
                   </div>
                   
                   <div className="text-sm text-muted-foreground">
-                    Created: {new Date(user.created_at).toLocaleDateString()}
+                    Created: {formatDate(user.created_at)}
                   </div>
 
                   <div className="space-y-2">

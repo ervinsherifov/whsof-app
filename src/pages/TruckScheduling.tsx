@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
+import { formatDate, parseDate } from '@/lib/dateUtils';
 
 
 export const TruckScheduling: React.FC = () => {
@@ -168,10 +169,6 @@ export const TruckScheduling: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,8 +203,19 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
+    // Parse DD/MM/YYYY date format
+    const parsedDate = parseDate(formData.arrivalDate);
+    if (!parsedDate) {
+      toast({
+        title: 'Invalid date format',
+        description: 'Please enter date in DD/MM/YYYY format',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Check if the scheduled date/time is in the past
-    const scheduledDateTime = new Date(`${formData.arrivalDate}T${formData.arrivalTime}`);
+    const scheduledDateTime = new Date(`${parsedDate.toISOString().split('T')[0]}T${formData.arrivalTime}`);
     const now = new Date();
     
     // Add 2 minute buffer to account for form filling time
@@ -227,7 +235,7 @@ export const TruckScheduling: React.FC = () => {
         .from('trucks')
         .insert({
           license_plate: formData.licensePlate.trim(),
-          arrival_date: formData.arrivalDate,
+          arrival_date: parsedDate.toISOString().split('T')[0],
           arrival_time: formData.arrivalTime,
           pallet_count: palletCount,
           cargo_description: formData.cargoDescription.trim(),

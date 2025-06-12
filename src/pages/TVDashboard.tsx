@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Fullscreen, Tv } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getTodayISO } from '@/lib/dateUtils';
+import { getTodayISO, formatDate } from '@/lib/dateUtils';
 
 export const TVDashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -162,12 +162,7 @@ export const TVDashboard: React.FC = () => {
           })}
         </div>
         <div className="text-lg lg:text-2xl 4xl:text-3xl text-muted-foreground">
-          {currentTime.toLocaleDateString('en-US', { 
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
+          {formatDate(currentTime)}
         </div>
       </div>
 

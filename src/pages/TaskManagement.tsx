@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
+import { formatDate, parseDate } from '@/lib/dateUtils';
 
 
 export const TaskManagement: React.FC = () => {
@@ -209,7 +210,18 @@ export const TaskManagement: React.FC = () => {
       
       let dueDateTime = null;
       if (formData.dueDate && formData.dueTime) {
-        const taskDateTime = new Date(`${formData.dueDate}T${formData.dueTime}`);
+        // Parse DD/MM/YYYY date format
+        const parsedDate = parseDate(formData.dueDate);
+        if (!parsedDate) {
+          toast({
+            title: 'Invalid date format',
+            description: 'Please enter date in DD/MM/YYYY format',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        const taskDateTime = new Date(`${parsedDate.toISOString().split('T')[0]}T${formData.dueTime}`);
         const now = new Date();
         
         if (taskDateTime < now) {
@@ -223,11 +235,21 @@ export const TaskManagement: React.FC = () => {
         
         dueDateTime = taskDateTime.toISOString();
       } else if (formData.dueDate) {
-        const taskDate = new Date(formData.dueDate);
+        // Parse DD/MM/YYYY date format
+        const parsedDate = parseDate(formData.dueDate);
+        if (!parsedDate) {
+          toast({
+            title: 'Invalid date format',
+            description: 'Please enter date in DD/MM/YYYY format',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        if (taskDate < today) {
+        if (parsedDate < today) {
           toast({
             title: 'Invalid due date',
             description: 'Cannot schedule tasks in the past',
@@ -236,7 +258,7 @@ export const TaskManagement: React.FC = () => {
           return;
         }
         
-        dueDateTime = taskDate.toISOString();
+        dueDateTime = parsedDate.toISOString();
       }
       
       const { error } = await supabase
@@ -344,10 +366,6 @@ export const TaskManagement: React.FC = () => {
     return tasks.filter(task => task.priority === priority && task.status !== 'COMPLETED').length;
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB');
-  };
 
   return (
     <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">

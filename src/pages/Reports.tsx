@@ -807,7 +807,7 @@ export const Reports: React.FC = () => {
                   className="w-full sm:w-auto text-xs"
                   onClick={() => exportToXLSX(timeEntries.map(entry => ({
                     userName: entry.profiles?.display_name || entry.profiles?.email,
-                    date: new Date(entry.check_in_time).toLocaleDateString(),
+                    date: formatDate(entry.check_in_time),
                     checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
                     checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
                     regularHours: entry.regular_hours || 0,
@@ -897,8 +897,8 @@ export const Reports: React.FC = () => {
                            <div className="flex-1">
                              <h3 className="font-semibold text-base sm:text-lg">{truck.license_plate}</h3>
                              <p className="text-xs sm:text-sm text-muted-foreground">
-                               Completed: {new Date(truck.updated_at).toLocaleDateString()}
-                             </p>
+                                Completed: {formatDate(truck.updated_at)}
+                              </p>
                              <p className="text-xs sm:text-sm text-muted-foreground">
                                Handled by: {truck.handled_by_name || 'Unknown'}
                              </p>
@@ -943,9 +943,9 @@ export const Reports: React.FC = () => {
                               >
                                 <Download className="h-3 w-3" />
                               </Button>
-                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                                {new Date(photo.created_at).toLocaleDateString()}
-                              </div>
+                               <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                 {formatDate(photo.created_at)}
+                               </div>
                             </div>
                           ))}
                         </div>
