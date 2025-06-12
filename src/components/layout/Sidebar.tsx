@@ -181,8 +181,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
   }
 
   return (
-    <aside className="w-64 bg-card border-r min-h-screen">
-      <SidebarContent />
+    <aside className="w-64 bg-card border-r flex-shrink-0">
+      <div className="sticky top-0 h-screen overflow-y-auto">
+        <SidebarContent />
+        <div className="p-4 mt-auto border-t">
+          <div className="text-center text-sm text-muted-foreground">
+            DHL SOF-WH • {user?.name}
+          </div>
+        </div>
+      </div>
     </aside>
   );
 };
