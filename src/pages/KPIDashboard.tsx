@@ -116,65 +116,68 @@ export default function KPIDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">KPI Dashboard</h1>
-        <Badge variant="outline" className="text-sm">
+    <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-display">KPI Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Real-time warehouse operations overview</p>
+        </div>
+        <Badge variant="outline" className="text-sm px-3 py-1">
           Last 30 Days
         </Badge>
       </div>
 
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Trucks</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Total Trucks</CardTitle>
+            <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpiMetrics.total_trucks}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.total_trucks}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {completionRate}% completion rate
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Processing Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Avg Processing Time</CardTitle>
+            <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl md:text-3xl font-bold text-display">
               {kpiMetrics.avg_processing_hours?.toFixed(1) || '0.0'}h
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               Per truck completion
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Exceptions</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Active Exceptions</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-status-urgent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpiMetrics.pending_exceptions}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.pending_exceptions}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {kpiMetrics.resolved_exceptions} resolved
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Today</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Completed Today</CardTitle>
+            <CheckCircle className="h-4 w-4 text-status-completed" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpiMetrics.completed_trucks}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.completed_trucks}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Last 30 days
             </p>
           </CardContent>
@@ -182,14 +185,17 @@ export default function KPIDashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card className="card-professional">
           <CardHeader>
-            <CardTitle>Truck Status Distribution</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="h-5 w-5 text-primary" />
+              Truck Status Distribution
+            </CardTitle>
             <CardDescription>Current status of all trucks</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -197,7 +203,7 @@ export default function KPIDashboard() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -209,66 +215,90 @@ export default function KPIDashboard() {
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
               </ResponsiveContainer>
-            </ChartContainer>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-professional">
           <CardHeader>
-            <CardTitle>Priority Distribution</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="h-5 w-5 text-primary" />
+              Priority Distribution
+            </CardTitle>
             <CardDescription>Trucks by priority level</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={priorityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="value" fill="hsl(var(--chart-1))" />
+                  <Bar 
+                    dataKey="value" 
+                    fill="hsl(var(--chart-1))" 
+                    radius={[4, 4, 0, 0]}
+                    className="transition-all duration-200 hover:opacity-80"
+                  />
                 </BarChart>
               </ResponsiveContainer>
-            </ChartContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Recent Exceptions */}
-      <Card>
+      <Card className="card-professional">
         <CardHeader>
-          <CardTitle>Recent Exceptions</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-status-urgent" />
+            Recent Exceptions
+          </CardTitle>
           <CardDescription>Latest reported issues and delays</CardDescription>
         </CardHeader>
         <CardContent>
           {exceptions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No exceptions reported</p>
+            <div className="text-center text-muted-foreground py-12">
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-status-completed" />
+              <p className="text-lg font-medium">No exceptions reported</p>
+              <p className="text-sm">All operations running smoothly</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {exceptions.map((exception: any) => (
-                <div key={exception.id} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={getPriorityColor(exception.priority)}>
+                <div key={exception.id} className="card-professional p-4 space-y-3 hover:shadow-soft transition-all duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={getPriorityColor(exception.priority)} className="font-medium">
                         {exception.priority}
                       </Badge>
-                      <Badge variant={getStatusColor(exception.status)}>
+                      <Badge variant={getStatusColor(exception.status)} className="font-medium">
                         {EXCEPTION_STATUSES[exception.status as keyof typeof EXCEPTION_STATUSES]}
                       </Badge>
-                      <span className="font-medium">{exception.trucks.license_plate}</span>
+                      <span className="font-semibold text-foreground">{exception.trucks.license_plate}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {format(new Date(exception.created_at), 'MMM dd, HH:mm')}
                     </span>
                   </div>
-                  <p className="text-sm">{exception.reason}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{exception.reason}</p>
                   {exception.status === 'PENDING' && user && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                       <Select
                         value={exception.status}
                         onValueChange={(value) => handleStatusChange(exception, value)}
                       >
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] form-professional">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
