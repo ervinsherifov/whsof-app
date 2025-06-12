@@ -37,22 +37,22 @@ export const TVDashboard: React.FC = () => {
       // Get today's date in YYYY-MM-DD format
       const today = getTodayISO();
       
-      // Fetch trucks - only for today and exclude DONE status
+      // Fetch trucks - only for today and only show SCHEDULED, ARRIVED, IN PROGRESS
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
         .eq('arrival_date', today)
-        .neq('status', 'DONE')
+        .in('status', ['SCHEDULED', 'ARRIVED', 'IN PROGRESS'])
         .order('arrival_time', { ascending: true });
 
       if (trucksError) throw trucksError;
 
-      // Fetch urgent tasks - exclude DONE status
+      // Fetch urgent tasks - only show CREATED, ONGOING statuses
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .in('priority', ['URGENT', 'HIGH'])
-        .neq('status', 'DONE')
+        .in('status', ['CREATED', 'ONGOING'])
         .order('due_date', { ascending: true })
         .limit(5);
 
@@ -72,8 +72,8 @@ export const TVDashboard: React.FC = () => {
 
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-      fetchData(); // Refresh data every 10 seconds
-    }, 10000);
+      fetchData(); // Refresh data every 20 seconds
+    }, 20000);
 
     // Set up realtime subscriptions
     const trucksChannel = supabase
@@ -105,6 +105,8 @@ export const TVDashboard: React.FC = () => {
         return 'bg-secondary text-secondary-foreground';
       case 'ARRIVED':
         return 'bg-green-600 text-white';
+      case 'IN PROGRESS':
+        return 'bg-orange-600 text-white';
       case 'DONE':
         return 'bg-muted text-muted-foreground';
       default:
@@ -306,7 +308,7 @@ export const TVDashboard: React.FC = () => {
 
       {/* Auto-refresh indicator */}
       <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded">
-        Auto-refresh: 10s • Realtime
+        Auto-refresh: 20s • Realtime
       </div>
     </div>
   );
