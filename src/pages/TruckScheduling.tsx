@@ -1,308 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
-import { formatDate, parseDate } from '@/lib/dateUtils';
-import { 
-  sanitizeText, 
-  validateLicensePlate, 
-  validateCargoDescription, 
-  validatePalletCount,
-  validateFutureDate,
-  validateFutureTime,
-  getSecureErrorMessage 
-} from '@/lib/security';
+import { useTruckData } from '@/hooks/useTruckData';
+import { TruckSchedulingForm } from '@/components/truck/TruckSchedulingForm';
+import { TruckList } from '@/components/truck/TruckList';
+import { RampStatusGrid } from '@/components/truck/RampStatusGrid';
 
+const availableRamps = [
+  { number: 1, type: 'Unloading' },
+  { number: 2, type: 'Unloading' },
+  { number: 3, type: 'Unloading' },
+  { number: 4, type: 'Unloading' },
+  { number: 5, type: 'Unloading' },
+  { number: 6, type: 'Unloading' },
+  { number: 8, type: 'Loading' },
+  { number: 9, type: 'Loading' },
+  { number: 10, type: 'Loading' },
+  { number: 11, type: 'Loading' },
+  { number: 12, type: 'Loading' },
+  { number: 13, type: 'Loading' },
+];
 
 export const TruckScheduling: React.FC = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRampDialogOpen, setIsRampDialogOpen] = useState(false);
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<any>(null);
-  const [warehouseStaff, setWarehouseStaff] = useState<any[]>([]);
   const [selectedHandlers, setSelectedHandlers] = useState<string[]>([]);
-  const [trucks, setTrucks] = useState<any[]>([]);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const { user } = useAuth();
-
-  const [formData, setFormData] = useState({
-    licensePlate: '',
-    arrivalDate: '',
-    arrivalTime: '',
-    palletCount: '',
-    cargoDescription: ''
-  });
-
   const [rampFormData, setRampFormData] = useState({
     rampNumber: '',
     assignedStaffId: ''
   });
 
-  const availableRamps = [
-    { number: 1, type: 'Unloading' },
-    { number: 2, type: 'Unloading' },
-    { number: 3, type: 'Unloading' },
-    { number: 4, type: 'Unloading' },
-    { number: 5, type: 'Unloading' },
-    { number: 6, type: 'Unloading' },
-    { number: 8, type: 'Loading' },
-    { number: 9, type: 'Loading' },
-    { number: 10, type: 'Loading' },
-    { number: 11, type: 'Loading' },
-    { number: 12, type: 'Loading' },
-    { number: 13, type: 'Loading' },
-  ];
-
-  useEffect(() => {
-    fetchTrucks();
-    fetchProfiles();
-    fetchWarehouseStaff();
-  }, []);
-
-  const fetchWarehouseStaff = async () => {
-    try {
-      // First get user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'WAREHOUSE_STAFF');
-
-      if (rolesError) throw rolesError;
-
-      if (userRoles && userRoles.length > 0) {
-        const userIds = userRoles.map(role => role.user_id);
-        
-        // Then get profiles for those users
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', userIds);
-
-        if (userError) throw userError;
-        setWarehouseStaff(userData || []);
-      } else {
-        setWarehouseStaff([]);
-      }
-    } catch (error) {
-      console.error('Error fetching warehouse staff:', error);
-    }
-  };
-
-  const fetchTrucks = async () => {
-    try {
-      let query = supabase
-        .from('trucks')
-        .select('*');
-
-      // Filter out DONE trucks for warehouse staff
-      if (user?.role === 'WAREHOUSE_STAFF') {
-        query = query.neq('status', 'DONE');
-      }
-
-      const { data, error } = await query
-        .order('arrival_date', { ascending: true })
-        .order('arrival_time', { ascending: true });
-
-      if (error) throw error;
-      setTrucks(data || []);
-    } catch (error: any) {
-      toast({
-        title: 'Error fetching trucks',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchProfiles = async () => {
-    try {
-      // First get user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'WAREHOUSE_STAFF');
-
-      if (rolesError) throw rolesError;
-
-      if (userRoles && userRoles.length > 0) {
-        const userIds = userRoles.map(role => role.user_id);
-        
-        // Then get profiles for those users
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', userIds);
-
-        if (error) throw error;
-        setProfiles(data || []);
-      } else {
-        setProfiles([]);
-      }
-    } catch (error: any) {
-      toast({
-        title: 'Error fetching staff',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'SCHEDULED':
-        return 'default';
-      case 'ARRIVED':
-        return 'secondary';
-      case 'IN_PROGRESS':
-        return 'default';
-      case 'DONE':
-        return 'outline';
-      default:
-        return 'default';
-    }
-  };
-
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user?.id) {
-      toast({
-        title: 'Authentication error',
-        description: 'You must be logged in to schedule trucks',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Sanitize inputs
-    const sanitizedLicensePlate = sanitizeText(formData.licensePlate);
-    const sanitizedCargoDescription = sanitizeText(formData.cargoDescription);
-
-    // Validate form data with security checks
-    if (!sanitizedLicensePlate || !formData.arrivalDate || !formData.arrivalTime || 
-        !formData.palletCount || !sanitizedCargoDescription) {
-      toast({
-        title: 'Validation error',
-        description: 'All fields are required',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate license plate format
-    if (!validateLicensePlate(sanitizedLicensePlate)) {
-      toast({
-        title: 'Invalid license plate',
-        description: 'License plate must be 1-20 characters, letters, numbers, spaces and hyphens only',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate cargo description
-    if (!validateCargoDescription(sanitizedCargoDescription)) {
-      toast({
-        title: 'Invalid cargo description',
-        description: 'Cargo description must be 1-500 characters and contain no HTML',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const palletCount = parseInt(formData.palletCount);
-    if (!validatePalletCount(palletCount)) {
-      toast({
-        title: 'Invalid pallet count',
-        description: 'Pallet count must be a positive integer between 1 and 100',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Parse DD/MM/YYYY date format
-    const parsedDate = parseDate(formData.arrivalDate);
-    if (!parsedDate) {
-      toast({
-        title: 'Invalid date format',
-        description: 'Please enter date in DD/MM/YYYY format',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate future date
-    if (!validateFutureDate(parsedDate.toISOString().split('T')[0])) {
-      toast({
-        title: 'Invalid date',
-        description: 'Date must be between today and one year from now',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate future time for today
-    if (!validateFutureTime(parsedDate.toISOString().split('T')[0], formData.arrivalTime)) {
-      toast({
-        title: 'Invalid time',
-        description: 'Please select a time at least 2 minutes from now',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('trucks')
-        .insert({
-          license_plate: sanitizedLicensePlate,
-          arrival_date: parsedDate.toISOString().split('T')[0],
-          arrival_time: formData.arrivalTime,
-          pallet_count: palletCount,
-          cargo_description: sanitizedCargoDescription,
-          created_by_user_id: user.id,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Truck scheduled successfully',
-        description: `Truck ${formData.licensePlate} scheduled for ${formData.arrivalDate} at ${formData.arrivalTime}`,
-      });
-
-      setFormData({
-        licensePlate: '',
-        arrivalDate: '',
-        arrivalTime: '',
-        palletCount: '',
-        cargoDescription: ''
-      });
-      setIsDialogOpen(false);
-      fetchTrucks();
-    } catch (error: any) {
-      toast({
-        title: 'Error scheduling truck',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { trucks, profiles, warehouseStaff, loading, refreshData } = useTruckData();
 
   const updateTruckStatus = async (truckId: string, newStatus: string) => {
     if (!user?.id) return;
@@ -340,10 +79,87 @@ export const TruckScheduling: React.FC = () => {
         description: `Status changed to ${newStatus.replace('_', ' ')}`,
       });
       
-      fetchTrucks();
+      refreshData();
     } catch (error: any) {
       toast({
         title: 'Error updating truck status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const deleteTruck = async (truckId: string, licensePlate: string) => {
+    if (!user?.id || user.role !== 'SUPER_ADMIN') return;
+
+    if (!confirm(`Are you sure you want to delete truck "${licensePlate}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('trucks')
+        .delete()
+        .eq('id', truckId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Truck deleted',
+        description: `Truck "${licensePlate}" has been deleted`,
+      });
+      
+      refreshData();
+    } catch (error: any) {
+      toast({
+        title: 'Error deleting truck',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const assignRamp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedTruck || !user?.id || !rampFormData.rampNumber || !rampFormData.assignedStaffId) {
+      toast({
+        title: 'Missing information',
+        description: 'Please select both a ramp and staff member',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const selectedStaff = profiles.find(p => p.user_id === rampFormData.assignedStaffId);
+      
+      const { error } = await supabase
+        .from('trucks')
+        .update({
+          ramp_number: parseInt(rampFormData.rampNumber),
+          assigned_staff_id: rampFormData.assignedStaffId || null,
+          assigned_staff_name: selectedStaff?.display_name || selectedStaff?.email,
+        })
+        .eq('id', selectedTruck.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Ramp assigned successfully',
+        description: `Truck ${selectedTruck.license_plate} assigned to ramp ${rampFormData.rampNumber}`,
+      });
+
+      setRampFormData({
+        rampNumber: '',
+        assignedStaffId: ''
+      });
+      setIsRampDialogOpen(false);
+      setSelectedTruck(null);
+      refreshData();
+    } catch (error: any) {
+      toast({
+        title: 'Error assigning ramp',
         description: error.message,
         variant: 'destructive',
       });
@@ -422,7 +238,7 @@ export const TruckScheduling: React.FC = () => {
       setIsCompletionDialogOpen(false);
       setSelectedTruck(null);
       setSelectedHandlers([]);
-      fetchTrucks();
+      refreshData();
     } catch (error: any) {
       toast({
         title: 'Error completing truck',
@@ -432,93 +248,12 @@ export const TruckScheduling: React.FC = () => {
     }
   };
 
-  const deleteTruck = async (truckId: string, licensePlate: string) => {
-    if (!user?.id || user.role !== 'SUPER_ADMIN') return;
-
-    if (!confirm(`Are you sure you want to delete truck "${licensePlate}"? This action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('trucks')
-        .delete()
-        .eq('id', truckId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Truck deleted',
-        description: `Truck "${licensePlate}" has been deleted`,
-      });
-      
-      fetchTrucks();
-    } catch (error: any) {
-      toast({
-        title: 'Error deleting truck',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const assignRamp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedTruck || !user?.id || !rampFormData.rampNumber || !rampFormData.assignedStaffId) {
-      toast({
-        title: 'Missing information',
-        description: 'Please select both a ramp and staff member',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      const selectedStaff = profiles.find(p => p.user_id === rampFormData.assignedStaffId);
-      
-      const { error } = await supabase
-        .from('trucks')
-        .update({
-          ramp_number: parseInt(rampFormData.rampNumber),
-          assigned_staff_id: rampFormData.assignedStaffId || null,
-          assigned_staff_name: selectedStaff?.display_name || selectedStaff?.email,
-        })
-        .eq('id', selectedTruck.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Ramp assigned successfully',
-        description: `Truck ${selectedTruck.license_plate} assigned to ramp ${rampFormData.rampNumber}`,
-      });
-
-      setRampFormData({
-        rampNumber: '',
-        assignedStaffId: ''
-      });
-      setIsRampDialogOpen(false);
-      setSelectedTruck(null);
-      fetchTrucks();
-    } catch (error: any) {
-      toast({
-        title: 'Error assigning ramp',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const getOccupiedRamps = () => {
-    return trucks
-      .filter(truck => truck.ramp_number && truck.status !== 'DONE')
-      .map(truck => truck.ramp_number);
-  };
-
   const isRampAvailable = (rampNumber: number, newArrivalDate?: string, newArrivalTime?: string) => {
     if (!newArrivalDate || !newArrivalTime) {
       // If no new schedule provided, check current occupancy for display
-      const occupiedRamps = getOccupiedRamps();
+      const occupiedRamps = trucks
+        .filter(truck => truck.ramp_number && truck.status !== 'DONE')
+        .map(truck => truck.ramp_number);
       return !occupiedRamps.includes(rampNumber);
     }
 
@@ -539,13 +274,9 @@ export const TruckScheduling: React.FC = () => {
     return conflictingTrucks.length === 0;
   };
 
-  const getRampOccupancy = (rampNumber: number) => {
-    // A ramp is occupied if there's an ARRIVED or IN PROGRESS truck assigned to it
-    const currentTruck = trucks.find(truck => {
-      return truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS');
-    });
-    
-    return currentTruck;
+  const handleAssignRamp = (truck: any) => {
+    setSelectedTruck(truck);
+    setIsRampDialogOpen(true);
   };
 
   return (
@@ -558,391 +289,18 @@ export const TruckScheduling: React.FC = () => {
           </p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="secondary" className="w-full sm:w-auto">Schedule New Truck</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4">
-            <DialogHeader>
-              <DialogTitle>Schedule New Truck</DialogTitle>
-              <DialogDescription>
-                Enter truck details and assign a ramp
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="licensePlate">License Plate</Label>
-                <Input
-                  id="licensePlate"
-                  value={formData.licensePlate}
-                  onChange={(e) => setFormData({...formData, licensePlate: e.target.value})}
-                  placeholder="ABC-123"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="arrivalDate">Arrival Date (DD/MM/YYYY)</Label>
-                <Input
-                  id="arrivalDate"
-                  type="text"
-                  value={formData.arrivalDate}
-                  onChange={(e) => setFormData({...formData, arrivalDate: e.target.value})}
-                  placeholder="12/06/2025"
-                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
-                  title="Please enter date in DD/MM/YYYY format"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="arrivalTime">Arrival Time (24h format)</Label>
-                <Input
-                  id="arrivalTime"
-                  type="text"
-                  value={formData.arrivalTime}
-                  onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
-                  placeholder="14:30"
-                  pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
-                  title="Please enter time in 24-hour format (HH:MM)"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="palletCount">Number of Pallets</Label>
-                <Input
-                  id="palletCount"
-                  type="number"
-                  value={formData.palletCount}
-                  onChange={(e) => setFormData({...formData, palletCount: e.target.value})}
-                  placeholder="24"
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cargoDescription">Cargo Description</Label>
-                <Textarea
-                  id="cargoDescription"
-                  value={formData.cargoDescription}
-                  onChange={(e) => setFormData({...formData, cargoDescription: e.target.value})}
-                  placeholder="Electronics, furniture, etc."
-                  required
-                />
-              </div>
-
-              {user?.role !== 'OFFICE_ADMIN' && (
-                <>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Note: Ramp and staff assignment will be done by warehouse staff after scheduling.
-                    </p>
-                  </div>
-                </>
-              )}
-
-              <div className="flex space-x-2">
-                <Button type="submit" className="flex-1">Schedule Truck</Button>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <TruckSchedulingForm onSuccess={refreshData} />
       </div>
 
-      {/* Ramp Status Overview */}
-      <Card className="mx-2 sm:mx-0">
-        <CardHeader>
-          <CardTitle>Ramp Status Overview</CardTitle>
-          <CardDescription>
-            Current availability of loading and unloading ramps (50-minute time slots)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {availableRamps.map((ramp) => {
-              const currentlyOccupying = getRampOccupancy(ramp.number);
-              const isCurrentlyBusy = !!currentlyOccupying;
-              const nextTruck = trucks.find(t => 
-                t.ramp_number === ramp.number && 
-                t.status !== 'DONE' && 
-                new Date(`${t.arrival_date}T${t.arrival_time}`) > new Date()
-              );
-              
-              return (
-                <div 
-                  key={ramp.number}
-                  className={`
-                    p-4 rounded-lg border text-center
-                    ${isCurrentlyBusy 
-                      ? 'bg-red-50 border-red-200 text-red-700' 
-                      : nextTruck
-                      ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
-                      : 'bg-green-50 border-green-200 text-green-700'
-                    }
-                  `}
-                >
-                  <div className="font-bold text-lg">#{ramp.number}</div>
-                  <div className="text-sm">{ramp.type}</div>
-                  <div className="text-xs font-medium mt-1">
-                    {isCurrentlyBusy ? 'Occupied' : nextTruck ? 'Scheduled' : 'Available'}
-                  </div>
-                  {currentlyOccupying && (
-                    <div className="text-xs mt-1">
-                      {currentlyOccupying.license_plate}
-                      <br />
-                      Until: {new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000 > Date.now() 
-                        ? new Date(new Date(`${currentlyOccupying.arrival_date}T${currentlyOccupying.arrival_time}`).getTime() + 50 * 60 * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', hour12: false})
-                        : 'Now'
-                      }
-                    </div>
-                  )}
-                  {!currentlyOccupying && nextTruck && (
-                    <div className="text-xs mt-1">
-                      Next: {nextTruck.license_plate}
-                      <br />
-                      At: {new Date(`${nextTruck.arrival_date}T${nextTruck.arrival_time}`).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', hour12: false})}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <RampStatusGrid trucks={trucks} />
 
-      {/* Scheduled Trucks */}
-      <Card className="mx-2 sm:mx-0">
-        <CardHeader>
-          <CardTitle>Scheduled Trucks</CardTitle>
-          <CardDescription>
-            Today's truck schedule and status
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading trucks...</p>
-            </div>
-          ) : (
-            <div className="w-full overflow-hidden">
-              <ScrollArea className="h-[400px] w-full">
-                <div className="block sm:hidden space-y-4">
-                  {/* Mobile card layout */}
-                  {trucks.map((truck) => (
-                    <Card key={truck.id} className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div className="font-medium text-lg">{truck.license_plate}</div>
-                          <Badge variant={getStatusColor(truck.status)}>
-                            {truck.status}
-                          </Badge>
-                        </div>
-                        
-                         <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Arrival:</span>
-                            <div className="font-medium">{formatDate(truck.arrival_date)}</div>
-                            <div className="font-medium">{truck.arrival_time}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Ramp:</span>
-                            <div className="font-medium">
-                              {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Pallets:</span>
-                            <div className="font-medium">{truck.pallet_count}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Staff:</span>
-                            <div className="font-medium text-xs truncate">
-                              {truck.assigned_staff_name || 'Not assigned'}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-muted-foreground text-xs">Cargo:</span>
-                            <div className="text-sm break-words">{truck.cargo_description}</div>
-                          </div>
-                          {truck.handled_by_name && (
-                            <div>
-                              <span className="text-muted-foreground text-xs">Handler:</span>
-                              <div className="text-sm">{truck.handled_by_name}</div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2">
-                          {truck.status === 'SCHEDULED' && user?.role === 'WAREHOUSE_STAFF' && !truck.ramp_number && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => {
-                                setSelectedTruck(truck);
-                                setIsRampDialogOpen(true);
-                              }}
-                            >
-                              Assign Ramp
-                            </Button>
-                          )}
-                          {truck.status === 'SCHEDULED' && truck.ramp_number && user?.role === 'WAREHOUSE_STAFF' && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => updateTruckStatus(truck.id, 'ARRIVED')}
-                            >
-                              Mark Arrived
-                            </Button>
-                          )}
-                        {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
-                            >
-                              Start Work
-                            </Button>
-                          )}
-                          {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => updateTruckStatus(truck.id, 'DONE')}
-                            >
-                              Mark Done
-                            </Button>
-                          )}
-                          {user?.role === 'SUPER_ADMIN' && (
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              className="text-xs"
-                              onClick={() => deleteTruck(truck.id, truck.license_plate)}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-                
-                {/* Desktop table layout */}
-                <div className="hidden sm:block min-w-[800px]">
-                  <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>License Plate</TableHead>
-                  <TableHead>Arrival Date/Time</TableHead>
-                  <TableHead>Ramp</TableHead>
-                  <TableHead>Pallets</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Assigned Staff</TableHead>
-                  <TableHead>Handler</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {trucks.map((truck) => (
-                  <TableRow key={truck.id}>
-                    <TableCell className="font-medium">
-                      {truck.license_plate}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(truck.arrival_date)} {truck.arrival_time}
-                    </TableCell>
-                    <TableCell>
-                      {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
-                    </TableCell>
-                    <TableCell>{truck.pallet_count}</TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {truck.cargo_description}
-                    </TableCell>
-                    <TableCell>{truck.assigned_staff_name || 'Not assigned'}</TableCell>
-                    <TableCell>{truck.handled_by_name || '-'}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(truck.status)}>
-                        {truck.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1">
-                        {truck.status === 'SCHEDULED' && user?.role === 'WAREHOUSE_STAFF' && !truck.ramp_number && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedTruck(truck);
-                              setIsRampDialogOpen(true);
-                            }}
-                          >
-                            Assign Ramp
-                          </Button>
-                        )}
-                        {truck.status === 'SCHEDULED' && truck.ramp_number && user?.role === 'WAREHOUSE_STAFF' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateTruckStatus(truck.id, 'ARRIVED')}
-                          >
-                            Mark Arrived
-                          </Button>
-                        )}
-                        {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
-                          >
-                            Start Work
-                          </Button>
-                        )}
-                        {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateTruckStatus(truck.id, 'DONE')}
-                          >
-                            Mark Done
-                          </Button>
-                        )}
-                        {user?.role === 'SUPER_ADMIN' && (
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => deleteTruck(truck.id, truck.license_plate)}
-                          >
-                            Delete
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                 ))}
-                </TableBody>
-                  </Table>
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <TruckList 
+        trucks={trucks}
+        loading={loading}
+        onAssignRamp={handleAssignRamp}
+        onUpdateStatus={updateTruckStatus}
+        onDeleteTruck={deleteTruck}
+      />
 
       {/* Ramp Assignment Dialog */}
       <Dialog open={isRampDialogOpen} onOpenChange={setIsRampDialogOpen}>
