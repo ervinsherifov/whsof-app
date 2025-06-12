@@ -58,7 +58,6 @@ export const validateTaskDescription = (description: string | null): boolean => 
  * Validates date is not in the past and within reasonable future
  */
 export const validateFutureDate = (date: string): boolean => {
-  console.log('validateFutureDate called with:', date);
   const selectedDate = new Date(date);
   const today = new Date();
   const oneYearFromNow = new Date();
@@ -67,10 +66,6 @@ export const validateFutureDate = (date: string): boolean => {
   // Set both dates to start of day for proper comparison
   selectedDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
-  
-  console.log('Selected date:', selectedDate);
-  console.log('Today:', today);
-  console.log('Is valid?', selectedDate >= today && selectedDate <= oneYearFromNow);
   
   return selectedDate >= today && selectedDate <= oneYearFromNow;
 };

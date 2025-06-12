@@ -102,8 +102,18 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
       return;
     }
 
+    // Format date for validation (avoid timezone issues)
+    const formatLocalDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const localDateString = formatLocalDate(parsedDate);
+
     // Validate future date
-    if (!validateFutureDate(parsedDate.toISOString().split('T')[0])) {
+    if (!validateFutureDate(localDateString)) {
       toast({
         title: 'Invalid date',
         description: 'Date must be between today and one year from now',
@@ -113,7 +123,7 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
     }
 
     // Validate future time for today
-    if (!validateFutureTime(parsedDate.toISOString().split('T')[0], formData.arrivalTime)) {
+    if (!validateFutureTime(localDateString, formData.arrivalTime)) {
       toast({
         title: 'Invalid time',
         description: 'Please select a time at least 2 minutes from now',
@@ -127,7 +137,7 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
         .from('trucks')
         .insert({
           license_plate: sanitizedLicensePlate,
-          arrival_date: parsedDate.toISOString().split('T')[0],
+          arrival_date: localDateString,
           arrival_time: formData.arrivalTime,
           pallet_count: palletCount,
           cargo_description: sanitizedCargoDescription,
