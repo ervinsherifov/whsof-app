@@ -317,7 +317,7 @@
   .dark {
     .card-professional {
       @apply bg-gray-800 border-gray-700;
-      @apply hover:bg-gray-750 hover:border-gray-600;
+      @apply hover:bg-gray-700 hover:border-gray-600;
     }
     
     .form-professional input,
