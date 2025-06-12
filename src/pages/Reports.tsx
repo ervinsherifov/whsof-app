@@ -590,11 +590,11 @@ export const Reports: React.FC = () => {
                       <TableHead>License</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Time</TableHead>
-                      <TableHead>Ramp</TableHead>
-                      <TableHead>Pallets</TableHead>
-                      <TableHead>Cargo</TableHead>
-                      <TableHead>Staff</TableHead>
-                      <TableHead>Status</TableHead>
+                       <TableHead>Ramp</TableHead>
+                       <TableHead>Processing</TableHead>
+                       <TableHead>Pallets</TableHead>
+                       <TableHead>Cargo</TableHead>
+                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -606,9 +606,18 @@ export const Reports: React.FC = () => {
                         <TableCell>{truck.arrival_date}</TableCell>
                         <TableCell>{truck.arrival_time?.substring(0, 5)}</TableCell>
                         <TableCell>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
-                        <TableCell>{truck.pallet_count}</TableCell>
-                        <TableCell title={truck.cargo_description}>{truck.cargo_description}</TableCell>
-                        <TableCell>{truck.assigned_staff_name || 'Unassigned'}</TableCell>
+                         <TableCell>
+                           {(() => {
+                             if (!truck.started_at) return 'Not started';
+                             const start = new Date(truck.started_at);
+                             const end = truck.completed_at ? new Date(truck.completed_at) : new Date();
+                             const diffMs = end.getTime() - start.getTime();
+                             const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
+                             return truck.completed_at ? `${hours}h` : `${hours}h (ongoing)`;
+                           })()}
+                         </TableCell>
+                         <TableCell>{truck.pallet_count}</TableCell>
+                         <TableCell title={truck.cargo_description}>{truck.cargo_description}</TableCell>
                         <TableCell>
                           <span className={`${truck.status === 'DONE' ? 'text-green-600' : 'text-orange-600'}`}>
                             {truck.status}
@@ -640,18 +649,27 @@ export const Reports: React.FC = () => {
                           <div className="text-muted-foreground">Ramp</div>
                           <div>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</div>
                         </div>
-                        <div>
-                          <div className="text-muted-foreground">Pallets</div>
-                          <div>{truck.pallet_count}</div>
-                        </div>
-                        <div className="col-span-2">
-                          <div className="text-muted-foreground">Cargo Description</div>
-                          <div>{truck.cargo_description}</div>
-                        </div>
-                        <div className="col-span-2">
-                          <div className="text-muted-foreground">Assigned Staff</div>
-                          <div>{truck.assigned_staff_name || 'Unassigned'}</div>
-                        </div>
+                         <div>
+                           <div className="text-muted-foreground">Processing</div>
+                           <div>
+                             {(() => {
+                               if (!truck.started_at) return 'Not started';
+                               const start = new Date(truck.started_at);
+                               const end = truck.completed_at ? new Date(truck.completed_at) : new Date();
+                               const diffMs = end.getTime() - start.getTime();
+                               const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
+                               return truck.completed_at ? `${hours}h` : `${hours}h (ongoing)`;
+                             })()}
+                           </div>
+                         </div>
+                         <div>
+                           <div className="text-muted-foreground">Pallets</div>
+                           <div>{truck.pallet_count}</div>
+                         </div>
+                         <div className="col-span-2">
+                           <div className="text-muted-foreground">Cargo Description</div>
+                           <div>{truck.cargo_description}</div>
+                         </div>
                       </div>
                     </div>
                   </Card>

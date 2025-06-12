@@ -65,6 +65,7 @@ export const TruckScheduling: React.FC = () => {
       } else if (newStatus === 'IN_PROGRESS') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
+        updateData.started_at = new Date().toISOString();
       }
 
       const { error } = await supabase
@@ -222,10 +223,13 @@ export const TruckScheduling: React.FC = () => {
 
       if (handlersError) throw handlersError;
 
-      // Mark truck as complete
+      // Mark truck as complete with completion timestamp
       const { error } = await supabase
         .from('trucks')
-        .update({ status: 'DONE' })
+        .update({ 
+          status: 'DONE',
+          completed_at: new Date().toISOString()
+        })
         .eq('id', selectedTruck.id);
 
       if (error) throw error;

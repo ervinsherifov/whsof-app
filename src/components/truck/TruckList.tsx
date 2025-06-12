@@ -7,6 +7,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
 
+const calculateProcessingHours = (startedAt?: string, completedAt?: string) => {
+  if (!startedAt) return null;
+  
+  const start = new Date(startedAt);
+  const end = completedAt ? new Date(completedAt) : new Date();
+  const diffMs = end.getTime() - start.getTime();
+  const hours = diffMs / (1000 * 60 * 60);
+  
+  return {
+    hours: Math.floor(hours),
+    minutes: Math.floor((hours - Math.floor(hours)) * 60),
+    totalHours: hours.toFixed(1)
+  };
+};
+
 interface TruckListProps {
   trucks: any[];
   loading: boolean;
@@ -91,7 +106,21 @@ export const TruckList: React.FC<TruckListProps> = ({
                         <span className="text-muted-foreground">Pallets:</span>
                         <div className="font-medium">{truck.pallet_count}</div>
                       </div>
-                    </div>
+                      {(truck.started_at || truck.completed_at) && (
+                        <div>
+                          <span className="text-muted-foreground">Processing:</span>
+                          <div className="font-medium">
+                            {(() => {
+                              const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
+                              if (!processingTime) return 'Not started';
+                              return truck.completed_at 
+                                ? `${processingTime.totalHours}h` 
+                                : `${processingTime.totalHours}h (ongoing)`;
+                            })()}
+                          </div>
+                        </div>
+                       )}
+                     </div>
                     
                     <div className="space-y-2">
                       <div>
@@ -172,6 +201,7 @@ export const TruckList: React.FC<TruckListProps> = ({
                     <TableHead>Arrival Date/Time</TableHead>
                     <TableHead>Ramp</TableHead>
                     <TableHead>Pallets</TableHead>
+                    <TableHead>Processing Time</TableHead>
                     <TableHead>Cargo</TableHead>
                     <TableHead>Handler</TableHead>
                     <TableHead>Status</TableHead>
@@ -191,6 +221,15 @@ export const TruckList: React.FC<TruckListProps> = ({
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
                       </TableCell>
                       <TableCell>{truck.pallet_count}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
+                          if (!processingTime) return 'Not started';
+                          return truck.completed_at 
+                            ? `${processingTime.totalHours}h` 
+                            : `${processingTime.totalHours}h (ongoing)`;
+                        })()}
+                      </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {truck.cargo_description}
                       </TableCell>

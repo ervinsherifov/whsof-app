@@ -248,6 +248,7 @@ export type Database = {
           assigned_staff_id: string | null
           assigned_staff_name: string | null
           cargo_description: string
+          completed_at: string | null
           created_at: string
           created_by_user_id: string
           handled_by_name: string | null
@@ -256,6 +257,7 @@ export type Database = {
           license_plate: string
           pallet_count: number
           ramp_number: number | null
+          started_at: string | null
           status: string
           updated_at: string
         }
@@ -265,6 +267,7 @@ export type Database = {
           assigned_staff_id?: string | null
           assigned_staff_name?: string | null
           cargo_description: string
+          completed_at?: string | null
           created_at?: string
           created_by_user_id: string
           handled_by_name?: string | null
@@ -273,6 +276,7 @@ export type Database = {
           license_plate: string
           pallet_count: number
           ramp_number?: number | null
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -282,6 +286,7 @@ export type Database = {
           assigned_staff_id?: string | null
           assigned_staff_name?: string | null
           cargo_description?: string
+          completed_at?: string | null
           created_at?: string
           created_by_user_id?: string
           handled_by_name?: string | null
@@ -290,6 +295,7 @@ export type Database = {
           license_plate?: string
           pallet_count?: number
           ramp_number?: number | null
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
