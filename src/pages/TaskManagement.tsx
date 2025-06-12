@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
-import { TimePicker } from '@/components/ui/time-picker';
+
 
 export const TaskManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -439,11 +439,15 @@ export const TaskManagement: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <TimePicker
-                    label="Due Time (24h)"
+                  <Label htmlFor="dueTime">Due Time (24h format)</Label>
+                  <Input
+                    id="dueTime"
+                    type="text"
                     value={formData.dueTime}
-                    onChange={(value) => setFormData({...formData, dueTime: value})}
-                    placeholder="HH:MM"
+                    onChange={(e) => setFormData({...formData, dueTime: e.target.value})}
+                    placeholder="14:30"
+                    pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+                    title="Please enter time in 24-hour format (HH:MM)"
                   />
                 </div>
               </div>

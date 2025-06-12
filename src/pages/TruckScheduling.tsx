@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
-import { TimePicker } from '@/components/ui/time-picker';
+
 
 export const TruckScheduling: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -550,13 +550,15 @@ export const TruckScheduling: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <TimePicker
-                  label="Arrival Time (24h format)"
+                <Label htmlFor="arrivalTime">Arrival Time (24h format)</Label>
+                <Input
+                  id="arrivalTime"
+                  type="text"
                   value={formData.arrivalTime}
-                  onChange={(value) => setFormData({...formData, arrivalTime: value})}
-                  min={formData.arrivalDate === new Date().toISOString().split('T')[0] 
-                    ? new Date().toTimeString().slice(0, 5)
-                    : undefined}
+                  onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
+                  placeholder="14:30"
+                  pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+                  title="Please enter time in 24-hour format (HH:MM)"
                   required
                 />
               </div>
