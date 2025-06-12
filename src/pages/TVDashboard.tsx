@@ -72,12 +72,12 @@ export const TVDashboard: React.FC = () => {
         return 0;
       });
 
-      // Fetch urgent tasks - only show CREATED, ONGOING statuses
+      // Fetch urgent tasks - only show PENDING, IN PROGRESS statuses
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .in('priority', ['URGENT', 'HIGH'])
-        .in('status', ['CREATED', 'ONGOING'])
+        .in('status', ['PENDING', 'IN PROGRESS'])
         .order('due_date', { ascending: true })
         .limit(5);
 

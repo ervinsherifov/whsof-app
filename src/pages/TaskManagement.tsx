@@ -561,7 +561,7 @@ export const TaskManagement: React.FC = () => {
                         <span className="font-medium">Created:</span>
                         <div>{formatDate(task.created_at)}</div>
                       </div>
-                      {task.status === 'IN_PROGRESS' && task.assigned_profile && (
+                      {task.status === 'IN PROGRESS' && task.assigned_profile && (
                         <div>
                           <span className="font-medium">Working on it:</span>
                           <div className="text-blue-600 font-semibold">{task.assigned_profile.display_name || task.assigned_profile.email}</div>
@@ -606,12 +606,12 @@ export const TaskManagement: React.FC = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => updateTaskStatus(task.id, 'IN_PROGRESS')}
+                          onClick={() => updateTaskStatus(task.id, 'IN PROGRESS')}
                         >
                           Start Task
                         </Button>
                       )}
-                      {task.status === 'IN_PROGRESS' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
+                      {task.status === 'IN PROGRESS' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
                         <Button 
                           size="sm" 
                           variant="outline"
