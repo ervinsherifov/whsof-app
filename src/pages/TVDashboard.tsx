@@ -34,20 +34,20 @@ export const TVDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch all trucks with SCHEDULED, ARRIVED, IN PROGRESS statuses
+      // Fetch all trucks with SCHEDULED, ARRIVED, IN_PROGRESS statuses
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
-        .in('status', ['SCHEDULED', 'ARRIVED', 'IN PROGRESS']);
+        .in('status', ['SCHEDULED', 'ARRIVED', 'IN_PROGRESS']);
 
       if (trucksError) throw trucksError;
 
-      // Sort trucks by status priority: IN PROGRESS > ARRIVED > SCHEDULED (by date/time)
+      // Sort trucks by status priority: IN_PROGRESS > ARRIVED > SCHEDULED (by date/time)
       const sortedTrucks = (trucksData || []).sort((a, b) => {
         // Define status priority
         const getStatusPriority = (status: string) => {
           switch (status) {
-            case 'IN PROGRESS': return 1;
+            case 'IN_PROGRESS': return 1;
             case 'ARRIVED': return 2;
             case 'SCHEDULED': return 3;
             default: return 4;
@@ -72,12 +72,12 @@ export const TVDashboard: React.FC = () => {
         return 0;
       });
 
-      // Fetch urgent tasks - only show PENDING, IN PROGRESS statuses
+      // Fetch urgent tasks - only show PENDING, IN_PROGRESS statuses
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .in('priority', ['URGENT', 'HIGH'])
-        .in('status', ['PENDING', 'IN PROGRESS'])
+        .in('status', ['PENDING', 'IN_PROGRESS'])
         .order('due_date', { ascending: true })
         .limit(5);
 
@@ -136,7 +136,7 @@ export const TVDashboard: React.FC = () => {
         return 'bg-secondary text-secondary-foreground';
       case 'ARRIVED':
         return 'bg-green-600 text-white';
-      case 'IN PROGRESS':
+      case 'IN_PROGRESS':
         return 'bg-orange-600 text-white';
       case 'DONE':
         return 'bg-muted text-muted-foreground';
@@ -303,7 +303,7 @@ export const TVDashboard: React.FC = () => {
                 {Array.from({ length: 13 }, (_, i) => {
                   const rampNumber = i + 1;
                   const occupyingTruck = trucks.find(truck => 
-                    truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN PROGRESS')
+                    truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS')
                   );
                   const isOccupied = !!occupyingTruck;
                   

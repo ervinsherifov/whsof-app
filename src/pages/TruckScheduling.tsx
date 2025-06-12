@@ -160,7 +160,7 @@ export const TruckScheduling: React.FC = () => {
         return 'default';
       case 'ARRIVED':
         return 'secondary';
-      case 'IN PROGRESS':
+      case 'IN_PROGRESS':
         return 'default';
       case 'DONE':
         return 'outline';
@@ -294,7 +294,7 @@ export const TruckScheduling: React.FC = () => {
       if (newStatus === 'ARRIVED') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
-      } else if (newStatus === 'IN PROGRESS') {
+      } else if (newStatus === 'IN_PROGRESS') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
       }
@@ -513,7 +513,7 @@ export const TruckScheduling: React.FC = () => {
   const getRampOccupancy = (rampNumber: number) => {
     // A ramp is occupied if there's an ARRIVED or IN PROGRESS truck assigned to it
     const currentTruck = trucks.find(truck => {
-      return truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN PROGRESS');
+      return truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS');
     });
     
     return currentTruck;
@@ -782,12 +782,12 @@ export const TruckScheduling: React.FC = () => {
                               size="sm" 
                               variant="outline"
                               className="text-xs"
-                              onClick={() => updateTruckStatus(truck.id, 'IN PROGRESS')}
+                              onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
                             >
                               Start Work
                             </Button>
                           )}
-                          {truck.status === 'IN PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
+                          {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
                             <Button 
                               size="sm" 
                               variant="outline"
@@ -879,12 +879,12 @@ export const TruckScheduling: React.FC = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => updateTruckStatus(truck.id, 'IN PROGRESS')}
+                            onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
                           >
                             Start Work
                           </Button>
                         )}
-                        {truck.status === 'IN PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
+                        {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
                           <Button 
                             size="sm" 
                             variant="outline"

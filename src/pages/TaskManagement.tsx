@@ -606,12 +606,12 @@ export const TaskManagement: React.FC = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => updateTaskStatus(task.id, 'IN PROGRESS')}
+                          onClick={() => updateTaskStatus(task.id, 'IN_PROGRESS')}
                         >
                           Start Task
                         </Button>
                       )}
-                      {task.status === 'IN PROGRESS' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
+                      {task.status === 'IN_PROGRESS' && (user?.role === 'WAREHOUSE_STAFF' || user?.role === 'SUPER_ADMIN') && (
                         <Button 
                           size="sm" 
                           variant="outline"
