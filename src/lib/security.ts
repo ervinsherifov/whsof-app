@@ -63,6 +63,8 @@ export const validateFutureDate = (date: string): boolean => {
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(today.getFullYear() + 1);
   
+  // Set both dates to start of day for proper comparison
+  selectedDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
   
   return selectedDate >= today && selectedDate <= oneYearFromNow;
