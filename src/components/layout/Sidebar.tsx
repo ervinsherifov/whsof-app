@@ -87,19 +87,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Debug: Log user role to identify filtering issues
-  console.log('Sidebar - User role:', user?.role);
-  console.log('Sidebar - isMobile:', isMobile);
-  console.log('Sidebar - isOpen:', isOpen);
-
   const filteredItems = sidebarItems.filter(item => 
     user?.role && item.roles.includes(user.role)
   );
 
-  console.log('Sidebar - Filtered items:', filteredItems.length);
-
   const handleNavigate = (path: string) => {
-    console.log('Navigating to:', path);
+    console.log('🔄 Sidebar Navigation:', path, 'User Role:', user?.role);
     navigate(path);
     if (isMobile) {
       onClose();
@@ -164,10 +157,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
         </div>
       )}
       
-      {/* Debug: Show if no items are filtered */}
+      {/* Show debug info if no items are available */}
       {filteredItems.length === 0 && (
-        <div className="p-4 text-sm text-muted-foreground">
-          No menu items available for role: {user?.role || 'No role'}
+        <div className="p-4 text-sm text-muted-foreground border rounded-lg bg-yellow-50">
+          ⚠️ No menu items for role: <strong>{user?.role || 'No role'}</strong>
+          <br />
+          <span className="text-xs">Available roles: WAREHOUSE_STAFF, OFFICE_ADMIN, SUPER_ADMIN</span>
         </div>
       )}
       
@@ -176,10 +171,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           key={item.path}
           variant={location.pathname === item.path ? 'default' : 'ghost'}
           className={cn(
-            'w-full justify-start text-left gap-3 h-10',
+            'w-full justify-start text-left gap-3 h-10 relative z-10 cursor-pointer',
             location.pathname === item.path && 'bg-primary text-primary-foreground'
           )}
           onClick={() => handleNavigate(item.path)}
+          style={{ pointerEvents: 'auto' }}
         >
           {item.icon}
           <span>{item.label}</span>
@@ -213,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
 
   // Desktop sidebar should always be visible, not dependent on isOpen
   return (
-    <aside className="w-64 bg-card border-r flex-shrink-0 h-full">
+    <aside className="w-64 bg-card border-r flex-shrink-0 relative z-50">
       <div className="h-full flex flex-col">
         <SidebarContent />
         <div className="p-4 mt-auto border-t">
