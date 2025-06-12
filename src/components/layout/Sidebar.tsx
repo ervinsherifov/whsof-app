@@ -171,10 +171,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           <button
             key={item.path}
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground',
+              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-yellow-100 hover:text-yellow-900 dark:hover:bg-yellow-900 dark:hover:text-yellow-100',
               location.pathname === item.path 
                 ? 'bg-primary text-primary-foreground' 
-                : 'text-foreground hover:bg-muted'
+                : 'text-foreground'
             )}
             onClick={() => handleNavigate(item.path)}
           >
