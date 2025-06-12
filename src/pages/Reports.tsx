@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { Search, Download } from 'lucide-react';
+import { formatDate, formatTime, getTodayISO } from '@/lib/dateUtils';
 
 export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('');
@@ -159,7 +160,7 @@ export const Reports: React.FC = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    link.setAttribute('download', `${filename}_${getTodayISO()}.xlsx`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -357,9 +358,9 @@ export const Reports: React.FC = () => {
                   if (reportType === 'time_logs') {
                     exportToXLSX(timeEntries.map(entry => ({
                       userName: entry.profiles?.display_name || entry.profiles?.email,
-                      date: new Date(entry.check_in_time).toLocaleDateString(),
-                      checkIn: new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                      checkOut: entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Not checked out',
+                      date: formatDate(entry.check_in_time),
+                      checkIn: formatTime(entry.check_in_time),
+                      checkOut: entry.check_out_time ? formatTime(entry.check_out_time) : 'Not checked out',
                       regularHours: entry.regular_hours || 0,
                       overtimeHours: entry.overtime_hours || 0,
                       totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
@@ -384,9 +385,9 @@ export const Reports: React.FC = () => {
                       status: task.status,
                       assignedTo: task.assigned_to_name || 'Unassigned',
                       completedBy: task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : '',
-                      dueDate: task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline',
-                      createdAt: new Date(task.created_at).toLocaleDateString(),
-                      completedAt: task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '',
+                      dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
+                      createdAt: formatDate(task.created_at),
+                      completedAt: task.completed_at ? formatDate(task.completed_at) : '',
                       completionComment: task.completion_comment || ''
                     })), 'task_management');
                   }
@@ -484,10 +485,10 @@ export const Reports: React.FC = () => {
                         <TableCell className="font-medium">
                           {entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}
                         </TableCell>
-                        <TableCell>{new Date(entry.check_in_time).toLocaleDateString()}</TableCell>
-                        <TableCell>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</TableCell>
+                        <TableCell>{formatDate(entry.check_in_time)}</TableCell>
+                        <TableCell>{formatTime(entry.check_in_time)}</TableCell>
                         <TableCell>
-                          {entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}
+                          {entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}
                         </TableCell>
                         <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
                         <TableCell>
@@ -516,7 +517,7 @@ export const Reports: React.FC = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium text-lg">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</h3>
-                          <p className="text-sm text-muted-foreground">{new Date(entry.check_in_time).toLocaleDateString()}</p>
+                          <p className="text-sm text-muted-foreground">{formatDate(entry.check_in_time)}</p>
                         </div>
                         <div className="text-right">
                           <div className="font-medium">{((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h</div>
@@ -527,11 +528,11 @@ export const Reports: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <div className="text-muted-foreground">Check In</div>
-                          <div>{new Date(entry.check_in_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
+                          <div>{formatTime(entry.check_in_time)}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Check Out</div>
-                          <div>{entry.check_out_time ? new Date(entry.check_out_time).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : 'Working'}</div>
+                          <div>{entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Regular Hours</div>
@@ -720,11 +721,11 @@ export const Reports: React.FC = () => {
                           {task.assigned_to_name || 'Unassigned'}
                         </TableCell>
                         <TableCell>
-                          {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}
+                          {task.due_date ? formatDate(task.due_date) : 'No deadline'}
                         </TableCell>
-                        <TableCell>{new Date(task.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{formatDate(task.created_at)}</TableCell>
                         <TableCell>
-                          {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}
+                          {task.completed_at ? formatDate(task.completed_at) : '—'}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -767,15 +768,15 @@ export const Reports: React.FC = () => {
                         </div>
                         <div>
                           <div className="text-muted-foreground">Due Date</div>
-                          <div>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}</div>
+                          <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Created</div>
-                          <div>{new Date(task.created_at).toLocaleDateString()}</div>
+                          <div>{formatDate(task.created_at)}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Completed</div>
-                          <div>{task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '—'}</div>
+                          <div>{task.completed_at ? formatDate(task.completed_at) : '—'}</div>
                         </div>
                       </div>
                     </div>

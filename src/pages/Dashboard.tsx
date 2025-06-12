@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { getTodayISO } from '@/lib/dateUtils';
 
 export const Dashboard: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
@@ -45,7 +46,7 @@ export const Dashboard: React.FC = () => {
         .select('*');
 
       // Fetch time entries for online staff
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayISO();
       const { data: timeEntries } = await supabase
         .from('time_entries')
         .select('*')

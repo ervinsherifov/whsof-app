@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Fullscreen, Tv } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getTodayISO } from '@/lib/dateUtils';
 
 export const TVDashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -34,7 +35,7 @@ export const TVDashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       // Get today's date in YYYY-MM-DD format
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayISO();
       
       // Fetch trucks - only for today and exclude DONE status
       const { data: trucksData, error: trucksError } = await supabase

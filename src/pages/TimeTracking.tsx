@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { formatDate } from '@/lib/dateUtils';
 
 interface TimeEntry {
   id: string;
@@ -311,12 +312,15 @@ export const TimeTracking: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Label htmlFor="date-filter">Filter by date:</Label>
+              <Label htmlFor="date-filter">Filter by date (DD/MM/YYYY):</Label>
               <Input
                 id="date-filter"
-                type="date"
+                type="text"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
+                placeholder="12/06/2025"
+                pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                title="Please enter date in DD/MM/YYYY format"
                 className="w-auto"
               />
             </div>
@@ -337,7 +341,7 @@ export const TimeTracking: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <span className="font-medium text-muted-foreground">Date:</span>
-                          <div>{new Date(entry.check_in_time).toLocaleDateString()}</div>
+                          <div>{formatDate(entry.check_in_time)}</div>
                         </div>
                         <div>
                           <span className="font-medium text-muted-foreground">Status:</span>
@@ -400,7 +404,7 @@ export const TimeTracking: React.FC = () => {
                       return (
                         <TableRow key={entry.id}>
                           <TableCell className="font-medium">
-                            {new Date(entry.check_in_time).toLocaleDateString()}
+                            {formatDate(entry.check_in_time)}
                           </TableCell>
                           <TableCell>{formatTime(entry.check_in_time)}</TableCell>
                           <TableCell>
