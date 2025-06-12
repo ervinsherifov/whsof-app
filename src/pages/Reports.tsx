@@ -317,23 +317,29 @@ export const Reports: React.FC = () => {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate" className="text-sm">Start Date</Label>
+                <Label htmlFor="startDate" className="text-sm">Start Date (DD/MM/YYYY)</Label>
                 <Input
                   id="startDate"
-                  type="date"
+                  type="text"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  placeholder="12/06/2025"
+                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                  title="Please enter date in DD/MM/YYYY format"
                   className="w-full text-sm"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate" className="text-sm">End Date</Label>
+                <Label htmlFor="endDate" className="text-sm">End Date (DD/MM/YYYY)</Label>
                 <Input
                   id="endDate"
-                  type="date"
+                  type="text"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  placeholder="12/06/2025"
+                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                  title="Please enter date in DD/MM/YYYY format"
                   className="w-full text-sm"
                 />
               </div>

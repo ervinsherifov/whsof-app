@@ -190,7 +190,17 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string, userName: string) => {
+  const updateUserRole = async (userId: string, newRole: string, userName: string, userEmail?: string) => {
+    // Check if this is the main super admin
+    if (userEmail === 'Ervin.sherifov@Dhl.com') {
+      toast({
+        title: 'Cannot modify main super admin',
+        description: 'The main super admin role cannot be changed',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('user_roles')
@@ -214,7 +224,17 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const deleteUser = async (userId: string, userName: string) => {
+  const deleteUser = async (userId: string, userName: string, userEmail?: string) => {
+    // Check if this is the main super admin
+    if (userEmail === 'Ervin.sherifov@Dhl.com') {
+      toast({
+        title: 'Cannot delete main super admin',
+        description: 'The main super admin account cannot be deleted or modified',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
       return;
     }
@@ -443,11 +463,13 @@ export const UserManagement: React.FC = () => {
                   <TableCell>
                     <Select 
                       value={user.role} 
-                      onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                      onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
+                      disabled={user.email === 'Ervin.sherifov@Dhl.com'}
                     >
                       <SelectTrigger className="w-full">
                         <Badge variant={getRoleBadgeVariant(user.role)}>
                           {getRoleLabel(user.role)}
+                          {user.email === 'Ervin.sherifov@Dhl.com' && <span className="ml-1">🔒</span>}
                         </Badge>
                       </SelectTrigger>
                       <SelectContent>
@@ -477,7 +499,8 @@ export const UserManagement: React.FC = () => {
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
+                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User', user.email)}
+                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
                       >
                         Delete
                       </Button>
@@ -513,7 +536,8 @@ export const UserManagement: React.FC = () => {
                       <Label className="text-sm font-medium">Role</Label>
                       <Select 
                         value={user.role} 
-                        onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User')}
+                        onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
+                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
                       >
                         <SelectTrigger className="w-full mt-1">
                           <SelectValue />
@@ -544,7 +568,8 @@ export const UserManagement: React.FC = () => {
                         size="sm" 
                         variant="destructive"
                         className="flex-1"
-                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User')}
+                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User', user.email)}
+                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
                       >
                         Delete
                       </Button>

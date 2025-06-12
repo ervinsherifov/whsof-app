@@ -409,32 +409,19 @@ export const TaskManagement: React.FC = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="assignedTo">Assign to</Label>
-                <Select value={formData.assignedTo} onValueChange={(value) => setFormData({...formData, assignedTo: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select warehouse staff" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {profiles.map((staff) => (
-                      <SelectItem key={staff.user_id} value={staff.user_id}>
-                        {staff.display_name || staff.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Label htmlFor="dueDate">Due Date (DD/MM/YYYY)</Label>
                   <Input
                     id="dueDate"
-                    type="date"
-                    min={new Date().toISOString().split('T')[0]}
+                    type="text"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
+                    placeholder="12/06/2025"
+                    pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                    title="Please enter date in DD/MM/YYYY format"
+                    required
                   />
                 </div>
 

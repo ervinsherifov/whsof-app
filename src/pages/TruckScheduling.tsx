@@ -538,13 +538,15 @@ export const TruckScheduling: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="arrivalDate">Arrival Date</Label>
+                <Label htmlFor="arrivalDate">Arrival Date (DD/MM/YYYY)</Label>
                 <Input
                   id="arrivalDate"
-                  type="date"
+                  type="text"
                   value={formData.arrivalDate}
                   onChange={(e) => setFormData({...formData, arrivalDate: e.target.value})}
-                  min={new Date().toISOString().split('T')[0]}
+                  placeholder="12/06/2025"
+                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                  title="Please enter date in DD/MM/YYYY format"
                   required
                 />
               </div>

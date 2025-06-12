@@ -36,22 +36,22 @@ export const TVDashboard: React.FC = () => {
       // Get today's date in YYYY-MM-DD format
       const today = new Date().toISOString().split('T')[0];
       
-      // Fetch trucks - only for today and only SCHEDULED or ARRIVED
+      // Fetch trucks - only for today and exclude DONE status
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
         .eq('arrival_date', today)
-        .in('status', ['SCHEDULED', 'ARRIVED'])
+        .neq('status', 'DONE')
         .order('arrival_time', { ascending: true });
 
       if (trucksError) throw trucksError;
 
-      // Fetch urgent tasks
+      // Fetch urgent tasks - exclude DONE status
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .in('priority', ['URGENT', 'HIGH'])
-        .eq('status', 'PENDING')
+        .neq('status', 'DONE')
         .order('due_date', { ascending: true })
         .limit(5);
 
