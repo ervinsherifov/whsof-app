@@ -29,7 +29,6 @@ export const TaskManagement: React.FC = () => {
     title: '',
     description: '',
     priority: 'MEDIUM',
-    assignedTo: '',
     dueDate: '',
     dueTime: ''
   });
@@ -206,7 +205,7 @@ export const TaskManagement: React.FC = () => {
     }
 
     try {
-      const selectedStaff = profiles.find(p => p.user_id === formData.assignedTo);
+      const selectedStaff = null;
       
       let dueDateTime = null;
       if (formData.dueDate && formData.dueTime) {
@@ -268,8 +267,8 @@ export const TaskManagement: React.FC = () => {
           title: formData.title,
           description: formData.description,
           priority: formData.priority,
-          assigned_to_user_id: formData.assignedTo === 'unassigned' ? null : formData.assignedTo || null,
-          assigned_to_name: selectedStaff?.display_name || selectedStaff?.email,
+          assigned_to_user_id: null,
+          assigned_to_name: null,
           due_date: dueDateTime,
           created_by_user_id: user.id,
         });
@@ -285,7 +284,6 @@ export const TaskManagement: React.FC = () => {
         title: '',
         description: '',
         priority: 'MEDIUM',
-        assignedTo: '',
         dueDate: '',
         dueTime: ''
       });
@@ -545,15 +543,7 @@ export const TaskManagement: React.FC = () => {
                       {task.description}
                     </p>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Assigned to:</span>
-                        <div>{task.assigned_profile?.display_name || task.assigned_profile?.email || task.assigned_to_name || 'Unassigned'}</div>
-                      </div>
-                      <div>
-                        <span className="font-medium">Related truck:</span>
-                        <div>{task.trucks?.license_plate || 'None'}</div>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-medium">Due date:</span>
                         <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
