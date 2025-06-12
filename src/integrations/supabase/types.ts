@@ -360,6 +360,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_kpi_metrics: {
+        Row: {
+          avg_processing_hours: number | null
+          completed_trucks: number | null
+          created_at: string
+          exceptions_reported: number | null
+          exceptions_resolved: number | null
+          id: string
+          metric_date: string
+          tasks_completed: number | null
+          total_trucks_handled: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_processing_hours?: number | null
+          completed_trucks?: number | null
+          created_at?: string
+          exceptions_reported?: number | null
+          exceptions_resolved?: number | null
+          id?: string
+          metric_date?: string
+          tasks_completed?: number | null
+          total_trucks_handled?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_processing_hours?: number | null
+          completed_trucks?: number | null
+          created_at?: string
+          exceptions_reported?: number | null
+          exceptions_resolved?: number | null
+          id?: string
+          metric_date?: string
+          tasks_completed?: number | null
+          total_trucks_handled?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -409,6 +451,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_kpi_with_profiles: {
+        Row: {
+          avg_processing_hours: number | null
+          completed_trucks: number | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          exceptions_reported: number | null
+          exceptions_resolved: number | null
+          id: string | null
+          metric_date: string | null
+          tasks_completed: number | null
+          total_trucks_handled: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_current_user_role: {
@@ -429,6 +489,10 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      refresh_user_kpi_metrics: {
+        Args: { target_date?: string }
+        Returns: undefined
       }
       sanitize_text: {
         Args: { input_text: string }
