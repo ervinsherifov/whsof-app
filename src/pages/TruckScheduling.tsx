@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
+import { TimePicker } from '@/components/ui/time-picker';
 
 export const TruckScheduling: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -93,9 +94,16 @@ export const TruckScheduling: React.FC = () => {
 
   const fetchTrucks = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('trucks')
-        .select('*')
+        .select('*');
+
+      // Filter out DONE trucks for warehouse staff
+      if (user?.role === 'WAREHOUSE_STAFF') {
+        query = query.neq('status', 'DONE');
+      }
+
+      const { data, error } = await query
         .order('arrival_date', { ascending: true })
         .order('arrival_time', { ascending: true });
 
@@ -151,11 +159,18 @@ export const TruckScheduling: React.FC = () => {
         return 'default';
       case 'ARRIVED':
         return 'secondary';
+      case 'IN_PROGRESS':
+        return 'default';
       case 'DONE':
         return 'outline';
       default:
         return 'default';
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,6 +278,9 @@ export const TruckScheduling: React.FC = () => {
       if (newStatus === 'ARRIVED') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
+      } else if (newStatus === 'IN_PROGRESS') {
+        updateData.handled_by_user_id = user.id;
+        updateData.handled_by_name = user.email;
       }
 
       const { error } = await supabase
@@ -274,7 +292,7 @@ export const TruckScheduling: React.FC = () => {
 
       toast({
         title: 'Truck status updated',
-        description: `Status changed to ${newStatus}`,
+        description: `Status changed to ${newStatus.replace('_', ' ')}`,
       });
       
       fetchTrucks();
@@ -532,19 +550,14 @@ export const TruckScheduling: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="arrivalTime">Arrival Time (24h format)</Label>
-                <Input
-                  id="arrivalTime"
-                  type="time"
+                <TimePicker
+                  label="Arrival Time (24h format)"
                   value={formData.arrivalTime}
-                  onChange={(e) => setFormData({...formData, arrivalTime: e.target.value})}
-                  placeholder="HH:MM"
+                  onChange={(value) => setFormData({...formData, arrivalTime: value})}
                   min={formData.arrivalDate === new Date().toISOString().split('T')[0] 
                     ? new Date().toTimeString().slice(0, 5)
                     : undefined}
                   required
-                  className="[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                 />
               </div>
 
@@ -683,10 +696,10 @@ export const TruckScheduling: React.FC = () => {
                           </Badge>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-2 text-sm">
+                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
                             <span className="text-muted-foreground">Arrival:</span>
-                            <div className="font-medium">{truck.arrival_date}</div>
+                            <div className="font-medium">{formatDate(truck.arrival_date)}</div>
                             <div className="font-medium">{truck.arrival_time}</div>
                           </div>
                           <div>
@@ -744,7 +757,17 @@ export const TruckScheduling: React.FC = () => {
                               Mark Arrived
                             </Button>
                           )}
-                          {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
+                        {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
+                            >
+                              Start Work
+                            </Button>
+                          )}
+                          {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
                             <Button 
                               size="sm" 
                               variant="outline"
@@ -793,7 +816,7 @@ export const TruckScheduling: React.FC = () => {
                       {truck.license_plate}
                     </TableCell>
                     <TableCell>
-                      {truck.arrival_date} {truck.arrival_time}
+                      {formatDate(truck.arrival_date)} {truck.arrival_time}
                     </TableCell>
                     <TableCell>
                       {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
@@ -833,6 +856,15 @@ export const TruckScheduling: React.FC = () => {
                           </Button>
                         )}
                         {truck.status === 'ARRIVED' && user?.role === 'WAREHOUSE_STAFF' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateTruckStatus(truck.id, 'IN_PROGRESS')}
+                          >
+                            Start Work
+                          </Button>
+                        )}
+                        {truck.status === 'IN_PROGRESS' && user?.role === 'WAREHOUSE_STAFF' && (
                           <Button 
                             size="sm" 
                             variant="outline"

@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
+import { TimePicker } from '@/components/ui/time-picker';
 
 export const TaskManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,9 +41,16 @@ export const TaskManagement: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      const { data: tasksData, error } = await supabase
+      let query = supabase
         .from('tasks')
-        .select('*')
+        .select('*');
+
+      // Filter out COMPLETED tasks for warehouse staff
+      if (user?.role === 'WAREHOUSE_STAFF') {
+        query = query.neq('status', 'COMPLETED');
+      }
+
+      const { data: tasksData, error } = await query
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -336,6 +344,11 @@ export const TaskManagement: React.FC = () => {
     return tasks.filter(task => task.priority === priority && task.status !== 'COMPLETED').length;
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB');
+  };
+
   return (
     <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -413,7 +426,6 @@ export const TaskManagement: React.FC = () => {
                 </Select>
               </div>
 
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="dueDate">Due Date</Label>
@@ -427,15 +439,11 @@ export const TaskManagement: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dueTime">Due Time (24h)</Label>
-                  <Input
-                    id="dueTime"
-                    type="time"
+                  <TimePicker
+                    label="Due Time (24h)"
                     value={formData.dueTime}
-                    onChange={(e) => setFormData({...formData, dueTime: e.target.value})}
+                    onChange={(value) => setFormData({...formData, dueTime: value})}
                     placeholder="HH:MM"
-                    className="[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                   />
                 </div>
               </div>
@@ -538,11 +546,11 @@ export const TaskManagement: React.FC = () => {
                       </div>
                       <div>
                         <span className="font-medium">Due date:</span>
-                        <div>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No deadline'}</div>
+                        <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
                       </div>
                       <div>
                         <span className="font-medium">Created:</span>
-                        <div>{new Date(task.created_at).toLocaleDateString()}</div>
+                        <div>{formatDate(task.created_at)}</div>
                       </div>
                       {task.status === 'IN_PROGRESS' && task.assigned_profile && (
                         <div>
