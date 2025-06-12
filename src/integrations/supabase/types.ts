@@ -256,6 +256,7 @@ export type Database = {
           id: string
           license_plate: string
           pallet_count: number
+          priority: string
           ramp_number: number | null
           started_at: string | null
           status: string
@@ -275,6 +276,7 @@ export type Database = {
           id?: string
           license_plate: string
           pallet_count: number
+          priority?: string
           ramp_number?: number | null
           started_at?: string | null
           status?: string
@@ -294,6 +296,7 @@ export type Database = {
           id?: string
           license_plate?: string
           pallet_count?: number
+          priority?: string
           ramp_number?: number | null
           started_at?: string | null
           status?: string

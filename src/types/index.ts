@@ -4,6 +4,8 @@ export type UserRole = 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN';
 
 export type TruckStatus = 'SCHEDULED' | 'ARRIVED' | 'IN_PROGRESS' | 'DONE';
 
+export type TruckPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
@@ -32,6 +34,7 @@ export interface Truck {
   cargo_description: string;
   pallet_count: number;
   status: TruckStatus;
+  priority: TruckPriority;
   ramp_number?: number;
   assigned_staff_id?: string;
   assigned_staff_name?: string;
@@ -99,6 +102,7 @@ export interface TruckFormData {
   arrival_time: string;
   cargo_description: string;
   pallet_count: number;
+  priority: TruckPriority;
   assigned_staff_id?: string;
 }
 
@@ -146,6 +150,13 @@ export const TASK_STATUSES: Record<TaskStatus, string> = {
   PENDING: 'Pending',
   IN_PROGRESS: 'In Progress',
   COMPLETED: 'Completed'
+};
+
+export const TRUCK_PRIORITIES: Record<TruckPriority, string> = {
+  LOW: 'Low',
+  NORMAL: 'Normal',
+  HIGH: 'High',
+  URGENT: 'Urgent'
 };
 
 export const TASK_PRIORITIES: Record<TaskPriority, string> = {

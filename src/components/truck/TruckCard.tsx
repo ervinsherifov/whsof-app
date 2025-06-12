@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
 import { calculateProcessingHours } from '@/lib/truckUtils';
-import { TruckCardProps, TruckStatus } from '@/types';
+import { TruckCardProps, TruckStatus, TruckPriority, TRUCK_PRIORITIES } from '@/types';
 
 const getStatusColor = (status: TruckStatus) => {
   switch (status) {
@@ -22,6 +22,21 @@ const getStatusColor = (status: TruckStatus) => {
   }
 };
 
+const getPriorityColor = (priority: TruckPriority) => {
+  switch (priority) {
+    case 'URGENT':
+      return 'destructive';
+    case 'HIGH':
+      return 'default';
+    case 'NORMAL':
+      return 'secondary';
+    case 'LOW':
+      return 'outline';
+    default:
+      return 'secondary';
+  }
+};
+
 export const TruckCard: React.FC<TruckCardProps> = React.memo(({
   truck,
   onAssignRamp,
@@ -35,9 +50,14 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
       <div className="space-y-3">
         <div className="flex justify-between items-start">
           <div className="font-medium text-lg">{truck.license_plate}</div>
-          <Badge variant={getStatusColor(truck.status)}>
-            {truck.status}
-          </Badge>
+          <div className="flex gap-2">
+            <Badge variant={getPriorityColor(truck.priority)} className="text-xs">
+              {TRUCK_PRIORITIES[truck.priority]}
+            </Badge>
+            <Badge variant={getStatusColor(truck.status)}>
+              {truck.status}
+            </Badge>
+          </div>
         </div>
         
         <div className="grid grid-cols-2 gap-2 text-sm">

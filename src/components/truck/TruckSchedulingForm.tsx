@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +17,7 @@ import {
   validateFutureDate,
   validateFutureTime 
 } from '@/lib/security';
+import { TRUCK_PRIORITIES, TruckPriority } from '@/types';
 
 interface TruckSchedulingFormProps {
   onSuccess: () => void;
@@ -31,7 +33,8 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
     arrivalDate: '',
     arrivalTime: '',
     palletCount: '',
-    cargoDescription: ''
+    cargoDescription: '',
+    priority: 'NORMAL' as TruckPriority
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,6 +144,7 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
           arrival_time: formData.arrivalTime,
           pallet_count: palletCount,
           cargo_description: sanitizedCargoDescription,
+          priority: formData.priority,
           created_by_user_id: user.id,
         });
 
@@ -156,7 +160,8 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
         arrivalDate: '',
         arrivalTime: '',
         palletCount: '',
-        cargoDescription: ''
+        cargoDescription: '',
+        priority: 'NORMAL' as TruckPriority
       });
       setIsDialogOpen(false);
       onSuccess();
@@ -244,6 +249,22 @@ export const TruckSchedulingForm: React.FC<TruckSchedulingFormProps> = ({ onSucc
               placeholder="Electronics, furniture, etc."
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority Level</Label>
+            <Select value={formData.priority} onValueChange={(value: TruckPriority) => setFormData({...formData, priority: value})}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(TRUCK_PRIORITIES).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {user?.role !== 'OFFICE_ADMIN' && (
