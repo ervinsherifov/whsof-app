@@ -82,7 +82,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) => {
-  const { user, checkIn, checkOut } = useAuth();
+  const { user, checkIn, checkOut, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -158,8 +158,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           </div>
         )}
         
-        {/* Show debug info if no items are available */}
-        {filteredItems.length === 0 && (
+        {/* Show debug info if no items are available and not loading */}
+        {filteredItems.length === 0 && !isLoading && user && (
           <div className="p-4 text-sm text-muted-foreground border rounded-lg bg-yellow-50">
             ⚠️ No menu items for role: <strong>{user?.role || 'No role'}</strong>
             <br />
