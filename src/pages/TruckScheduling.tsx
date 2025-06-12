@@ -215,13 +215,21 @@ export const TruckScheduling: React.FC = () => {
     }
 
     // Check if the scheduled date/time is in the past
-    const scheduledDateTime = new Date(`${parsedDate.toISOString().split('T')[0]}T${formData.arrivalTime}`);
     const now = new Date();
     
     // Add 2 minute buffer to account for form filling time
     const bufferTime = new Date(now.getTime() + 2 * 60 * 1000);
     
-    if (scheduledDateTime <= bufferTime) {
+    // Create local datetime without timezone conversion issues
+    const localScheduledTime = new Date(
+      parsedDate.getFullYear(),
+      parsedDate.getMonth(),
+      parsedDate.getDate(),
+      parseInt(formData.arrivalTime.split(':')[0]),
+      parseInt(formData.arrivalTime.split(':')[1])
+    );
+    
+    if (localScheduledTime <= bufferTime) {
       toast({
         title: 'Invalid Schedule Time',
         description: 'Please select a future date and time (at least 2 minutes from now)',
@@ -503,9 +511,9 @@ export const TruckScheduling: React.FC = () => {
   };
 
   const getRampOccupancy = (rampNumber: number) => {
-    // A ramp is occupied if there's an ARRIVED truck assigned to it
+    // A ramp is occupied if there's an ARRIVED or IN PROGRESS truck assigned to it
     const currentTruck = trucks.find(truck => {
-      return truck.ramp_number === rampNumber && truck.status === 'ARRIVED';
+      return truck.ramp_number === rampNumber && (truck.status === 'ARRIVED' || truck.status === 'IN PROGRESS');
     });
     
     return currentTruck;
