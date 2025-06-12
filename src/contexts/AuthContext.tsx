@@ -30,60 +30,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
-
-  // Session timeout configuration (2 hours)
-  const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 
   // Update activity timestamp
   const updateActivity = useCallback(() => {
     setLastActivity(Date.now());
   }, []);
-
-  // Reset session timeout
-  const resetSessionTimeout = useCallback(() => {
-    if (sessionTimeout) {
-      clearTimeout(sessionTimeout);
-    }
-
-    const timeout = setTimeout(async () => {
-      logSecurityEvent('session_timeout', { userId: user?.id });
-      toast.error('Session expired due to inactivity. Please log in again.');
-      // Force logout by clearing auth state
-      await supabase.auth.signOut();
-    }, SESSION_TIMEOUT_MS);
-
-    setSessionTimeout(timeout);
-  }, [user?.id]);
-
-  // Set up activity monitoring
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    
-    const handleActivity = () => {
-      updateActivity();
-      resetSessionTimeout();
-    };
-
-    activityEvents.forEach(event => {
-      window.addEventListener(event, handleActivity, true);
-    });
-
-    // Initial timeout setup
-    resetSessionTimeout();
-
-    return () => {
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, handleActivity, true);
-      });
-      if (sessionTimeout) {
-        clearTimeout(sessionTimeout);
-      }
-    };
-  }, [isAuthenticated, updateActivity, resetSessionTimeout]);
 
   const getUserProfile = async (userId: string) => {
     try {
@@ -222,11 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      if (sessionTimeout) {
-        clearTimeout(sessionTimeout);
-        setSessionTimeout(null);
-      }
-
       logSecurityEvent('logout', { userId: user?.id });
       
       await supabase.auth.signOut();
