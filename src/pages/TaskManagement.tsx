@@ -248,6 +248,7 @@ export const TaskManagement: React.FC = () => {
         
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        parsedDate.setHours(0, 0, 0, 0);
         
         if (parsedDate < today) {
           toast({

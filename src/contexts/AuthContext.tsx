@@ -29,7 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
   // Update activity timestamp
@@ -93,7 +92,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (mounted) {
           setIsLoading(false);
-          setIsInitialized(true);
         }
       }
     );
@@ -125,10 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
       }
       
-      // Always set loading to false and initialized to true
+      // Always set loading to false
       if (mounted) {
         setIsLoading(false);
-        setIsInitialized(true);
       }
     });
 
@@ -288,7 +285,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{
       user,
       session,
-      isLoading: isLoading || !isInitialized,
+      isLoading,
       isAuthenticated,
       login,
       logout,
