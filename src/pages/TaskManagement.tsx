@@ -434,6 +434,8 @@ export const TaskManagement: React.FC = () => {
                     value={formData.dueTime}
                     onChange={(e) => setFormData({...formData, dueTime: e.target.value})}
                     placeholder="HH:MM"
+                    className="[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                   />
                 </div>
               </div>

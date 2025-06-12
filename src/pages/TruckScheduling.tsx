@@ -543,6 +543,8 @@ export const TruckScheduling: React.FC = () => {
                     ? new Date().toTimeString().slice(0, 5)
                     : undefined}
                   required
+                  className="[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                 />
               </div>
 

@@ -5,7 +5,7 @@ export const Footer: React.FC = () => {
     <footer className="bg-secondary text-secondary-foreground py-2 px-6 mt-auto">
       <div className="flex justify-center items-center">
         <p className="text-sm font-medium">
-          Created by Ervin Sherifov
+          © 2024 DHL Sofia Warehouse Management System
         </p>
       </div>
     </footer>
