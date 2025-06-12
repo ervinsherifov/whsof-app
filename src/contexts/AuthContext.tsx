@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let profileCache = new Map<string, any>();
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -71,26 +72,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setIsAuthenticated(!!session?.user);
         
-        if (session?.user) {
-          // Defer Supabase calls with setTimeout to prevent deadlock
-          setTimeout(() => {
-            if (!mounted) return;
-            getUserProfile(session.user.id).then(profile => {
-              if (mounted && profile) {
-                setUser({
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  name: profile.display_name || profile.email || session.user.email || '',
-                  role: profile.role
-                });
-              }
+        if (session?.user && event === 'SIGNED_IN') {
+          // Only fetch profile on initial sign in, not on token refresh
+          const userId = session.user.id;
+          const cached = profileCache.get(userId);
+          
+          if (cached) {
+            setUser({
+              id: userId,
+              email: session.user.email || '',
+              name: cached.display_name || cached.email || session.user.email || '',
+              role: cached.role
             });
-          }, 0);
-        } else {
+            setIsLoading(false);
+          } else {
+            // Defer Supabase calls with setTimeout to prevent deadlock
+            setTimeout(() => {
+              if (!mounted) return;
+              getUserProfile(userId).then(profile => {
+                if (mounted && profile) {
+                  profileCache.set(userId, profile);
+                  setUser({
+                    id: userId,
+                    email: session.user.email || '',
+                    name: profile.display_name || profile.email || session.user.email || '',
+                    role: profile.role
+                  });
+                }
+                if (mounted) {
+                  setIsLoading(false);
+                }
+              });
+            }, 0);
+          }
+        } else if (!session?.user) {
           setUser(null);
+          profileCache.clear();
         }
         
-        if (mounted) {
+        if (mounted && event !== 'TOKEN_REFRESHED') {
           setIsLoading(false);
         }
       }
@@ -105,27 +125,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(!!existingSession?.user);
       
       if (existingSession?.user) {
+        const userId = existingSession.user.id;
         // Defer profile fetching to prevent blocking
         setTimeout(() => {
           if (!mounted) return;
-          getUserProfile(existingSession.user.id).then(profile => {
+          getUserProfile(userId).then(profile => {
             if (mounted && profile) {
+              profileCache.set(userId, profile);
               setUser({
-                id: existingSession.user.id,
+                id: userId,
                 email: existingSession.user.email || '',
                 name: profile.display_name || profile.email || existingSession.user.email || '',
                 role: profile.role
               });
             }
+            if (mounted) {
+              setIsLoading(false);
+            }
           });
         }, 0);
       } else {
         setUser(null);
-      }
-      
-      // Always set loading to false
-      if (mounted) {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     });
 
