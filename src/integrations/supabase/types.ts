@@ -329,6 +329,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -342,6 +346,20 @@ export type Database = {
       }
       is_super_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      sanitize_text: {
+        Args: { input_text: string }
+        Returns: string
+      }
+      validate_truck_data: {
+        Args: {
+          p_license_plate: string
+          p_arrival_date: string
+          p_arrival_time: string
+          p_cargo_description: string
+          p_pallet_count: number
+        }
         Returns: boolean
       }
     }

@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { logSecurityEvent, getSecureErrorMessage, checkRateLimit } from '@/lib/security';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -28,6 +30,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+
+  // Session timeout configuration (2 hours)
+  const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+
+  // Update activity timestamp
+  const updateActivity = useCallback(() => {
+    setLastActivity(Date.now());
+  }, []);
+
+  // Reset session timeout
+  const resetSessionTimeout = useCallback(() => {
+    if (sessionTimeout) {
+      clearTimeout(sessionTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      logSecurityEvent('session_timeout', { userId: user?.id });
+      toast.error('Session expired due to inactivity. Please log in again.');
+      logout();
+    }, SESSION_TIMEOUT_MS);
+
+    setSessionTimeout(timeout);
+  }, [sessionTimeout, user?.id, SESSION_TIMEOUT_MS]);
+
+  // Set up activity monitoring
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => {
+      updateActivity();
+      resetSessionTimeout();
+    };
+
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity, true);
+    });
+
+    // Initial timeout setup
+    resetSessionTimeout();
+
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity, true);
+      });
+      if (sessionTimeout) {
+        clearTimeout(sessionTimeout);
+      }
+    };
+  }, [isAuthenticated, updateActivity, resetSessionTimeout, sessionTimeout]);
 
   const getUserProfile = async (userId: string) => {
     try {
@@ -131,23 +186,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Rate limiting check
+      if (!checkRateLimit(`login_${email}`, 5, 15 * 60 * 1000)) {
+        logSecurityEvent('login_rate_limit_exceeded', { email });
+        return { error: 'Too many login attempts. Please try again in 15 minutes.' };
+      }
 
-    if (error) {
-      return { error: error.message };
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        logSecurityEvent('login_failed', { 
+          email, 
+          error: error.message,
+          userAgent: navigator.userAgent 
+        });
+        return { error: getSecureErrorMessage(error) };
+      }
+
+      logSecurityEvent('login_successful', { email });
+      updateActivity();
+      return {};
+    } catch (error) {
+      logSecurityEvent('login_error', { 
+        email, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      return { error: getSecureErrorMessage(error) };
     }
-
-    return {};
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setIsAuthenticated(false);
+    try {
+      if (sessionTimeout) {
+        clearTimeout(sessionTimeout);
+        setSessionTimeout(null);
+      }
+
+      logSecurityEvent('logout', { userId: user?.id });
+      
+      await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setLastActivity(0);
+    } catch (error) {
+      logSecurityEvent('logout_error', { 
+        userId: user?.id, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      // Force logout even if signOut fails
+      setSession(null);
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const checkIn = async () => {

@@ -15,6 +15,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
 import { formatDate, parseDate } from '@/lib/dateUtils';
+import { 
+  sanitizeText, 
+  validateLicensePlate, 
+  validateCargoDescription, 
+  validatePalletCount,
+  validateFutureDate,
+  validateFutureTime,
+  getSecureErrorMessage 
+} from '@/lib/security';
 
 
 export const TruckScheduling: React.FC = () => {
@@ -182,9 +191,13 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
-    // Validate form data
-    if (!formData.licensePlate.trim() || !formData.arrivalDate || !formData.arrivalTime || 
-        !formData.palletCount || !formData.cargoDescription.trim()) {
+    // Sanitize inputs
+    const sanitizedLicensePlate = sanitizeText(formData.licensePlate);
+    const sanitizedCargoDescription = sanitizeText(formData.cargoDescription);
+
+    // Validate form data with security checks
+    if (!sanitizedLicensePlate || !formData.arrivalDate || !formData.arrivalTime || 
+        !formData.palletCount || !sanitizedCargoDescription) {
       toast({
         title: 'Validation error',
         description: 'All fields are required',
@@ -193,11 +206,31 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
-    const palletCount = parseInt(formData.palletCount);
-    if (isNaN(palletCount) || palletCount <= 0) {
+    // Validate license plate format
+    if (!validateLicensePlate(sanitizedLicensePlate)) {
       toast({
-        title: 'Validation error',
-        description: 'Pallet count must be a valid positive number',
+        title: 'Invalid license plate',
+        description: 'License plate must be 1-20 characters, letters, numbers, spaces and hyphens only',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate cargo description
+    if (!validateCargoDescription(sanitizedCargoDescription)) {
+      toast({
+        title: 'Invalid cargo description',
+        description: 'Cargo description must be 1-500 characters and contain no HTML',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const palletCount = parseInt(formData.palletCount);
+    if (!validatePalletCount(palletCount)) {
+      toast({
+        title: 'Invalid pallet count',
+        description: 'Pallet count must be a positive integer between 1 and 100',
         variant: 'destructive',
       });
       return;
@@ -214,25 +247,21 @@ export const TruckScheduling: React.FC = () => {
       return;
     }
 
-    // Check if the scheduled date/time is in the past
-    const now = new Date();
-    
-    // Add 2 minute buffer to account for form filling time
-    const bufferTime = new Date(now.getTime() + 2 * 60 * 1000);
-    
-    // Create local datetime without timezone conversion issues
-    const localScheduledTime = new Date(
-      parsedDate.getFullYear(),
-      parsedDate.getMonth(),
-      parsedDate.getDate(),
-      parseInt(formData.arrivalTime.split(':')[0]),
-      parseInt(formData.arrivalTime.split(':')[1])
-    );
-    
-    if (localScheduledTime <= bufferTime) {
+    // Validate future date
+    if (!validateFutureDate(parsedDate.toISOString().split('T')[0])) {
       toast({
-        title: 'Invalid Schedule Time',
-        description: 'Please select a future date and time (at least 2 minutes from now)',
+        title: 'Invalid date',
+        description: 'Date must be between today and one year from now',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate future time for today
+    if (!validateFutureTime(parsedDate.toISOString().split('T')[0], formData.arrivalTime)) {
+      toast({
+        title: 'Invalid time',
+        description: 'Please select a time at least 2 minutes from now',
         variant: 'destructive',
       });
       return;
@@ -242,11 +271,11 @@ export const TruckScheduling: React.FC = () => {
       const { error } = await supabase
         .from('trucks')
         .insert({
-          license_plate: formData.licensePlate.trim(),
+          license_plate: sanitizedLicensePlate,
           arrival_date: parsedDate.toISOString().split('T')[0],
           arrival_time: formData.arrivalTime,
           pallet_count: palletCount,
-          cargo_description: formData.cargoDescription.trim(),
+          cargo_description: sanitizedCargoDescription,
           created_by_user_id: user.id,
         });
 
