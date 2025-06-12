@@ -99,67 +99,168 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Enhanced shadows and modern styling */
-  .shadow-soft {
-    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  /* Professional Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold;
+    letter-spacing: -0.02em;
   }
 
-  .shadow-bold {
-    box-shadow: 0 4px 16px -2px rgba(212, 5, 17, 0.15), 0 8px 32px -8px rgba(212, 5, 17, 0.1);
+  .text-display {
+    @apply font-display;
+    letter-spacing: -0.02em;
   }
 
-  .shadow-yellow {
-    box-shadow: 0 4px 16px -2px rgba(255, 204, 0, 0.25), 0 8px 32px -8px rgba(255, 204, 0, 0.15);
+  /* Professional button styles */
+  .btn-professional {
+    @apply font-medium tracking-wide transition-all duration-200 ease-in-out;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 
-  /* Smooth transitions */
-  .transition-all-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  .btn-primary {
+    @apply btn-professional bg-dhl-red text-white shadow-soft;
+    @apply hover:bg-dhl-dark-red hover:shadow-bold hover:scale-[1.02];
+    @apply active:scale-[0.98];
   }
 
-  /* Modern button hover effects */
-  .btn-primary-modern {
-    @apply bg-primary text-primary-foreground rounded-xl px-6 py-3 font-semibold transition-all-smooth shadow-soft hover:shadow-bold hover:scale-105 active:scale-95;
+  .btn-secondary {
+    @apply btn-professional bg-dhl-yellow text-black shadow-soft;
+    @apply hover:bg-yellow-300 hover:shadow-yellow hover:scale-[1.02];
+    @apply active:scale-[0.98];
   }
 
-  .btn-secondary-modern {
-    @apply bg-secondary text-secondary-foreground rounded-xl px-6 py-3 font-semibold transition-all-smooth shadow-soft hover:shadow-yellow hover:scale-105 active:scale-95;
+  /* Professional card styles */
+  .card-professional {
+    @apply bg-card rounded-2xl shadow-soft border border-gray-100;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-bold hover:border-gray-200;
   }
 
-  /* Card styling */
-  .card-modern {
-    @apply bg-card rounded-2xl shadow-soft border-0 transition-all-smooth hover:shadow-bold;
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-glass;
+    @apply dark:bg-gray-900/80 dark:border-gray-800/20;
   }
 
-  /* Large screen optimizations */
+  /* Status indicators */
+  .status-scheduled {
+    @apply bg-status-scheduled/10 text-status-scheduled border-status-scheduled/20;
+  }
+
+  .status-arrived {
+    @apply bg-status-arrived/10 text-status-arrived border-status-arrived/20;
+  }
+
+  .status-in-progress {
+    @apply bg-status-in-progress/10 text-status-in-progress border-status-in-progress/20;
+  }
+
+  .status-completed {
+    @apply bg-status-completed/10 text-status-completed border-status-completed/20;
+  }
+
+  .status-urgent {
+    @apply bg-status-urgent/10 text-status-urgent border-status-urgent/20;
+  }
+
+  /* Priority badges */
+  .priority-low {
+    @apply bg-gray-100 text-gray-700 border-gray-200;
+  }
+
+  .priority-normal {
+    @apply bg-blue-50 text-blue-700 border-blue-200;
+  }
+
+  .priority-high {
+    @apply bg-orange-50 text-orange-700 border-orange-200;
+  }
+
+  .priority-urgent {
+    @apply bg-red-50 text-red-700 border-red-200;
+  }
+
+  /* Enhanced form styling */
+  .form-professional input,
+  .form-professional select,
+  .form-professional textarea {
+    @apply border-gray-200 rounded-xl transition-all duration-200;
+    @apply focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/10;
+    @apply hover:border-gray-300;
+  }
+
+  /* Loading states */
+  .loading-skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  .loading-dots::after {
+    content: '';
+    animation: loading-dots 1.4s infinite;
+  }
+
+  @keyframes loading-dots {
+    0%, 80%, 100% { opacity: 0; }
+    40% { opacity: 1; }
+  }
+
+  /* Modern grid layouts */
+  .grid-professional {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  /* Responsive utilities */
+  @media (max-width: 640px) {
+    .mobile-hidden {
+      @apply hidden;
+    }
+    
+    .mobile-full {
+      @apply w-full;
+    }
+    
+    .mobile-text-sm {
+      @apply text-sm;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .desktop-grid {
+      @apply grid-cols-3;
+    }
+  }
+
+  /* Large screen optimizations for TV dashboards */
   @media (min-width: 1920px) {
     body {
       font-size: 1.125rem;
     }
     
-    .text-4xl {
-      font-size: 3rem;
+    .tv-text-scale {
+      transform: scale(1.2);
+      transform-origin: left top;
     }
     
-    .text-3xl {
-      font-size: 2.5rem;
-    }
-    
-    .text-2xl {
-      font-size: 2rem;
-    }
-    
-    .text-xl {
-      font-size: 1.5rem;
+    .tv-card-scale {
+      transform: scale(1.1);
     }
   }
 
-  /* Ultra-large screen optimizations (80" TV) */
+  /* Ultra-large screen optimizations (4K/8K displays) */
   @media (min-width: 2560px) {
     body {
-      font-size: 1.25rem;
+      font-size: 1.375rem;
+    }
+    
+    .ultra-text-scale {
+      transform: scale(1.5);
+      transform-origin: left top;
+    }
+    
+    .ultra-card-scale {
+      transform: scale(1.3);
     }
     
     .text-4xl {
@@ -169,49 +270,61 @@
     .text-3xl {
       font-size: 3.5rem;
     }
-    
-    .text-2xl {
-      font-size: 2.5rem;
-    }
-    
-    .text-xl {
-      font-size: 2rem;
-    }
-    
-    .btn-primary-modern,
-    .btn-secondary-modern {
-      @apply px-8 py-4 text-lg;
-    }
   }
 
-  /* Enhanced contrast for accessibility */
-  .contrast-high {
-    filter: contrast(1.1);
-  }
-
-  /* Focus styles for accessibility */
+  /* Enhanced accessibility */
   .focus-visible:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    @apply outline-none ring-2 ring-dhl-red ring-offset-2 ring-offset-background;
   }
 
-  /* Hide Lovable edit button and branding */
-  iframe[src*="lovable"] {
-    display: none !important;
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .card-professional {
+      @apply border-2 border-black;
+    }
+    
+    .btn-primary {
+      @apply border-2 border-black;
+    }
   }
 
-  /* Hide any lovable branded elements */
-  [data-lovable], [class*="lovable"], [id*="lovable"] {
-    display: none !important;
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
-  /* Mobile optimization - prevent horizontal scroll */
-  html, body {
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100vw;
+  /* Print optimizations */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    .card-professional {
+      @apply shadow-none border border-gray-400;
+    }
+    
+    body {
+      font-size: 12pt;
+      line-height: 1.4;
+    }
   }
 
-  * {
-    box-sizing: border-box;
+  /* Dark mode enhancements */
+  .dark {
+    .card-professional {
+      @apply bg-gray-800 border-gray-700;
+      @apply hover:bg-gray-750 hover:border-gray-600;
+    }
+    
+    .form-professional input,
+    .form-professional select,
+    .form-professional textarea {
+      @apply bg-gray-800 border-gray-600 text-white;
+      @apply focus:border-dhl-red focus:ring-dhl-red/20;
+    }
   }
 }
