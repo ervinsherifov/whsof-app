@@ -202,6 +202,62 @@ export type Database = {
           },
         ]
       }
+      truck_exceptions: {
+        Row: {
+          actual_resolution_time: string | null
+          created_at: string
+          estimated_resolution_time: string | null
+          exception_type: string
+          id: string
+          notes: string | null
+          priority: string
+          reason: string
+          reported_by_user_id: string
+          resolved_by_user_id: string | null
+          status: string
+          truck_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_resolution_time?: string | null
+          created_at?: string
+          estimated_resolution_time?: string | null
+          exception_type: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          reason: string
+          reported_by_user_id: string
+          resolved_by_user_id?: string | null
+          status?: string
+          truck_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_resolution_time?: string | null
+          created_at?: string
+          estimated_resolution_time?: string | null
+          exception_type?: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          reason?: string
+          reported_by_user_id?: string
+          resolved_by_user_id?: string | null
+          status?: string
+          truck_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "truck_exceptions_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       truck_handlers: {
         Row: {
           created_at: string
@@ -335,7 +391,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      kpi_metrics: {
+        Row: {
+          arrived_trucks: number | null
+          avg_processing_hours: number | null
+          completed_trucks: number | null
+          high_priority_trucks: number | null
+          in_progress_trucks: number | null
+          low_priority_trucks: number | null
+          metric_date: string | null
+          normal_priority_trucks: number | null
+          pending_exceptions: number | null
+          resolved_exceptions: number | null
+          scheduled_trucks: number | null
+          total_trucks: number | null
+          urgent_trucks: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_current_user_role: {

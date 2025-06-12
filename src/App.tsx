@@ -14,6 +14,7 @@ import { TruckScheduling } from "@/pages/TruckScheduling";
 import { TaskManagement } from "@/pages/TaskManagement";
 import { Reports } from "@/pages/Reports";
 import { TVDashboard } from "@/pages/TVDashboard";
+import KPIDashboard from "@/pages/KPIDashboard";
 import { UserManagement } from "@/pages/UserManagement";
 import { Unauthorized } from "@/pages/Unauthorized";
 import Index from "./pages/Index";
@@ -72,6 +73,14 @@ const App = () => (
               <ProtectedRoute allowedRoles={['OFFICE_ADMIN', 'SUPER_ADMIN']}>
                 <Layout>
                   <Reports />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/kpi-dashboard" element={
+              <ProtectedRoute allowedRoles={['OFFICE_ADMIN', 'SUPER_ADMIN']}>
+                <Layout>
+                  <KPIDashboard />
                 </Layout>
               </ProtectedRoute>
             } />

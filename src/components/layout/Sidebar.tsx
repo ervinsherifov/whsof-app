@@ -56,6 +56,12 @@ const sidebarItems: SidebarItem[] = [
     icon: <ClipboardList className="h-4 w-4" />,
   },
   {
+    label: 'KPI Dashboard',
+    path: '/kpi-dashboard',
+    roles: ['OFFICE_ADMIN', 'SUPER_ADMIN'],
+    icon: <BarChart3 className="h-4 w-4" />,
+  },
+  {
     label: 'Reports',
     path: '/reports',
     roles: ['OFFICE_ADMIN', 'SUPER_ADMIN'],
