@@ -47,14 +47,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(sessionTimeout);
     }
 
-    const timeout = setTimeout(() => {
+    const timeout = setTimeout(async () => {
       logSecurityEvent('session_timeout', { userId: user?.id });
       toast.error('Session expired due to inactivity. Please log in again.');
-      logout();
+      // Force logout by clearing auth state
+      await supabase.auth.signOut();
     }, SESSION_TIMEOUT_MS);
 
     setSessionTimeout(timeout);
-  }, [sessionTimeout, user?.id, SESSION_TIMEOUT_MS]);
+  }, [user?.id]);
 
   // Set up activity monitoring
   useEffect(() => {
@@ -82,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearTimeout(sessionTimeout);
       }
     };
-  }, [isAuthenticated, updateActivity, resetSessionTimeout, sessionTimeout]);
+  }, [isAuthenticated, updateActivity, resetSessionTimeout]);
 
   const getUserProfile = async (userId: string) => {
     try {
