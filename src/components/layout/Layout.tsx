@@ -15,13 +15,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Always render sidebar on desktop, only control mobile drawer */}
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)}
           isMobile={isMobile}
         />
-        <main className="flex-1 p-2 sm:p-4 lg:p-6">
+        <main className="flex-1 overflow-auto p-2 sm:p-4 lg:p-6">
           {children}
         </main>
       </div>
