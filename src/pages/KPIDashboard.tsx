@@ -21,15 +21,15 @@ import { AlertTriangle, TrendingUp, Clock, CheckCircle, BarChart2, Users, Trophy
 const chartConfig = {
   completed: {
     label: "Completed",
-    color: "hsl(var(--status-completed))",
+    color: "hsl(var(--primary))",
   },
   inProgress: {
     label: "In Progress", 
-    color: "hsl(var(--status-warning))",
+    color: "hsl(var(--secondary))",
   },
   arrived: {
     label: "Arrived",
-    color: "hsl(var(--primary))",
+    color: "hsl(var(--accent))",
   },
   scheduled: {
     label: "Scheduled",
@@ -37,15 +37,15 @@ const chartConfig = {
   },
   urgent: {
     label: "Urgent",
-    color: "hsl(var(--status-urgent))",
+    color: "hsl(var(--destructive))",
   },
   high: {
     label: "High",
-    color: "hsl(var(--status-warning))",
+    color: "hsl(var(--secondary))",
   },
   normal: {
     label: "Normal", 
-    color: "hsl(var(--status-completed))",
+    color: "hsl(var(--primary))",
   },
   low: {
     label: "Low",
@@ -54,10 +54,10 @@ const chartConfig = {
 };
 
 const CHART_COLORS = [
-  'hsl(var(--status-completed))',
-  'hsl(var(--status-warning))', 
-  'hsl(var(--primary))',
-  'hsl(var(--muted))'
+  'hsl(var(--primary))',     // DHL Red
+  'hsl(var(--secondary))',   // DHL Yellow  
+  'hsl(var(--accent))',      // DHL Yellow (accent)
+  'hsl(var(--muted))'        // Gray
 ];
 
 const getPriorityColor = (priority: string) => {
@@ -216,7 +216,7 @@ export default function KPIDashboard() {
         <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-foreground">Active Exceptions</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-status-urgent" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.pending_exceptions}</div>
@@ -229,7 +229,7 @@ export default function KPIDashboard() {
         <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-foreground">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-status-completed" />
+            <CheckCircle className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.completed_trucks}</div>
@@ -326,9 +326,9 @@ export default function KPIDashboard() {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={
-                          entry.name === 'Urgent' ? 'hsl(var(--status-urgent))' :
-                          entry.name === 'High' ? 'hsl(var(--status-warning))' :
-                          entry.name === 'Normal' ? 'hsl(var(--status-completed))' :
+                          entry.name === 'Urgent' ? 'hsl(var(--destructive))' :
+                          entry.name === 'High' ? 'hsl(var(--secondary))' :
+                          entry.name === 'Normal' ? 'hsl(var(--primary))' :
                           'hsl(var(--muted))'
                         } 
                       />
@@ -403,7 +403,7 @@ export default function KPIDashboard() {
       <Card className="card-professional">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-status-urgent" />
+            <AlertTriangle className="h-5 w-5 text-destructive" />
             Recent Exceptions
           </CardTitle>
           <CardDescription>Latest reported issues and delays</CardDescription>
@@ -411,7 +411,7 @@ export default function KPIDashboard() {
         <CardContent>
           {exceptions.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">
-              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-status-completed" />
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-primary" />
               <p className="text-lg font-medium">No exceptions reported</p>
               <p className="text-sm">All operations running smoothly</p>
             </div>
