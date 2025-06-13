@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,36 +16,36 @@ interface ExceptionWithTruck extends TruckException {
   };
 }
 import { format } from 'date-fns';
-import { AlertTriangle, TrendingUp, Clock, CheckCircle, BarChart2, Users, Trophy, HelpCircle } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Clock, CheckCircle, BarChart2, Users, Trophy, Filter } from 'lucide-react';
 
 const chartConfig = {
   completed: {
     label: "Completed",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--status-completed))",
   },
   inProgress: {
     label: "In Progress", 
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--status-warning))",
   },
   arrived: {
     label: "Arrived",
-    color: "hsl(var(--chart-3))",
+    color: "hsl(var(--primary))",
   },
   scheduled: {
     label: "Scheduled",
-    color: "hsl(var(--chart-4))",
+    color: "hsl(var(--muted))",
   },
   urgent: {
     label: "Urgent",
-    color: "hsl(var(--destructive))",
+    color: "hsl(var(--status-urgent))",
   },
   high: {
     label: "High",
-    color: "hsl(var(--chart-5))",
+    color: "hsl(var(--status-warning))",
   },
   normal: {
     label: "Normal", 
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--status-completed))",
   },
   low: {
     label: "Low",
@@ -52,7 +53,12 @@ const chartConfig = {
   },
 };
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const CHART_COLORS = [
+  'hsl(var(--status-completed))',
+  'hsl(var(--status-warning))', 
+  'hsl(var(--primary))',
+  'hsl(var(--muted))'
+];
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -74,7 +80,9 @@ const getStatusColor = (status: string) => {
 };
 
 export default function KPIDashboard() {
-  const { kpiMetrics, userKPIs, exceptions, loading, updateExceptionStatus } = useKPIData();
+  const [selectedUserId, setSelectedUserId] = useState<string>('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('30');
+  const { kpiMetrics, userKPIs, warehouseUsers, exceptions, loading, updateExceptionStatus } = useKPIData(selectedUserId, selectedPeriod);
   const { user } = useAuth();
 
   if (loading) {
@@ -94,10 +102,10 @@ export default function KPIDashboard() {
   }
 
   const statusData = [
-    { name: 'Completed', value: kpiMetrics.completed_trucks, color: COLORS[0] },
-    { name: 'In Progress', value: kpiMetrics.in_progress_trucks, color: COLORS[1] },
-    { name: 'Arrived', value: kpiMetrics.arrived_trucks, color: COLORS[2] },
-    { name: 'Scheduled', value: kpiMetrics.scheduled_trucks, color: COLORS[3] },
+    { name: 'Completed', value: kpiMetrics.completed_trucks, color: CHART_COLORS[0] },
+    { name: 'In Progress', value: kpiMetrics.in_progress_trucks, color: CHART_COLORS[1] },
+    { name: 'Arrived', value: kpiMetrics.arrived_trucks, color: CHART_COLORS[2] },
+    { name: 'Scheduled', value: kpiMetrics.scheduled_trucks, color: CHART_COLORS[3] },
   ];
 
   const priorityData = [
@@ -117,14 +125,62 @@ export default function KPIDashboard() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-display">KPI Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Real-time warehouse operations overview</p>
+      {/* Header with Filters */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-display">KPI Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Real-time warehouse operations overview</p>
+          </div>
+          <Badge variant="outline" className="text-sm px-3 py-1">
+            Last {selectedPeriod} Days
+          </Badge>
         </div>
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          Last 30 Days
-        </Badge>
+        
+        {/* Filter Controls */}
+        <Card className="card-professional">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Filters:</span>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Warehouse Staff</label>
+                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                    <SelectTrigger className="w-[200px] bg-background border-border">
+                      <SelectValue placeholder="Select staff member" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg z-50">
+                      <SelectItem value="all">All Warehouse Staff</SelectItem>
+                      {warehouseUsers.map((user) => (
+                        <SelectItem key={user.user_id} value={user.user_id}>
+                          {user.display_name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Time Period</label>
+                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                    <SelectTrigger className="w-[150px] bg-background border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg z-50">
+                      <SelectItem value="7">Last 7 Days</SelectItem>
+                      <SelectItem value="30">Last 30 Days</SelectItem>
+                      <SelectItem value="90">Last 90 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Key Metrics Cards */}
@@ -172,13 +228,13 @@ export default function KPIDashboard() {
 
         <Card className="card-professional">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">Completed Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Completed</CardTitle>
             <CheckCircle className="h-4 w-4 text-status-completed" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.completed_trucks}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Last 30 days
+              Last {selectedPeriod} days
             </p>
           </CardContent>
         </Card>
@@ -194,29 +250,27 @@ export default function KPIDashboard() {
             </CardTitle>
             <CardDescription>Current status of all trucks</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig}>
-              <div className="h-[320px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+          <CardContent className="p-6">
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -229,33 +283,31 @@ export default function KPIDashboard() {
             </CardTitle>
             <CardDescription>Trucks by priority level</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig}>
-              <div className="h-[320px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar 
-                      dataKey="value" 
-                      fill="hsl(var(--chart-1))" 
-                      radius={[4, 4, 0, 0]}
-                      className="transition-all duration-200 hover:opacity-80"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+          <CardContent className="p-6">
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="value" 
+                    fill="hsl(var(--status-completed))" 
+                    radius={[4, 4, 0, 0]}
+                    className="transition-all duration-200 hover:opacity-80"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -266,15 +318,20 @@ export default function KPIDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            Top Performers Today
+            {selectedUserId === 'all' ? 'Top Performers' : 'Selected User Performance'}
           </CardTitle>
-          <CardDescription>Individual warehouse staff KPIs for today</CardDescription>
+          <CardDescription>
+            {selectedUserId === 'all' 
+              ? `Individual warehouse staff KPIs for last ${selectedPeriod} days` 
+              : `KPI metrics for selected user over last ${selectedPeriod} days`
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {userKPIs.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <Trophy className="h-8 w-8 mx-auto mb-2 text-muted" />
-              <p>No user activity recorded for today</p>
+              <p>No user activity recorded for this period</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -311,57 +368,6 @@ export default function KPIDashboard() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* How Exceptions Work */}
-      <Card className="card-professional">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-primary" />
-            How Exceptions Work
-          </CardTitle>
-          <CardDescription>Understanding the exception reporting and resolution process</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold text-foreground mb-2">Who Can Report Exceptions?</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• <strong>Warehouse Staff:</strong> Can report issues they encounter during truck processing</li>
-                <li>• <strong>Office Admin:</strong> Can report administrative or scheduling issues</li>
-                <li>• <strong>Super Admin:</strong> Can report any type of exception</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-2">Exception Types & Priorities</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• <Badge variant="destructive" className="mr-1">URGENT</Badge> Critical issues requiring immediate attention</li>
-                <li>• <Badge variant="secondary" className="mr-1">HIGH</Badge> Important issues affecting operations</li>
-                <li>• <Badge variant="default" className="mr-1">MEDIUM</Badge> Standard operational issues</li>
-                <li>• <Badge variant="outline" className="mr-1">LOW</Badge> Minor issues that can wait</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-2">How to Apply/Report</h4>
-              <ol className="space-y-1 text-sm text-muted-foreground list-decimal list-inside">
-                <li>Navigate to Truck Scheduling page</li>
-                <li>Select the truck with issues</li>
-                <li>Click "Report Exception" button</li>
-                <li>Fill in exception details and priority</li>
-                <li>Submit for review and resolution</li>
-              </ol>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-2">Resolution Process</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• <Badge variant="outline" className="mr-1">PENDING</Badge> Exception reported, awaiting review</li>
-                <li>• <Badge variant="secondary" className="mr-1">IN_PROGRESS</Badge> Being actively worked on</li>
-                <li>• <Badge variant="destructive" className="mr-1">ESCALATED</Badge> Requires higher-level intervention</li>
-                <li>• <Badge variant="default" className="mr-1">RESOLVED</Badge> Issue has been fixed</li>
-              </ul>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -409,7 +415,7 @@ export default function KPIDashboard() {
                         <SelectTrigger className="w-[180px] form-professional">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background border-border shadow-lg z-50">
                           {Object.entries(EXCEPTION_STATUSES).map(([key, label]) => (
                             <SelectItem key={key} value={key}>
                               {String(label)}

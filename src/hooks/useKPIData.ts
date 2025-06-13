@@ -24,9 +24,16 @@ interface UserKPIMetrics {
   email: string;
 }
 
-export const useKPIData = () => {
+interface WarehouseUser {
+  user_id: string;
+  display_name: string;
+  email: string;
+}
+
+export const useKPIData = (selectedUserId?: string, selectedPeriod: string = '30') => {
   const [kpiMetrics, setKpiMetrics] = useState<KPIMetrics | null>(null);
   const [userKPIs, setUserKPIs] = useState<UserKPIMetrics[]>([]);
+  const [warehouseUsers, setWarehouseUsers] = useState<WarehouseUser[]>([]);
   const [exceptions, setExceptions] = useState<ExceptionWithTruck[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -55,18 +62,37 @@ export const useKPIData = () => {
 
       if (exceptionsError) throw exceptionsError;
 
-      // Fetch user KPIs
-      const { data: userKPIData, error: userKPIError } = await supabase
+      // Fetch user KPIs based on filters
+      let userKPIQuery = supabase
         .from('user_kpi_with_profiles')
         .select('*')
-        .eq('metric_date', new Date().toISOString().split('T')[0])
-        .order('total_trucks_handled', { ascending: false })
-        .limit(10);
+        .order('total_trucks_handled', { ascending: false });
+
+      // Apply date filter
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - parseInt(selectedPeriod));
+      userKPIQuery = userKPIQuery.gte('metric_date', daysAgo.toISOString().split('T')[0]);
+
+      // Apply user filter if specified
+      if (selectedUserId && selectedUserId !== 'all') {
+        userKPIQuery = userKPIQuery.eq('user_id', selectedUserId);
+      }
+
+      const { data: userKPIData, error: userKPIError } = await userKPIQuery.limit(10);
 
       if (userKPIError) throw userKPIError;
 
+      // Fetch warehouse users for dropdown
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .order('display_name');
+
+      if (usersError) throw usersError;
+
       setKpiMetrics(kpiData);
       setUserKPIs(userKPIData || []);
+      setWarehouseUsers(usersData || []);
       setExceptions(exceptionsData as ExceptionWithTruck[] || []);
     } catch (error: any) {
       toast({
@@ -77,7 +103,7 @@ export const useKPIData = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, selectedUserId, selectedPeriod]);
 
   const updateExceptionStatus = async (exceptionId: string, status: string, resolvedByUserId?: string) => {
     try {
@@ -119,6 +145,7 @@ export const useKPIData = () => {
   return {
     kpiMetrics,
     userKPIs,
+    warehouseUsers,
     exceptions,
     loading,
     refreshData: fetchKPIData,
