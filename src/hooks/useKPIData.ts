@@ -82,10 +82,16 @@ export const useKPIData = (selectedUserId?: string, selectedPeriod: string = '30
 
       if (userKPIError) throw userKPIError;
 
-      // Fetch warehouse users for dropdown
+      // Fetch warehouse users for dropdown (only warehouse staff)
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select(`
+          user_id, 
+          display_name, 
+          email,
+          user_roles!inner(role)
+        `)
+        .eq('user_roles.role', 'WAREHOUSE_STAFF')
         .order('display_name');
 
       if (usersError) throw usersError;
