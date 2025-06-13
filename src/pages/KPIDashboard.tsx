@@ -15,7 +15,7 @@ interface ExceptionWithTruck extends TruckException {
   };
 }
 import { format } from 'date-fns';
-import { AlertTriangle, TrendingUp, Clock, CheckCircle, BarChart2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Clock, CheckCircle, BarChart2, Users, Trophy, HelpCircle } from 'lucide-react';
 
 const chartConfig = {
   completed: {
@@ -74,7 +74,7 @@ const getStatusColor = (status: string) => {
 };
 
 export default function KPIDashboard() {
-  const { kpiMetrics, exceptions, loading, updateExceptionStatus } = useKPIData();
+  const { kpiMetrics, userKPIs, exceptions, loading, updateExceptionStatus } = useKPIData();
   const { user } = useAuth();
 
   if (loading) {
@@ -260,6 +260,110 @@ export default function KPIDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Per-User Performance */}
+      <Card className="card-professional">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            Top Performers Today
+          </CardTitle>
+          <CardDescription>Individual warehouse staff KPIs for today</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {userKPIs.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <Trophy className="h-8 w-8 mx-auto mb-2 text-muted" />
+              <p>No user activity recorded for today</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {userKPIs.map((userKPI, index) => (
+                <div key={userKPI.id} className="flex items-center justify-between p-3 bg-accent/5 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                      #{index + 1}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{userKPI.display_name || userKPI.email}</p>
+                      <p className="text-sm text-muted-foreground">{userKPI.email}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="font-semibold text-display">{userKPI.total_trucks_handled || 0}</p>
+                      <p className="text-muted-foreground">Trucks</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-display">{userKPI.completed_trucks || 0}</p>
+                      <p className="text-muted-foreground">Completed</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-display">{userKPI.avg_processing_hours?.toFixed(1) || '0.0'}h</p>
+                      <p className="text-muted-foreground">Avg Time</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-display">{userKPI.tasks_completed || 0}</p>
+                      <p className="text-muted-foreground">Tasks</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* How Exceptions Work */}
+      <Card className="card-professional">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-primary" />
+            How Exceptions Work
+          </CardTitle>
+          <CardDescription>Understanding the exception reporting and resolution process</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-foreground mb-2">Who Can Report Exceptions?</h4>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li>• <strong>Warehouse Staff:</strong> Can report issues they encounter during truck processing</li>
+                <li>• <strong>Office Admin:</strong> Can report administrative or scheduling issues</li>
+                <li>• <strong>Super Admin:</strong> Can report any type of exception</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-2">Exception Types & Priorities</h4>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li>• <Badge variant="destructive" className="mr-1">URGENT</Badge> Critical issues requiring immediate attention</li>
+                <li>• <Badge variant="secondary" className="mr-1">HIGH</Badge> Important issues affecting operations</li>
+                <li>• <Badge variant="default" className="mr-1">MEDIUM</Badge> Standard operational issues</li>
+                <li>• <Badge variant="outline" className="mr-1">LOW</Badge> Minor issues that can wait</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-2">How to Apply/Report</h4>
+              <ol className="space-y-1 text-sm text-muted-foreground list-decimal list-inside">
+                <li>Navigate to Truck Scheduling page</li>
+                <li>Select the truck with issues</li>
+                <li>Click "Report Exception" button</li>
+                <li>Fill in exception details and priority</li>
+                <li>Submit for review and resolution</li>
+              </ol>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-2">Resolution Process</h4>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li>• <Badge variant="outline" className="mr-1">PENDING</Badge> Exception reported, awaiting review</li>
+                <li>• <Badge variant="secondary" className="mr-1">IN_PROGRESS</Badge> Being actively worked on</li>
+                <li>• <Badge variant="destructive" className="mr-1">ESCALATED</Badge> Requires higher-level intervention</li>
+                <li>• <Badge variant="default" className="mr-1">RESOLVED</Badge> Issue has been fixed</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Exceptions */}
       <Card className="card-professional">

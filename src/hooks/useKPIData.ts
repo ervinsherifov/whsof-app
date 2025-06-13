@@ -10,8 +10,23 @@ interface ExceptionWithTruck extends TruckException {
   };
 }
 
+interface UserKPIMetrics {
+  id: string;
+  user_id: string;
+  metric_date: string;
+  total_trucks_handled: number;
+  completed_trucks: number;
+  avg_processing_hours: number;
+  tasks_completed: number;
+  exceptions_reported: number;
+  exceptions_resolved: number;
+  display_name: string;
+  email: string;
+}
+
 export const useKPIData = () => {
   const [kpiMetrics, setKpiMetrics] = useState<KPIMetrics | null>(null);
+  const [userKPIs, setUserKPIs] = useState<UserKPIMetrics[]>([]);
   const [exceptions, setExceptions] = useState<ExceptionWithTruck[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -40,7 +55,18 @@ export const useKPIData = () => {
 
       if (exceptionsError) throw exceptionsError;
 
+      // Fetch user KPIs
+      const { data: userKPIData, error: userKPIError } = await supabase
+        .from('user_kpi_with_profiles')
+        .select('*')
+        .eq('metric_date', new Date().toISOString().split('T')[0])
+        .order('total_trucks_handled', { ascending: false })
+        .limit(10);
+
+      if (userKPIError) throw userKPIError;
+
       setKpiMetrics(kpiData);
+      setUserKPIs(userKPIData || []);
       setExceptions(exceptionsData as ExceptionWithTruck[] || []);
     } catch (error: any) {
       toast({
@@ -92,6 +118,7 @@ export const useKPIData = () => {
 
   return {
     kpiMetrics,
+    userKPIs,
     exceptions,
     loading,
     refreshData: fetchKPIData,
