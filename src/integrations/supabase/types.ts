@@ -864,9 +864,8 @@ export type Database = {
           completed_trucks: number | null
           high_priority_trucks: number | null
           in_progress_trucks: number | null
-          low_priority_trucks: number | null
+          last_updated: string | null
           metric_date: string | null
-          normal_priority_trucks: number | null
           pending_exceptions: number | null
           resolved_exceptions: number | null
           scheduled_trucks: number | null
@@ -911,6 +910,21 @@ export type Database = {
         }
         Relationships: []
       }
+      user_performance_summary: {
+        Row: {
+          active_days: number | null
+          avg_processing_hours: number | null
+          display_name: string | null
+          email: string | null
+          last_activity_date: string | null
+          total_overtime_hours: number | null
+          total_tasks_completed: number | null
+          total_trucks_completed: number | null
+          total_working_hours: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_work_hours: {
@@ -947,6 +961,10 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      refresh_all_kpi_views: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       refresh_kpi_dashboard: {
         Args: Record<PropertyKey, never>
