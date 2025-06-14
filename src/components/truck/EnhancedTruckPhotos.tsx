@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,75 +12,28 @@ import {
   Camera, 
   Download, 
   Eye, 
-  Filter, 
-  Search, 
   ZoomIn, 
   ZoomOut, 
   ChevronLeft, 
   ChevronRight,
   MessageSquare,
-  CheckCircle,
-  AlertCircle,
-  Trash2,
-  Tag,
   Clock,
   FileImage,
   Grid,
   List
 } from 'lucide-react';
 
-interface PhotoCategory {
-  id: string;
-  name: string;
-  description: string;
-  color_code: string;
-  is_required: boolean;
-  sort_order: number;
-  is_active: boolean;
-}
-
 interface TruckPhoto {
   id: string;
   photo_url: string;
-  category_id?: string;
   file_name?: string;
   file_size_kb?: number;
   mime_type?: string;
   is_primary: boolean;
   capture_timestamp?: string;
-  tags?: string[];
   created_at: string;
   uploaded_by_user_id: string;
-  category?: PhotoCategory;
   annotations?: any[];
-  quality_metrics?: any[];
-}
-
-interface PhotoAnnotation {
-  id: string;
-  x_coordinate: number;
-  y_coordinate: number;
-  annotation_text: string;
-  annotation_type: 'note' | 'issue' | 'measurement' | 'highlight';
-  created_by_user_id: string;
-  created_at: string;
-}
-
-interface PhotoQualityMetrics {
-  id: string;
-  quality_score?: number;
-  file_size_kb?: number;
-  resolution_width?: number;
-  resolution_height?: number;
-}
-
-interface ComplianceInfo {
-  truck_id: string;
-  required_categories: string[];
-  completed_categories: string[];
-  compliance_score: number;
-  is_compliant: boolean;
-  photo_count: number;
 }
 
 interface EnhancedTruckPhotosProps {
@@ -95,11 +46,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
   onPhotosUpdated 
 }) => {
   const [photos, setPhotos] = useState<TruckPhoto[]>([]);
-  const [categories, setCategories] = useState<PhotoCategory[]>([]);
-  const [compliance, setCompliance] = useState<ComplianceInfo | null>(null);
-  const [filteredPhotos, setFilteredPhotos] = useState<TruckPhoto[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedPhoto, setSelectedPhoto] = useState<TruckPhoto | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -113,40 +59,13 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
   } | null>(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadCategory, setUploadCategory] = useState<string>('');
-  
   
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchCategories();
     fetchPhotos();
-    fetchCompliance();
   }, [truckId]);
-
-  useEffect(() => {
-    filterPhotos();
-  }, [photos, selectedCategory, searchTerm]);
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('photo_categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error: any) {
-      toast({
-        title: 'Error fetching categories',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
 
   const fetchPhotos = async () => {
     try {
@@ -154,9 +73,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
         .from('truck_completion_photos')
         .select(`
           *,
-          category:photo_categories(*),
-          annotations:photo_annotations(*),
-          quality_metrics:photo_quality_metrics(*)
+          annotations:photo_annotations(*)
         `)
         .eq('truck_id', truckId)
         .eq('is_deleted', false)
@@ -171,40 +88,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
         variant: 'destructive',
       });
     }
-  };
-
-  const fetchCompliance = async () => {
-    try {
-      const { data, error } = await supabase
-        .rpc('check_truck_photo_compliance', { truck_id_param: truckId });
-      
-      if (error) throw error;
-      if (data && typeof data === 'object') {
-        setCompliance(data as unknown as ComplianceInfo);
-      }
-    } catch (error: any) {
-      console.error('Error fetching compliance:', error);
-    }
-  };
-
-  const filterPhotos = () => {
-    let filtered = photos;
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(photo => 
-        photo.category_id === selectedCategory || 
-        (selectedCategory === 'uncategorized' && !photo.category_id)
-      );
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(photo =>
-        photo.file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        photo.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredPhotos(filtered);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,7 +161,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           .insert({
             truck_id: truckId,
             photo_url: publicUrl,
-            category_id: uploadCategory || null,
+            category_id: null,
             file_name: file.name,
             file_size_kb: fileSizeKb,
             mime_type: file.type,
@@ -299,10 +182,8 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
       });
 
       setSelectedFiles([]);
-      setUploadCategory('');
       setShowUploadDialog(false);
       fetchPhotos();
-      fetchCompliance();
       onPhotosUpdated?.();
 
     } catch (error: any) {
@@ -344,7 +225,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
     });
 
     try {
-      for (const photo of filteredPhotos) {
+      for (const photo of photos) {
         await downloadPhoto(photo);
         // Add small delay to avoid overwhelming the browser
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -360,17 +241,17 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
 
   const openPhotoModal = (photo: TruckPhoto) => {
     setSelectedPhoto(photo);
-    setCurrentPhotoIndex(filteredPhotos.findIndex(p => p.id === photo.id));
+    setCurrentPhotoIndex(photos.findIndex(p => p.id === photo.id));
     setZoomLevel(1);
   };
 
   const navigatePhoto = (direction: 'prev' | 'next') => {
     const newIndex = direction === 'prev' 
       ? Math.max(0, currentPhotoIndex - 1)
-      : Math.min(filteredPhotos.length - 1, currentPhotoIndex + 1);
+      : Math.min(photos.length - 1, currentPhotoIndex + 1);
     
     setCurrentPhotoIndex(newIndex);
-    setSelectedPhoto(filteredPhotos[newIndex]);
+    setSelectedPhoto(photos[newIndex]);
     setZoomLevel(1);
   };
 
@@ -413,68 +294,8 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
     return `${(sizeKb / 1024).toFixed(1)} MB`;
   };
 
-  const getComplianceColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
   return (
     <div className="space-y-6">
-      {/* Compliance Summary */}
-      {compliance && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {compliance.is_compliant ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-600" />
-              )}
-              Photo Compliance
-            </CardTitle>
-            <CardDescription>
-              Documentation requirements for truck completion
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${getComplianceColor(compliance.compliance_score)}`}>
-                  {compliance.compliance_score.toFixed(0)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Compliance Score</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{compliance.photo_count}</div>
-                <div className="text-sm text-muted-foreground">Total Photos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {compliance.completed_categories.length}/{compliance.required_categories.length}
-                </div>
-                <div className="text-sm text-muted-foreground">Required Categories</div>
-              </div>
-            </div>
-            
-            <div className="mt-4 flex flex-wrap gap-2">
-              {compliance.required_categories.map(category => (
-                <Badge
-                  key={category}
-                  variant={compliance.completed_categories.includes(category) ? "default" : "destructive"}
-                  className="text-xs"
-                >
-                  {category.replace('_', ' ')}
-                  {compliance.completed_categories.includes(category) && (
-                    <CheckCircle className="h-3 w-3 ml-1" />
-                  )}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Controls */}
       <Card>
         <CardHeader>
@@ -482,10 +303,10 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5" />
-                Truck Photos ({filteredPhotos.length})
+                Document Photos ({photos.length})
               </CardTitle>
               <CardDescription>
-                Document truck completion with categorized photos
+                Upload and manage documentation photos
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -507,7 +328,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   <DialogHeader>
                     <DialogTitle>Upload Photos</DialogTitle>
                     <DialogDescription>
-                      Upload photos for truck documentation
+                      Upload photos for documentation
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -521,27 +342,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         onChange={handleFileSelect}
                         disabled={uploading}
                       />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="category">
-                        Category (Optional)
-                      </Label>
-                      <Select value={uploadCategory} onValueChange={setUploadCategory}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map(category => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        You can categorize photos for better organization
-                      </p>
                     </div>
                     
                     {selectedFiles.length > 0 && (
@@ -580,39 +380,12 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search photos by name or category..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
+          {/* Action Bar */}
+          <div className="flex justify-end mb-6">
             <Button
               variant="outline"
               onClick={downloadAllPhotos}
-              disabled={filteredPhotos.length === 0}
+              disabled={photos.length === 0}
             >
               <Download className="h-4 w-4 mr-2" />
               Download All
@@ -620,17 +393,17 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           </div>
 
           {/* Photos Grid/List */}
-          {filteredPhotos.length === 0 ? (
+          {photos.length === 0 ? (
             <div className="text-center py-12">
               <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No photos found</p>
               <p className="text-sm text-muted-foreground">
-                {photos.length === 0 ? 'Upload photos to get started' : 'Try adjusting your filters'}
+                Upload photos to get started
               </p>
             </div>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {filteredPhotos.map((photo) => (
+              {photos.map((photo) => (
                 <div key={photo.id} className="group relative">
                   <div 
                     className="aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer hover:ring-2 hover:ring-primary"
@@ -638,7 +411,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   >
                     <img
                       src={photo.photo_url}
-                      alt={photo.file_name || 'Truck photo'}
+                      alt={photo.file_name || 'Document photo'}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
                     
@@ -664,17 +437,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                       </Badge>
                     )}
                     
-                    {/* Category badge */}
-                    {photo.category && (
-                      <Badge
-                        variant="secondary"
-                        className="absolute top-2 right-2 text-xs"
-                        style={{ backgroundColor: photo.category.color_code + '20', color: photo.category.color_code }}
-                      >
-                        {photo.category.name}
-                      </Badge>
-                    )}
-                    
                     {/* Annotations indicator */}
                     {photo.annotations && photo.annotations.length > 0 && (
                       <div className="absolute bottom-2 left-2">
@@ -693,9 +455,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     </p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{formatFileSize(photo.file_size_kb)}</span>
-                      {photo.quality_metrics && photo.quality_metrics.length > 0 && photo.quality_metrics[0]?.quality_score && (
-                        <span>Q: {photo.quality_metrics[0].quality_score.toFixed(1)}</span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -703,7 +462,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredPhotos.map((photo) => (
+              {photos.map((photo) => (
                 <div key={photo.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50">
                   <div 
                     className="w-16 h-16 rounded-lg overflow-hidden bg-muted cursor-pointer"
@@ -711,7 +470,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   >
                     <img
                       src={photo.photo_url}
-                      alt={photo.file_name || 'Truck photo'}
+                      alt={photo.file_name || 'Document photo'}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -721,15 +480,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                       <h4 className="font-medium truncate">{photo.file_name || 'Untitled'}</h4>
                       {photo.is_primary && (
                         <Badge variant="default" className="text-xs">Primary</Badge>
-                      )}
-                      {photo.category && (
-                        <Badge
-                          variant="secondary"
-                          className="text-xs"
-                          style={{ backgroundColor: photo.category.color_code + '20', color: photo.category.color_code }}
-                        >
-                          {photo.category.name}
-                        </Badge>
                       )}
                     </div>
                     
@@ -747,9 +497,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                           <MessageSquare className="h-4 w-4" />
                           {photo.annotations.length} annotations
                         </span>
-                      )}
-                      {photo.quality_metrics && photo.quality_metrics.length > 0 && photo.quality_metrics[0]?.quality_score && (
-                        <span>Quality: {photo.quality_metrics[0].quality_score.toFixed(1)}/10</span>
                       )}
                     </div>
                   </div>
@@ -786,10 +533,10 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
               <div className="flex items-center justify-between p-4 border-b">
                 <div>
                   <DialogTitle className="text-lg font-semibold">
-                    {selectedPhoto.file_name || 'Truck Photo'}
+                    {selectedPhoto.file_name || 'Document Photo'}
                   </DialogTitle>
                   <p className="text-sm text-muted-foreground">
-                    Photo {currentPhotoIndex + 1} of {filteredPhotos.length}
+                    Photo {currentPhotoIndex + 1} of {photos.length}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -825,7 +572,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <img
                     src={selectedPhoto.photo_url}
-                    alt={selectedPhoto.file_name || 'Truck photo'}
+                    alt={selectedPhoto.file_name || 'Document photo'}
                     style={{ 
                       transform: `scale(${zoomLevel})`,
                       maxWidth: '100%',
@@ -851,7 +598,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                 </div>
 
                 {/* Navigation arrows */}
-                {filteredPhotos.length > 1 && (
+                {photos.length > 1 && (
                   <>
                     <Button
                       className="absolute left-4 top-1/2 transform -translate-y-1/2"
@@ -867,7 +614,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                       size="sm"
                       variant="secondary"
                       onClick={() => navigatePhoto('next')}
-                      disabled={currentPhotoIndex === filteredPhotos.length - 1}
+                      disabled={currentPhotoIndex === photos.length - 1}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -884,16 +631,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   <div>
                     <strong>Upload Date:</strong> {new Date(selectedPhoto.created_at).toLocaleString()}
                   </div>
-                  {selectedPhoto.category && (
-                    <div>
-                      <strong>Category:</strong> {selectedPhoto.category.name}
-                    </div>
-                  )}
-                  {selectedPhoto.quality_metrics && selectedPhoto.quality_metrics.length > 0 && selectedPhoto.quality_metrics[0]?.quality_score && (
-                    <div>
-                      <strong>Quality Score:</strong> {selectedPhoto.quality_metrics[0].quality_score.toFixed(1)}/10
-                    </div>
-                  )}
                   {selectedPhoto.annotations && selectedPhoto.annotations.length > 0 && (
                     <div className="col-span-2">
                       <strong>Annotations:</strong>
