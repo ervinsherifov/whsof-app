@@ -518,34 +518,36 @@ export const UserManagement: React.FC = () => {
       {/* Filters */}
       <Card className="card-elevated">
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-2 text-sm font-medium min-w-fit">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium">
               <Filter className="h-4 w-4 text-primary" />
-              Filters:
+              Filters
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full">
-              <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-full"
                 />
               </div>
               
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                  <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="w-full sm:w-48 min-w-0">
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Filter by role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Roles</SelectItem>
+                    <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                    <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
