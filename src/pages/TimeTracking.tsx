@@ -29,6 +29,10 @@ interface TimeEntry {
   approved_by_user_id: string | null;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    display_name: string | null;
+    email: string | null;
+  } | null;
 }
 
 export const TimeTracking: React.FC = () => {
@@ -48,14 +52,42 @@ export const TimeTracking: React.FC = () => {
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
   const fetchTimeEntries = async () => {
     if (!user?.id) return;
     
     try {
-      let query = supabase
-        .from('time_entries')
-        .select('*')
-        .eq('user_id', user.id);
+      // Check if user is super admin
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      const isAdmin = userRoles?.role === 'SUPER_ADMIN';
+      setIsSuperAdmin(isAdmin);
+      
+      let query;
+      
+      if (isAdmin) {
+        // Super admins can see all entries with user profiles
+        query = supabase
+          .from('time_entries')
+          .select(`
+            *,
+            profiles (
+              display_name,
+              email
+            )
+          `);
+      } else {
+        // Regular users only see their own entries
+        query = supabase
+          .from('time_entries')
+          .select('*')
+          .eq('user_id', user.id);
+      }
 
       // Apply date filter if selectedDate is valid
       if (selectedDate && selectedDate.includes('/')) {
@@ -414,54 +446,63 @@ export const TimeTracking: React.FC = () => {
                 timeEntries.map((entry) => {
                   const hours = calculateHours(entry);
                   return (
-                    <div key={entry.id} className="border rounded-lg p-4 bg-card">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="font-medium text-muted-foreground">Date:</span>
-                          <div className="flex items-center space-x-2">
-                            <span>{formatDate(entry.check_in_time)}</span>
-                            {entry.is_weekend && (
-                              <Badge variant="outline" className="bg-orange-100 text-orange-800 text-xs">Weekend</Badge>
-                            )}
-                            {entry.is_holiday && (
-                              <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">Holiday</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Status:</span>
-                          <div className="flex items-center space-x-2">
-                            <span>{entry.check_out_time ? 'Complete' : 'Working'}</span>
-                            {entry.approval_status === 'pending' && (
-                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending Approval</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">In:</span>
-                          <div>{formatTime(entry.check_in_time)}</div>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Out:</span>
-                          <div>{entry.check_out_time ? formatTime(entry.check_out_time) : '-'}</div>
-                        </div>
+                     <div key={entry.id} className="border rounded-lg p-4 bg-card">
+                       <div className="grid grid-cols-2 gap-2 text-sm">
+                         {isSuperAdmin && (
+                           <div className="col-span-2 mb-2 pb-2 border-b">
+                             <span className="font-medium text-muted-foreground">Employee:</span>
+                             <div>
+                               <div className="font-medium">{entry.profiles?.display_name || 'Unknown User'}</div>
+                               <div className="text-sm text-muted-foreground">{entry.profiles?.email}</div>
+                             </div>
+                           </div>
+                         )}
                          <div>
-                           <span className="font-medium text-muted-foreground">Regular:</span>
-                           <div>{formatHoursDisplay(hours.regular)}</div>
-                         </div>
-                         <div>
-                           <span className="font-medium text-muted-foreground">Overtime:</span>
-                           <div className={hours.overtime > 0 ? "text-orange-600 font-medium" : ""}>
-                             {formatHoursDisplay(hours.overtime)}
-                             {entry.overtime_reason && entry.overtime_reason.length > 0 && (
-                               <span className="ml-1 text-xs text-muted-foreground">
-                                 ({entry.overtime_reason.join(', ')})
-                               </span>
+                           <span className="font-medium text-muted-foreground">Date:</span>
+                           <div className="flex items-center space-x-2">
+                             <span>{formatDate(entry.check_in_time)}</span>
+                             {entry.is_weekend && (
+                               <Badge variant="outline" className="bg-orange-100 text-orange-800 text-xs">Weekend</Badge>
+                             )}
+                             {entry.is_holiday && (
+                               <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">Holiday</Badge>
                              )}
                            </div>
                          </div>
-                      </div>
-                    </div>
+                         <div>
+                           <span className="font-medium text-muted-foreground">Status:</span>
+                           <div className="flex items-center space-x-2">
+                             <span>{entry.check_out_time ? 'Complete' : 'Working'}</span>
+                             {entry.approval_status === 'pending' && (
+                               <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending Approval</Badge>
+                             )}
+                           </div>
+                         </div>
+                         <div>
+                           <span className="font-medium text-muted-foreground">In:</span>
+                           <div>{formatTime(entry.check_in_time)}</div>
+                         </div>
+                         <div>
+                           <span className="font-medium text-muted-foreground">Out:</span>
+                           <div>{entry.check_out_time ? formatTime(entry.check_out_time) : '-'}</div>
+                         </div>
+                          <div>
+                            <span className="font-medium text-muted-foreground">Regular:</span>
+                            <div>{formatHoursDisplay(hours.regular)}</div>
+                          </div>
+                          <div>
+                            <span className="font-medium text-muted-foreground">Overtime:</span>
+                            <div className={hours.overtime > 0 ? "text-orange-600 font-medium" : ""}>
+                              {formatHoursDisplay(hours.overtime)}
+                              {entry.overtime_reason && entry.overtime_reason.length > 0 && (
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                  ({entry.overtime_reason.join(', ')})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                       </div>
+                     </div>
                   );
                 })
               )}
@@ -472,6 +513,7 @@ export const TimeTracking: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {isSuperAdmin && <TableHead>Employee</TableHead>}
                     <TableHead>Date</TableHead>
                     <TableHead>In</TableHead>
                     <TableHead>Out</TableHead>
@@ -483,13 +525,13 @@ export const TimeTracking: React.FC = () => {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4">
+                      <TableCell colSpan={isSuperAdmin ? 7 : 6} className="text-center py-4">
                         Loading...
                       </TableCell>
                     </TableRow>
                   ) : timeEntries.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                      <TableCell colSpan={isSuperAdmin ? 7 : 6} className="text-center py-4 text-muted-foreground">
                         No time entries found
                       </TableCell>
                     </TableRow>
@@ -498,6 +540,14 @@ export const TimeTracking: React.FC = () => {
                       const hours = calculateHours(entry);
                       return (
                         <TableRow key={entry.id}>
+                          {isSuperAdmin && (
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{entry.profiles?.display_name || 'Unknown User'}</div>
+                                <div className="text-sm text-muted-foreground">{entry.profiles?.email}</div>
+                              </div>
+                            </TableCell>
+                          )}
                           <TableCell className="font-medium">
                             <div className="flex items-center space-x-2">
                               <span>{formatDate(entry.check_in_time)}</span>
