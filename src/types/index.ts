@@ -82,26 +82,6 @@ export interface ProcessingTime {
   totalHours: string;
 }
 
-export type ExceptionType = 'DELAY' | 'MECHANICAL_ISSUE' | 'LOADING_PROBLEM' | 'DOCUMENTATION_ISSUE' | 'STAFF_SHORTAGE' | 'OTHER';
-
-export type ExceptionStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'ESCALATED';
-
-export interface TruckException {
-  id: string;
-  truck_id: string;
-  exception_type: ExceptionType;
-  reason: string;
-  estimated_resolution_time?: string;
-  actual_resolution_time?: string;
-  status: ExceptionStatus;
-  priority: TaskPriority;
-  reported_by_user_id: string;
-  resolved_by_user_id?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface KPIMetrics {
   total_trucks: number;
   completed_trucks: number;
@@ -113,9 +93,23 @@ export interface KPIMetrics {
   normal_priority_trucks: number;
   low_priority_trucks: number;
   avg_processing_hours: number;
-  pending_exceptions: number;
-  resolved_exceptions: number;
+}
+
+export interface UserKPIMetrics {
+  id: string;
+  user_id: string;
+  display_name?: string;
+  email?: string;
   metric_date: string;
+  total_trucks_handled: number;
+  completed_trucks: number;
+  avg_processing_hours?: number;
+  tasks_completed: number;
+  total_pallets_handled: number;
+  avg_pallets_per_truck?: number;
+  avg_unloading_speed_pallets_per_hour?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 // API Response types
@@ -206,20 +200,4 @@ export const USER_ROLES: Record<UserRole, string> = {
   WAREHOUSE_STAFF: 'Warehouse Staff',
   OFFICE_ADMIN: 'Office Admin',
   SUPER_ADMIN: 'Super Admin'
-};
-
-export const EXCEPTION_TYPES: Record<ExceptionType, string> = {
-  DELAY: 'Delay',
-  MECHANICAL_ISSUE: 'Mechanical Issue',
-  LOADING_PROBLEM: 'Loading Problem',
-  DOCUMENTATION_ISSUE: 'Documentation Issue',
-  STAFF_SHORTAGE: 'Staff Shortage',
-  OTHER: 'Other'
-};
-
-export const EXCEPTION_STATUSES: Record<ExceptionStatus, string> = {
-  PENDING: 'Pending',
-  IN_PROGRESS: 'In Progress',
-  RESOLVED: 'Resolved',
-  ESCALATED: 'Escalated'
 };

@@ -44,13 +44,13 @@ export function KPIMetricsCards({ kpiMetrics, selectedPeriod }: KPIMetricsCardsP
 
       <Card className="card-professional">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-foreground">Active Exceptions</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <CardTitle className="text-sm font-medium text-foreground">In Progress</CardTitle>
+          <AlertTriangle className="h-4 w-4 text-secondary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.pending_exceptions}</div>
+          <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.in_progress_trucks}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            {kpiMetrics.resolved_exceptions} resolved
+            Currently processing
           </p>
         </CardContent>
       </Card>

@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
 import { calculateProcessingHours } from '@/lib/truckUtils';
 import { TruckCardProps, TruckStatus, TruckPriority, TRUCK_PRIORITIES } from '@/types';
-import { ExceptionDialog } from './ExceptionDialog';
 
 const getStatusColor = (status: TruckStatus) => {
   switch (status) {
@@ -151,8 +150,6 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
               Mark Done
             </Button>
           )}
-          
-          <ExceptionDialog truck={truck} />
           
           {user?.role === 'SUPER_ADMIN' && (
             <Button 

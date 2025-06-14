@@ -9,7 +9,6 @@ import * as XLSX from 'xlsx';
 interface ExportData {
   userKPIs: any[];
   kpiMetrics: any;
-  exceptions: any[];
   trends: any[];
 }
 
@@ -74,8 +73,6 @@ export function ExportReports({ data }: ExportReportsProps) {
         'Completed Trucks': kpiMetrics?.completed_trucks || 0,
         'In Progress Trucks': kpiMetrics?.in_progress_trucks || 0,
         'Avg Processing Hours': kpiMetrics?.avg_processing_hours?.toFixed(2) || '0.00',
-        'Pending Exceptions': kpiMetrics?.pending_exceptions || 0,
-        'Resolved Exceptions': kpiMetrics?.resolved_exceptions || 0,
         'Active Users': userKPIs.length,
       }
     ];
@@ -93,8 +90,6 @@ export function ExportReports({ data }: ExportReportsProps) {
       'Completed Trucks': user.completed_trucks || 0,
       'Avg Processing Hours': user.avg_processing_hours?.toFixed(2) || '0.00',
       'Tasks Completed': user.tasks_completed || 0,
-      'Exceptions Reported': user.exceptions_reported || 0,
-      'Exceptions Resolved': user.exceptions_resolved || 0,
       'Total Pallets Handled': user.total_pallets_handled || 0,
       'Avg Pallets per Truck': user.avg_pallets_per_truck?.toFixed(2) || '0.00',
       'Unloading Speed (Pallets/Hour)': user.avg_unloading_speed_pallets_per_hour?.toFixed(2) || '0.00',
