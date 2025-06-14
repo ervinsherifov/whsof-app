@@ -170,7 +170,7 @@ export const TVDashboard: React.FC = () => {
   }
 
   return (
-    <div className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6">
+    <div className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard">
       {/* Dynamic Background */}
       <DynamicBackground trucks={trucks} />
       
@@ -190,8 +190,8 @@ export const TVDashboard: React.FC = () => {
 
       {/* Header */}
       <div className="relative text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0 z-10">
-        <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4">Warehouse Operations</h1>
-        <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground">
+        <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4 display-text">Warehouse Operations</h1>
+        <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground metric-value">
           {currentTime.toLocaleTimeString('en-GB', { 
             hour12: false,
             hour: '2-digit',
@@ -218,12 +218,12 @@ export const TVDashboard: React.FC = () => {
                   className={`
                     relative border-2 rounded-xl p-4 lg:p-6 4xl:p-8 
                     transform transition-all duration-500 ease-out
-                    animate-fade-in bg-card/80 backdrop-blur-sm
+                    animate-fade-in truck-card backdrop-blur-sm
                     hover:scale-102 hover:shadow-lg
                     ${truck.status === 'IN_PROGRESS' 
-                      ? 'border-orange-500/50 shadow-orange-500/20 shadow-lg animate-pulse' 
+                      ? 'border-orange-500/60 shadow-orange-500/30 shadow-lg tv-glow' 
                       : truck.status === 'ARRIVED'
-                      ? 'border-green-500/50 shadow-green-500/20 shadow-md'
+                      ? 'border-green-500/60 shadow-green-500/30 shadow-md'
                       : 'border-border/50 shadow-sm'
                     }
                   `}
@@ -234,7 +234,7 @@ export const TVDashboard: React.FC = () => {
                 >
                   {/* Status Indicator Bar */}
                   <div className={`
-                    absolute top-0 left-0 right-0 h-1.5 rounded-t-xl
+                    absolute top-0 left-0 right-0 h-2 rounded-t-xl status-indicator
                     ${truck.status === 'IN_PROGRESS' 
                       ? 'bg-gradient-to-r from-orange-500 to-orange-400' 
                       : truck.status === 'ARRIVED'
@@ -246,21 +246,21 @@ export const TVDashboard: React.FC = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl lg:text-3xl 4xl:text-4xl font-bold tracking-tight">
+                      <div className="text-2xl lg:text-3xl 4xl:text-4xl font-bold tracking-tight display-text">
                         {truck.license_plate}
                       </div>
                       {truck.priority === 'URGENT' && (
-                        <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
+                        <div className="w-3 h-3 bg-destructive rounded-full tv-pulse" />
                       )}
                     </div>
                     <Badge className={`
-                      text-sm lg:text-lg 4xl:text-xl px-4 py-2 font-semibold
+                      text-sm lg:text-lg 4xl:text-xl px-4 py-2 font-semibold border-2
                       ${truck.status === 'SCHEDULED' 
-                        ? 'bg-secondary/20 text-secondary-foreground border-secondary/30'
+                        ? 'bg-secondary/20 text-secondary-foreground border-secondary/40'
                         : truck.status === 'ARRIVED'
-                        ? 'bg-green-500/20 text-green-700 border-green-500/30'
+                        ? 'bg-green-500/25 text-green-100 border-green-500/50'
                         : truck.status === 'IN_PROGRESS'
-                        ? 'bg-orange-500/20 text-orange-700 border-orange-500/30'
+                        ? 'bg-orange-500/25 text-orange-100 border-orange-500/50'
                         : 'bg-muted/20 text-muted-foreground border-muted/30'
                       }
                     `}>
@@ -274,7 +274,7 @@ export const TVDashboard: React.FC = () => {
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Date
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground metric-value">
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
@@ -282,7 +282,7 @@ export const TVDashboard: React.FC = () => {
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground font-mono">
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground font-mono metric-value">
                         {truck.arrival_time.substring(0, 5)}
                       </div>
                     </div>
@@ -298,7 +298,7 @@ export const TVDashboard: React.FC = () => {
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Pallets
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground metric-value">
                         {truck.pallet_count}
                       </div>
                     </div>

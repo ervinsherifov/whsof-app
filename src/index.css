@@ -82,41 +82,47 @@
   }
 
   .dark {
-    --background: 222 84% 5%; /* #020817 */
-    --foreground: 210 40% 98%; /* #f8fafc */
+    /* TV-Optimized Dark Theme */
+    --background: 210 100% 2%; /* #000514 - True dark for better contrast */
+    --foreground: 210 40% 98%; /* #f8fafc - High contrast text */
 
-    --card: 222 84% 5%; /* #020817 */
+    --card: 215 30% 8%; /* #0a0f1c - Deeper card background */
     --card-foreground: 210 40% 98%; /* #f8fafc */
 
-    --popover: 222 47% 11%; /* #0f172a */
+    --popover: 215 35% 6%; /* #070b14 - Even darker for overlays */
     --popover-foreground: 210 40% 98%; /* #f8fafc */
 
-    --primary: 0 84% 41%; /* #D40511 */
+    --primary: 0 84% 45%; /* #e60e1a - Brighter red for TV viewing */
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --secondary: 49 100% 50%; /* #FFCC00 */
+    --secondary: 49 100% 55%; /* #ffcc00 - Brighter yellow for visibility */
     --secondary-foreground: 0 0% 0%; /* #000000 */
 
-    --muted: 217 33% 17%; /* #1e293b */
-    --muted-foreground: 215 20% 65%; /* #94a3b8 */
+    --muted: 215 25% 12%; /* #151b28 - Better contrast for muted areas */
+    --muted-foreground: 215 15% 75%; /* #b8c5d1 - Lighter muted text */
 
-    --accent: 49 100% 50%; /* #FFCC00 */
+    --accent: 49 100% 55%; /* #ffcc00 - Enhanced visibility */
     --accent-foreground: 0 0% 0%; /* #000000 */
 
-    --destructive: 0 84% 41%; /* #D40511 */
+    --destructive: 0 84% 50%; /* #ff1a1a - Brighter for alerts */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 217 33% 17%; /* #1e293b */
-    --input: 217 33% 17%; /* #1e293b */
-    --ring: 0 84% 41%; /* #D40511 */
+    --border: 215 25% 15%; /* #1a202e - Subtle but visible borders */
+    --input: 215 25% 12%; /* #151b28 - Input backgrounds */
+    --ring: 0 84% 50%; /* #ff1a1a - Focus rings */
 
-    /* Dark mode success/warning/info */
-    --success: 142 76% 36%;
+    /* Enhanced colors for TV viewing */
+    --success: 142 80% 45%; /* #22c55e - Brighter green */
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 95% 55%; /* #f59e0b - Enhanced orange */
     --warning-foreground: 0 0% 0%;
-    --info: 204 94% 94%;
-    --info-foreground: 197 71% 52%;
+    --info: 204 100% 60%; /* #3b82f6 - Brighter blue */
+    --info-foreground: 0 0% 100%;
+
+    /* TV-specific enhancements */
+    --tv-glow: 210 100% 20%; /* Subtle blue glow */
+    --tv-accent-warm: 25 100% 60%; /* Warm accent color */
+    --tv-accent-cool: 200 100% 65%; /* Cool accent color */
   }
 }
 
@@ -331,16 +337,124 @@
     }
   }
 
-  /* Dark mode refinements */
+  /* TV-Optimized Dark Mode Enhancements */
   .dark {
+    /* Enhanced card visibility for TV viewing */
     .card-elevated {
-      @apply bg-card/95 border-border/50;
-      backdrop-filter: blur(12px);
+      @apply bg-card/95 border-border/60;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                  0 0 0 1px rgba(255, 255, 255, 0.05);
     }
     
+    /* Better form inputs for TV displays */
     .form-input {
-      @apply bg-background/50 border-border/50;
-      @apply focus:bg-background focus:border-primary/50;
+      @apply bg-background/60 border-border/60;
+      @apply focus:bg-background/80 focus:border-primary/60;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Enhanced text contrast for distance viewing */
+    h1, h2, h3, h4, h5, h6 {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Improved button visibility */
+    .btn-primary {
+      box-shadow: 0 4px 16px rgba(230, 14, 26, 0.3),
+                  0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary {
+      box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3),
+                  0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* TV Dashboard specific optimizations */
+  .tv-dashboard {
+    /* Ensure high contrast for all elements */
+    color-scheme: dark;
+    
+    /* Enhanced readability */
+    .truck-card {
+      background: linear-gradient(135deg, 
+        hsl(var(--card)) 0%, 
+        hsl(var(--card)) 80%, 
+        rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Status indicators with enhanced visibility */
+    .status-indicator {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 16px rgba(var(--primary), 0.4);
+    }
+
+    /* Enhanced text for distance viewing */
+    .display-text {
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      letter-spacing: 0.025em;
+    }
+
+    /* Improved number visibility */
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  /* Enhanced animations for TV viewing */
+  @keyframes tv-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(var(--primary), 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 30px rgba(var(--primary), 0.5);
+    }
+  }
+
+  @keyframes tv-pulse {
+    0%, 100% { 
+      background-color: rgba(var(--primary), 0.1);
+    }
+    50% { 
+      background-color: rgba(var(--primary), 0.2);
+    }
+  }
+
+  .tv-glow { animation: tv-glow 3s ease-in-out infinite; }
+  .tv-pulse { animation: tv-pulse 2s ease-in-out infinite; }
+
+  /* Accessibility improvements for TV viewing */
+  @media (prefers-contrast: high) {
+    .dark {
+      --background: 0 0% 0%; /* Pure black for maximum contrast */
+      --foreground: 0 0% 100%; /* Pure white text */
+      --border: 0 0% 30%; /* Lighter borders */
+      --muted-foreground: 0 0% 80%; /* Lighter muted text */
+    }
+  }
+
+  /* Large screen optimizations (4K+ displays) */
+  @media (min-width: 2560px) {
+    .tv-dashboard {
+      /* Increase base font sizes for 4K displays */
+      font-size: 1.25rem;
+      
+      h1 { font-size: 6rem; }
+      h2 { font-size: 4.5rem; }
+      h3 { font-size: 3rem; }
+      
+      /* Enhanced shadows for larger displays */
+      .card-elevated {
+        box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4),
+                    0 0 0 2px rgba(255, 255, 255, 0.05);
+      }
     }
   }
 }
