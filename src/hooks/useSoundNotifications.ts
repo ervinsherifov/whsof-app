@@ -90,25 +90,34 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
     maxVolume: number, 
     noteDuration: number
   ) => {
+    console.log(`🔊 Playing chime with frequencies: ${frequencies.join(', ')}`);
+    
     frequencies.forEach((freq, index) => {
       setTimeout(() => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-        oscillator.type = 'sine';
-        
-        // Smooth volume envelope
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(maxVolume * volume, audioContext.currentTime + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + noteDuration);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + noteDuration);
-      }, index * (noteDuration * 0.8)); // Slight overlap for smooth progression
+        try {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+          oscillator.type = 'sine';
+          
+          // Smooth volume envelope
+          const now = audioContext.currentTime;
+          gainNode.gain.setValueAtTime(0, now);
+          gainNode.gain.linearRampToValueAtTime(maxVolume * volume, now + 0.05);
+          gainNode.gain.linearRampToValueAtTime(0, now + noteDuration);
+          
+          oscillator.start(now);
+          oscillator.stop(now + noteDuration);
+          
+          console.log(`🔊 Chime note ${index + 1} played: ${freq}Hz`);
+        } catch (error) {
+          console.error(`🔇 Error playing chime note ${index + 1}:`, error);
+        }
+      }, index * (noteDuration * 800)); // Convert to milliseconds
     });
   };
 
@@ -119,23 +128,32 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
     beepDuration: number,
     gap: number = 0.1
   ) => {
+    console.log(`🔊 Playing beep sequence with frequencies: ${frequencies.join(', ')}`);
+    
     frequencies.forEach((freq, index) => {
       setTimeout(() => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-        oscillator.type = 'square';
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(maxVolume * volume, audioContext.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + beepDuration);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + beepDuration);
+        try {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+          oscillator.type = 'square';
+          
+          const now = audioContext.currentTime;
+          gainNode.gain.setValueAtTime(0, now);
+          gainNode.gain.linearRampToValueAtTime(maxVolume * volume, now + 0.01);
+          gainNode.gain.linearRampToValueAtTime(0, now + beepDuration);
+          
+          oscillator.start(now);
+          oscillator.stop(now + beepDuration);
+          
+          console.log(`🔊 Beep ${index + 1} played: ${freq}Hz`);
+        } catch (error) {
+          console.error(`🔇 Error playing beep ${index + 1}:`, error);
+        }
       }, index * (beepDuration + gap) * 1000);
     });
   };
