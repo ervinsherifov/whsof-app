@@ -508,7 +508,6 @@ export const UserManagement: React.FC = () => {
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -563,11 +562,7 @@ export const UserManagement: React.FC = () => {
                           {user.is_active ? 'Active Today' : 'Inactive'}
                         </span>
                       </div>
-                    </TableCell>
-                    
-                    <TableCell>
-                      <div className="text-sm font-mono">{formatDate(user.created_at)}</div>
-                    </TableCell>
+                     </TableCell>
                     
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
