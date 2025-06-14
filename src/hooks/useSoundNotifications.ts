@@ -53,33 +53,56 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
       audioContext.resume();
     }
 
-    console.log(`🔊 Playing ${status} sound`);
+    console.log(`🔊 Playing ${status} sound, AudioContext state: ${audioContext.state}`);
+
+    // Test with a simple, loud beep first
+    if (status === 'TEST') {
+      // Simple loud test beep
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.type = 'square';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+      
+      console.log(`🔊 Simple test beep played at 800Hz, volume 0.5`);
+      return;
+    }
 
     // Configure sound based on status
     switch (status) {
       case 'SCHEDULED':
         // Soft chime - two ascending notes
-        playChime(audioContext, [440, 554.37], 0.3, 0.4); // A4 to C#5
+        playChime(audioContext, [440, 554.37], 0.5, 0.5); // Increased volume and duration
         break;
       
       case 'ARRIVED':
         // Alert chime - three ascending notes
-        playChime(audioContext, [523.25, 659.25, 783.99], 0.4, 0.3); // C5, E5, G5
+        playChime(audioContext, [523.25, 659.25, 783.99], 0.6, 0.4); // Increased volume
         break;
       
       case 'IN_PROGRESS':
         // Work start - confident double beep
-        playBeepSequence(audioContext, [698.46, 698.46], 0.5, 0.2, 0.1); // F5
+        playBeepSequence(audioContext, [698.46, 698.46], 0.7, 0.3, 0.2); // Increased volume and duration
         break;
       
       case 'DONE':
         // Completion - triumphant ascending sequence
-        playChime(audioContext, [523.25, 659.25, 783.99, 1046.50], 0.6, 0.25); // C5, E5, G5, C6
+        playChime(audioContext, [523.25, 659.25, 783.99, 1046.50], 0.8, 0.3); // Increased volume
         break;
       
       default:
         // Generic notification
-        playBeepSequence(audioContext, [440], 0.3, 0.2);
+        playBeepSequence(audioContext, [440], 0.5, 0.3);
         break;
     }
   };

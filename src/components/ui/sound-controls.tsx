@@ -52,6 +52,17 @@ export const SoundControls: React.FC<SoundControlsProps> = ({
         {enabled && (
           <div className="space-y-1">
             <div className="text-xs font-medium text-muted-foreground mb-1">Test Sounds:</div>
+            
+            {/* Simple Test Button */}
+            <Button
+              onClick={() => onTestSound('TEST')}
+              variant="default"
+              size="sm"
+              className="w-full h-8 text-xs mb-2 bg-orange-600 hover:bg-orange-700"
+            >
+              🔊 LOUD TEST BEEP
+            </Button>
+            
             <div className="grid grid-cols-2 gap-1">
               {statusSounds.map(({ status, label, color }) => (
                 <Button
