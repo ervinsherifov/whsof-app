@@ -28,6 +28,7 @@ interface TruckListProps {
   onAssignRamp: (truck: any) => void;
   onUpdateStatus: (truckId: string, status: string) => void;
   onDeleteTruck: (truckId: string, licensePlate: string) => void;
+  onReschedule?: (truck: any) => void;
 }
 
 export const TruckList: React.FC<TruckListProps> = ({
@@ -35,7 +36,8 @@ export const TruckList: React.FC<TruckListProps> = ({
   loading,
   onAssignRamp,
   onUpdateStatus,
-  onDeleteTruck
+  onDeleteTruck,
+  onReschedule
 }) => {
   const { user } = useAuth();
 
@@ -176,6 +178,19 @@ export const TruckList: React.FC<TruckListProps> = ({
                           Mark Done
                         </Button>
                       )}
+                      
+                      {/* Reschedule button for overdue trucks or admins */}
+                      {((truck.is_overdue || truck.status === 'SCHEDULED') && (user?.role === 'OFFICE_ADMIN' || user?.role === 'SUPER_ADMIN')) && onReschedule && (
+                        <Button 
+                          size="sm" 
+                          variant="secondary"
+                          className="text-xs"
+                          onClick={() => onReschedule(truck)}
+                        >
+                          Reschedule
+                        </Button>
+                      )}
+                      
                       {user?.role === 'SUPER_ADMIN' && (
                         <Button 
                           size="sm" 
@@ -277,6 +292,18 @@ export const TruckList: React.FC<TruckListProps> = ({
                               Mark Done
                             </Button>
                           )}
+                          
+                          {/* Reschedule button for overdue trucks or admins */}
+                          {((truck.is_overdue || truck.status === 'SCHEDULED') && (user?.role === 'OFFICE_ADMIN' || user?.role === 'SUPER_ADMIN')) && onReschedule && (
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => onReschedule(truck)}
+                            >
+                              Reschedule
+                            </Button>
+                          )}
+                          
                           {user?.role === 'SUPER_ADMIN' && (
                             <Button 
                               size="sm" 

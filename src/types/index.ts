@@ -45,6 +45,13 @@ export interface Truck {
   completed_at?: string;
   created_at: string;
   updated_at: string;
+  // New overdue tracking fields
+  is_overdue?: boolean;
+  original_arrival_date?: string;
+  actual_arrival_date?: string;
+  overdue_marked_at?: string;
+  reschedule_count?: number;
+  late_arrival_reason?: string;
 }
 
 export interface Task {
@@ -152,6 +159,7 @@ export interface TruckListProps {
   onAssignRamp: (truck: Truck) => void;
   onUpdateStatus: (truckId: string, status: TruckStatus) => void;
   onDeleteTruck: (truckId: string, licensePlate: string) => void;
+  onReschedule?: (truck: Truck) => void;
 }
 
 export interface TruckCardProps {
@@ -159,6 +167,7 @@ export interface TruckCardProps {
   onAssignRamp: (truck: Truck) => void;
   onUpdateStatus: (truckId: string, status: TruckStatus) => void;
   onDeleteTruck: (truckId: string, licensePlate: string) => void;
+  onReschedule?: (truck: Truck) => void;
 }
 
 export interface TruckTableRowProps {

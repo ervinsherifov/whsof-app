@@ -41,7 +41,8 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
   truck,
   onAssignRamp,
   onUpdateStatus,
-  onDeleteTruck
+  onDeleteTruck,
+  onReschedule
 }) => {
   const { user } = useAuth();
 
@@ -148,6 +149,19 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
               aria-label={`Mark truck ${truck.license_plate} as done`}
             >
               Mark Done
+            </Button>
+          )}
+          
+          {/* Reschedule button for overdue trucks or admins */}
+          {((truck.is_overdue || truck.status === 'SCHEDULED') && (user?.role === 'OFFICE_ADMIN' || user?.role === 'SUPER_ADMIN')) && onReschedule && (
+            <Button 
+              size="sm" 
+              variant="secondary"
+              className="text-xs hover-scale"
+              onClick={() => onReschedule(truck)}
+              aria-label={`Reschedule truck ${truck.license_plate}`}
+            >
+              Reschedule
             </Button>
           )}
           

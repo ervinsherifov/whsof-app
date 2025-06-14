@@ -13,6 +13,7 @@ import { useTruckData } from '@/hooks/useTruckData';
 import { TruckSchedulingForm } from '@/components/truck/TruckSchedulingForm';
 import { TruckList } from '@/components/truck/TruckList';
 import { RampStatusGrid } from '@/components/truck/RampStatusGrid';
+import { TruckRescheduleDialog } from '@/components/truck/TruckRescheduleDialog';
 
 const availableRamps = [
   { number: 1, type: 'Unloading' },
@@ -32,6 +33,7 @@ const availableRamps = [
 export const TruckScheduling: React.FC = () => {
   const [isRampDialogOpen, setIsRampDialogOpen] = useState(false);
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState<any>(null);
   const [selectedHandlers, setSelectedHandlers] = useState<string[]>([]);
   const [rampFormData, setRampFormData] = useState({
@@ -283,6 +285,11 @@ export const TruckScheduling: React.FC = () => {
     setIsRampDialogOpen(true);
   };
 
+  const handleReschedule = (truck: any) => {
+    setSelectedTruck(truck);
+    setIsRescheduleDialogOpen(true);
+  };
+
   return (
     <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -304,6 +311,7 @@ export const TruckScheduling: React.FC = () => {
         onAssignRamp={handleAssignRamp}
         onUpdateStatus={updateTruckStatus}
         onDeleteTruck={deleteTruck}
+        onReschedule={handleReschedule}
       />
 
       {/* Ramp Assignment Dialog */}
@@ -460,6 +468,17 @@ export const TruckScheduling: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Truck Reschedule Dialog */}
+      <TruckRescheduleDialog
+        truck={selectedTruck}
+        isOpen={isRescheduleDialogOpen}
+        onOpenChange={setIsRescheduleDialogOpen}
+        onSuccess={() => {
+          refreshData();
+          setSelectedTruck(null);
+        }}
+      />
     </div>
   );
 };
