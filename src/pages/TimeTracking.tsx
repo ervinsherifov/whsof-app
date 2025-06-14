@@ -216,8 +216,8 @@ export const TimeTracking: React.FC = () => {
     let overtimeHours = 0;
     
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-      regularHours = Math.min(hours, 8);
-      overtimeHours = Math.max(0, hours - 8);
+      regularHours = Math.min(hours, 9);
+      overtimeHours = Math.max(0, hours - 9);
     } else {
       overtimeHours = hours;
     }
@@ -402,7 +402,7 @@ export const TimeTracking: React.FC = () => {
           </div>
           
           <div className="text-sm text-muted-foreground">
-            <p>• Standard hours: Monday-Friday 09:00 - 17:00 (8 hours)</p>
+            <p>• Standard hours: Monday-Friday 08:00 - 17:00 (9 hours)</p>
             <p>• Weekend work is automatically overtime</p>
             <p>• Holiday work requires approval</p>
             <p>• All times are recorded in 24-hour format</p>
