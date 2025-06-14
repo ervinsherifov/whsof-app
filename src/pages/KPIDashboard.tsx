@@ -341,6 +341,66 @@ export default function KPIDashboard() {
         </Card>
       </div>
 
+      {/* Task Performance Overview */}
+      <Card className="card-professional">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-primary" />
+            Task Performance Overview
+          </CardTitle>
+          <CardDescription>
+            {selectedUserId === 'all' 
+              ? `Task completion metrics for all warehouse staff in last ${selectedPeriod} days` 
+              : `Task completion metrics for selected user in last ${selectedPeriod} days`
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {userKPIs.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted" />
+              <p>No task activity recorded for this period</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userKPIs.map((userKPI) => (
+                <div key={`task-${userKPI.id}`} className="p-4 bg-accent/5 rounded-lg border border-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{userKPI.display_name || userKPI.email}</p>
+                      <p className="text-xs text-muted-foreground">{userKPI.email}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Tasks Completed</span>
+                      <span className="font-semibold text-primary">{userKPI.tasks_completed || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Trucks Handled</span>
+                      <span className="font-semibold text-display">{userKPI.total_trucks_handled || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Avg Processing</span>
+                      <span className="font-semibold text-display">{userKPI.avg_processing_hours?.toFixed(1) || '0.0'}h</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Task/Truck Ratio</span>
+                      <span className="font-semibold text-secondary">
+                        {userKPI.total_trucks_handled > 0 
+                          ? (userKPI.tasks_completed / userKPI.total_trucks_handled).toFixed(1)
+                          : '0.0'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Per-User Performance */}
       <Card className="card-professional">
         <CardHeader>
