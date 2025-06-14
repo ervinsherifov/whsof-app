@@ -79,6 +79,12 @@ const sidebarItems: SidebarItem[] = [
     roles: ['SUPER_ADMIN'],
     icon: <Users className="h-4 w-4" />,
   },
+  {
+    label: 'Overtime Approval',
+    path: '/overtime-approval',
+    roles: ['SUPER_ADMIN'],
+    icon: <Clock className="h-4 w-4" />,
+  },
 ];
 
 interface SidebarProps {

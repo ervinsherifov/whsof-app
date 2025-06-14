@@ -16,6 +16,7 @@ import { Reports } from "@/pages/Reports";
 import { TVDashboard } from "@/pages/TVDashboard";
 import KPIDashboard from "@/pages/KPIDashboard";
 import { UserManagement } from "@/pages/UserManagement";
+import { OvertimeApproval } from "@/pages/OvertimeApproval";
 import { Unauthorized } from "@/pages/Unauthorized";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -95,6 +96,14 @@ const App = () => (
               <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <Layout>
                   <UserManagement />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/overtime-approval" element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <Layout>
+                  <OvertimeApproval />
                 </Layout>
               </ProtectedRoute>
             } />
