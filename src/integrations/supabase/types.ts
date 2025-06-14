@@ -9,6 +9,105 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      kpi_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          metric_name: string
+          threshold_value: number
+          user_id: string | null
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          metric_name: string
+          threshold_value: number
+          user_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          metric_name?: string
+          threshold_value?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      performance_targets: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          metric_name: string
+          period_type: string
+          target_value: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metric_name: string
+          period_type?: string
+          target_value: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metric_name?: string
+          period_type?: string
+          target_value?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      performance_trends: {
+        Row: {
+          avg_efficiency: number | null
+          avg_processing_hours: number | null
+          completed_trucks: number | null
+          created_at: string | null
+          date: string
+          id: string
+          total_pallets: number | null
+          total_trucks: number | null
+        }
+        Insert: {
+          avg_efficiency?: number | null
+          avg_processing_hours?: number | null
+          completed_trucks?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          total_pallets?: number | null
+          total_trucks?: number | null
+        }
+        Update: {
+          avg_efficiency?: number | null
+          avg_processing_hours?: number | null
+          completed_trucks?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          total_pallets?: number | null
+          total_trucks?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -442,6 +541,24 @@ export type Database = {
       }
     }
     Views: {
+      kpi_dashboard_summary: {
+        Row: {
+          arrived_trucks: number | null
+          avg_processing_hours: number | null
+          completed_trucks: number | null
+          high_priority_trucks: number | null
+          in_progress_trucks: number | null
+          low_priority_trucks: number | null
+          metric_date: string | null
+          normal_priority_trucks: number | null
+          pending_exceptions: number | null
+          resolved_exceptions: number | null
+          scheduled_trucks: number | null
+          total_trucks: number | null
+          urgent_trucks: number | null
+        }
+        Relationships: []
+      }
       kpi_metrics: {
         Row: {
           arrived_trucks: number | null
@@ -498,6 +615,10 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      refresh_kpi_dashboard: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       refresh_user_kpi_metrics: {
         Args: { target_date?: string }
