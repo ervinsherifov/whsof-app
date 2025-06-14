@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useKPIMetrics } from '@/hooks/useKPIMetrics';
 import { useUserKPIData } from '@/hooks/useUserKPIData';
-import { useExceptionData } from '@/hooks/useExceptionData';
 import { useRealtimeKPI } from '@/hooks/useRealtimeKPI';
 import { useHistoricalTrends } from '@/hooks/useHistoricalTrends';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +10,6 @@ import { KPICharts } from '@/components/kpi/KPICharts';
 import { EnhancedUserPerformance } from '@/components/kpi/EnhancedUserPerformance';
 import { WorkSummaryCards } from '@/components/kpi/WorkSummaryCards';
 import { KPIFilters } from '@/components/kpi/KPIFilters';
-import { ExceptionsSection } from '@/components/kpi/ExceptionsSection';
 import { TrendChart } from '@/components/kpi/TrendChart';
 import { PerformanceTargets } from '@/components/kpi/PerformanceTargets';
 import { KPINotifications } from '@/components/kpi/KPINotifications';
@@ -26,12 +24,11 @@ export default function KPIDashboard() {
   
   const { kpiMetrics, loading: kpiLoading } = useKPIMetrics(selectedUserId, selectedPeriod);
   const { userKPIs, warehouseUsers, loading: userLoading } = useUserKPIData(selectedUserId, selectedPeriod);
-  const { exceptions, updateExceptionStatus, loading: exceptionsLoading } = useExceptionData();
   const { trends, loading: trendsLoading } = useHistoricalTrends(parseInt(selectedPeriod));
   const { lastUpdate } = useRealtimeKPI();
   const { user } = useAuth();
 
-  const loading = kpiLoading || userLoading || exceptionsLoading || trendsLoading;
+  const loading = kpiLoading || userLoading || trendsLoading;
 
   if (loading) {
     return (
@@ -49,14 +46,9 @@ export default function KPIDashboard() {
     );
   }
 
-  const handleStatusChange = (exception: any, newStatus: string) => {
-    updateExceptionStatus(exception.id, newStatus, user?.id);
-  };
-
   const exportData = {
     userKPIs,
     kpiMetrics,
-    exceptions,
     trends
   };
 
@@ -182,13 +174,6 @@ export default function KPIDashboard() {
         userKPIs={userKPIs} 
         selectedUserId={selectedUserId} 
         selectedPeriod={selectedPeriod} 
-      />
-
-      {/* Recent Exceptions */}
-      <ExceptionsSection 
-        exceptions={exceptions} 
-        onStatusChange={handleStatusChange} 
-        currentUser={user} 
       />
     </div>
   );
