@@ -18,6 +18,7 @@ import {
   Hash
 } from 'lucide-react';
 import { Truck as TruckType } from '@/types';
+import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
 
 interface MobileTruckInterfaceProps {
   trucks: TruckType[];
@@ -354,6 +355,17 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
                           </Button>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Photo Section for In Progress Trucks */}
+                  {truck.status === 'IN_PROGRESS' && (
+                    <div className="space-y-3 border-t pt-4">
+                      <h4 className="text-sm font-medium text-muted-foreground">Truck Documentation</h4>
+                      <TruckCompletionPhotos 
+                        truckId={truck.id}
+                        onPhotosUploaded={() => {}}
+                      />
                     </div>
                   )}
 
