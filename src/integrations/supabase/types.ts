@@ -629,6 +629,53 @@ export type Database = {
           },
         ]
       }
+      truck_notifications: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          severity: string | null
+          target_user_id: string | null
+          title: string
+          truck_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          severity?: string | null
+          target_user_id?: string | null
+          title: string
+          truck_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          severity?: string | null
+          target_user_id?: string | null
+          title?: string
+          truck_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "truck_notifications_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       truck_photo_compliance: {
         Row: {
           completed_categories: string[] | null
@@ -679,8 +726,53 @@ export type Database = {
           },
         ]
       }
+      truck_status_history: {
+        Row: {
+          change_reason: string | null
+          changed_by_system: boolean | null
+          changed_by_user_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_status: string
+          old_status: string | null
+          truck_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by_system?: boolean | null
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status: string
+          old_status?: string | null
+          truck_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by_system?: boolean | null
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status?: string
+          old_status?: string | null
+          truck_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "truck_status_history_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trucks: {
         Row: {
+          actual_arrival_date: string | null
           arrival_date: string
           arrival_time: string
           assigned_staff_id: string | null
@@ -692,15 +784,21 @@ export type Database = {
           handled_by_name: string | null
           handled_by_user_id: string | null
           id: string
+          is_overdue: boolean | null
+          late_arrival_reason: string | null
           license_plate: string
+          original_arrival_date: string | null
+          overdue_marked_at: string | null
           pallet_count: number
           priority: string
           ramp_number: number | null
+          reschedule_count: number | null
           started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          actual_arrival_date?: string | null
           arrival_date: string
           arrival_time: string
           assigned_staff_id?: string | null
@@ -712,15 +810,21 @@ export type Database = {
           handled_by_name?: string | null
           handled_by_user_id?: string | null
           id?: string
+          is_overdue?: boolean | null
+          late_arrival_reason?: string | null
           license_plate: string
+          original_arrival_date?: string | null
+          overdue_marked_at?: string | null
           pallet_count: number
           priority?: string
           ramp_number?: number | null
+          reschedule_count?: number | null
           started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          actual_arrival_date?: string | null
           arrival_date?: string
           arrival_time?: string
           assigned_staff_id?: string | null
@@ -732,10 +836,15 @@ export type Database = {
           handled_by_name?: string | null
           handled_by_user_id?: string | null
           id?: string
+          is_overdue?: boolean | null
+          late_arrival_reason?: string | null
           license_plate?: string
+          original_arrival_date?: string | null
+          overdue_marked_at?: string | null
           pallet_count?: number
           priority?: string
           ramp_number?: number | null
+          reschedule_count?: number | null
           started_at?: string | null
           status?: string
           updated_at?: string
@@ -947,9 +1056,22 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_truck_analytics: {
+        Args: { p_start_date?: string; p_end_date?: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      handle_truck_arrival: {
+        Args: {
+          p_truck_id: string
+          p_actual_arrival_date?: string
+          p_late_reason?: string
+          p_user_id?: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -962,6 +1084,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      mark_overdue_trucks: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       refresh_all_kpi_views: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -973,6 +1099,16 @@ export type Database = {
       refresh_user_kpi_metrics: {
         Args: { target_date?: string }
         Returns: undefined
+      }
+      reschedule_overdue_truck: {
+        Args: {
+          p_truck_id: string
+          p_new_date: string
+          p_new_time: string
+          p_reason?: string
+          p_user_id?: string
+        }
+        Returns: boolean
       }
       sanitize_text: {
         Args: { input_text: string }
