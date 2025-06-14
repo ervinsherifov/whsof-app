@@ -49,14 +49,14 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
       const updateData: any = { status: newStatus };
       
       if (newStatus === 'ARRIVED') {
-        updateData.handled_by_user_id = user.id;
-        updateData.handled_by_name = user.email;
-        
         // Call the backend function to handle actual arrival
         await supabase.rpc('handle_truck_arrival', {
           p_truck_id: truckId,
           p_user_id: user.id
         });
+        // Don't update here, the RPC function handles it
+        onRefresh();
+        return;
       } else if (newStatus === 'IN_PROGRESS') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
@@ -65,6 +65,7 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
         updateData.completed_at = new Date().toISOString();
       }
 
+      // Only update if not ARRIVED (ARRIVED is handled by RPC)
       const { error } = await supabase
         .from('trucks')
         .update(updateData)
@@ -339,7 +340,7 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">Assign Ramp:</p>
                       <div className="grid grid-cols-4 gap-2">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((rampNum) => (
+                        {Array.from({ length: 13 }, (_, i) => i + 1).map((rampNum) => (
                           <Button
                             key={rampNum}
                             onClick={() => assignRamp(truck.id, rampNum)}
