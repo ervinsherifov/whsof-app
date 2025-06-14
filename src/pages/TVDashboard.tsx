@@ -273,9 +273,9 @@ export const TVDashboard: React.FC = () => {
                     </Badge>
                   </div>
 
-                  {/* Main Info Grid - Fixed layout for proper spacing */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8 mb-6">
-                    <div className="space-y-2">
+                  {/* Main Info Grid - Better spacing between items */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 xl:gap-16 mb-6">
+                    <div className="space-y-3">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Date
                       </div>
@@ -283,7 +283,7 @@ export const TVDashboard: React.FC = () => {
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
@@ -291,7 +291,7 @@ export const TVDashboard: React.FC = () => {
                         {truck.arrival_time.substring(0, 5)}
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Ramp
                       </div>
@@ -299,7 +299,7 @@ export const TVDashboard: React.FC = () => {
                         {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Pallets
                       </div>
