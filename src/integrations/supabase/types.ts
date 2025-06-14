@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      holidays: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          date: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kpi_alerts: {
         Row: {
           alert_type: string
@@ -374,32 +404,50 @@ export type Database = {
       }
       time_entries: {
         Row: {
+          approval_status: string | null
+          approved_by_user_id: string | null
           check_in_time: string
           check_out_time: string | null
           created_at: string
           id: string
+          is_holiday: boolean | null
+          is_weekend: boolean | null
           overtime_hours: number | null
+          overtime_reason: string[] | null
           regular_hours: number | null
+          total_hours: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_by_user_id?: string | null
           check_in_time?: string
           check_out_time?: string | null
           created_at?: string
           id?: string
+          is_holiday?: boolean | null
+          is_weekend?: boolean | null
           overtime_hours?: number | null
+          overtime_reason?: string[] | null
           regular_hours?: number | null
+          total_hours?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: string | null
+          approved_by_user_id?: string | null
           check_in_time?: string
           check_out_time?: string | null
           created_at?: string
           id?: string
+          is_holiday?: boolean | null
+          is_weekend?: boolean | null
           overtime_hours?: number | null
+          overtime_reason?: string[] | null
           regular_hours?: number | null
+          total_hours?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -774,6 +822,39 @@ export type Database = {
           },
         ]
       }
+      work_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string | null
+          id: string
+          is_working_day: boolean | null
+          start_time: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time?: string | null
+          id?: string
+          is_working_day?: boolean | null
+          start_time?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string | null
+          id?: string
+          is_working_day?: boolean | null
+          start_time?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       kpi_dashboard_summary: {
@@ -832,6 +913,14 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_work_hours: {
+        Args: {
+          p_user_id: string
+          p_check_in_time: string
+          p_check_out_time: string
+        }
+        Returns: Json
+      }
       check_truck_photo_compliance: {
         Args: { truck_id_param: string }
         Returns: Json
