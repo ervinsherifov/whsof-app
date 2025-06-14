@@ -36,10 +36,7 @@ interface UserStats {
 export const UserManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -61,29 +58,6 @@ export const UserManagement: React.FC = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  useEffect(() => {
-    filterUsers();
-  }, [users, searchTerm, roleFilter]);
-
-  const filterUsers = () => {
-    let filtered = users;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Role filter
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(user => user.role === roleFilter);
-    }
-
-    setFilteredUsers(filtered);
-  };
 
   const fetchUsers = async () => {
     try {
@@ -515,45 +489,12 @@ export const UserManagement: React.FC = () => {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card className="card-elevated">
-        <CardContent className="p-6">
-          <div className="w-full max-w-none">
-            <div className="flex flex-col md:flex-row gap-4 w-full">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-                <Input
-                  placeholder="Search users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-10 w-full border border-input"
-                />
-              </div>
-              
-              <div className="w-full md:w-60 flex-shrink-0">
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="h-10 w-full border border-input">
-                    <SelectValue placeholder="Filter by role" />
-                  </SelectTrigger>
-                  <SelectContent className="z-50 bg-background border shadow-lg min-w-[200px]">
-                    <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                    <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Users Table */}
       <Card className="card-elevated">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            All Users ({filteredUsers.length})
+            All Users ({users.length})
           </CardTitle>
           <CardDescription>
             Manage user accounts and role-based permissions
@@ -572,7 +513,7 @@ export const UserManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <TableRow key={user.id} className="hover:bg-muted/50">
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -677,15 +618,12 @@ export const UserManagement: React.FC = () => {
             </Table>
           </div>
           
-          {filteredUsers.length === 0 && (
+          {users.length === 0 && (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No users found</h3>
               <p className="text-caption">
-                {searchTerm || roleFilter !== 'all' 
-                  ? 'Try adjusting your filters' 
-                  : 'Get started by adding your first user'
-                }
+                Get started by adding your first user
               </p>
             </div>
           )}
