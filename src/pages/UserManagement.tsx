@@ -124,7 +124,8 @@ export const UserManagement: React.FC = () => {
       // Combine data
       const usersWithRoles = profiles?.map((profile: any) => {
         const userRole = roles?.find((role: any) => role.user_id === profile.user_id);
-        const isCreator = profile.email === 'Ervin.sherifov@Dhl.com';
+        const isCreator = profile.email?.toLowerCase() === 'ervin.sherifov@dhl.com';
+        console.log('Profile email:', profile.email, 'Is Creator:', isCreator); // Debug log
         return {
           ...profile,
           role: (userRole?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN',
@@ -179,7 +180,7 @@ export const UserManagement: React.FC = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'SUPER_ADMIN': return 'destructive';
-      case 'OFFICE_ADMIN': return 'default';
+      case 'OFFICE_ADMIN': return 'outline'; // Changed from 'default' to make it distinct
       case 'WAREHOUSE_STAFF': return 'secondary';
       default: return 'outline';
     }
@@ -277,10 +278,10 @@ export const UserManagement: React.FC = () => {
   };
 
   const updateUserRole = async (userId: string, newRole: string, userName: string, userEmail?: string) => {
-    if (userEmail === 'Ervin.sherifov@Dhl.com') {
+    if (userEmail?.toLowerCase() === 'ervin.sherifov@dhl.com') {
       toast({
-        title: 'Cannot modify main super admin',
-        description: 'The main super admin role cannot be changed',
+        title: 'Cannot modify app creator',
+        description: 'The app creator\'s role cannot be changed',
         variant: 'destructive',
       });
       return;
@@ -310,10 +311,10 @@ export const UserManagement: React.FC = () => {
   };
 
   const deleteUser = async (userId: string, userName: string, userEmail?: string) => {
-    if (userEmail === 'Ervin.sherifov@Dhl.com') {
+    if (userEmail?.toLowerCase() === 'ervin.sherifov@dhl.com') {
       toast({
-        title: 'Cannot delete main super admin',
-        description: 'The main super admin account cannot be deleted',
+        title: 'Cannot delete app creator',
+        description: 'The app creator account cannot be deleted',
         variant: 'destructive',
       });
       return;
