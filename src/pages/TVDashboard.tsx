@@ -135,9 +135,9 @@ export const TVDashboard: React.FC = () => {
       case 'SCHEDULED':
         return 'bg-secondary text-secondary-foreground';
       case 'ARRIVED':
-        return 'bg-green-600 text-white';
+        return 'bg-green-600 text-green-50';
       case 'IN_PROGRESS':
-        return 'bg-orange-600 text-white';
+        return 'bg-orange-600 text-orange-50';
       case 'DONE':
         return 'bg-muted text-muted-foreground';
       default:
@@ -150,11 +150,11 @@ export const TVDashboard: React.FC = () => {
       case 'URGENT':
         return 'bg-destructive text-destructive-foreground';
       case 'HIGH':
-        return 'bg-orange-600 text-white';
+        return 'bg-orange-600 text-orange-50';
       case 'MEDIUM':
         return 'bg-secondary text-secondary-foreground';
       case 'LOW':
-        return 'bg-green-600 text-white';
+        return 'bg-green-600 text-green-50';
       default:
         return 'bg-muted text-muted-foreground';
     }

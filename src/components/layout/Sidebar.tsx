@@ -177,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           <button
             key={item.path}
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-[#FFCC00] hover:text-black',
+              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground',
               location.pathname === item.path 
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-foreground'

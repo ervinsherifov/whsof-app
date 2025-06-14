@@ -971,7 +971,7 @@ export const Reports: React.FC = () => {
                               >
                                 <Download className="h-3 w-3" />
                               </Button>
-                               <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                               <div className="absolute bottom-2 left-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
                                  {formatDate(photo.created_at)}
                                </div>
                             </div>
