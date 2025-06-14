@@ -414,32 +414,32 @@ export const Reports: React.FC = () => {
         {/* Summary Statistics - Only for Super Admin */}
         {hasFullAccess && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="card-elevated">
-            <CardContent className="p-6 flex flex-col justify-center items-center text-center h-full">
+          <Card className="card-elevated h-32">
+            <CardContent className="p-0 h-full flex flex-col justify-center items-center text-center">
               <div className="text-2xl font-bold font-mono text-success">{summary.totalHours}</div>
               <div className="text-overline mt-1">Total Hours Today</div>
               <div className="text-caption mt-2">All staff combined</div>
             </CardContent>
           </Card>
 
-          <Card className="card-elevated">
-            <CardContent className="p-6 flex flex-col justify-center items-center text-center h-full">
+          <Card className="card-elevated h-32">
+            <CardContent className="p-0 h-full flex flex-col justify-center items-center text-center">
               <div className="text-2xl font-bold font-mono text-warning">{summary.totalOvertime}</div>
               <div className="text-overline mt-1">Overtime Hours</div>
               <div className="text-caption mt-2">Beyond standard hours</div>
             </CardContent>
           </Card>
 
-          <Card className="card-elevated">
-            <CardContent className="p-6 flex flex-col justify-center items-center text-center h-full">
+          <Card className="card-elevated h-32">
+            <CardContent className="p-0 h-full flex flex-col justify-center items-center text-center">
               <div className="text-2xl font-bold font-mono text-primary">{summary.totalTrucks}</div>
               <div className="text-overline mt-1">Trucks Processed</div>
               <div className="text-caption mt-2">Completed today</div>
             </CardContent>
           </Card>
 
-          <Card className="card-elevated">
-            <CardContent className="p-6 flex flex-col justify-center items-center text-center h-full">
+          <Card className="card-elevated h-32">
+            <CardContent className="p-0 h-full flex flex-col justify-center items-center text-center">
               <div className="text-2xl font-bold font-mono text-success">{summary.totalTasks}</div>
               <div className="text-overline mt-1">Completed Tasks</div>
               <div className="text-caption mt-2">Tasks completed</div>
@@ -603,7 +603,7 @@ export const Reports: React.FC = () => {
                         <TableCell className="font-medium">
                           {truck.license_plate}
                         </TableCell>
-                        <TableCell>{truck.arrival_date}</TableCell>
+                        <TableCell>{formatDate(truck.arrival_date)}</TableCell>
                         <TableCell>{truck.arrival_time?.substring(0, 5)}</TableCell>
                         <TableCell>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
                          <TableCell>
@@ -637,7 +637,7 @@ export const Reports: React.FC = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium text-lg">{truck.license_plate}</h3>
-                          <p className="text-sm text-muted-foreground">{truck.arrival_date} • {truck.arrival_time?.substring(0, 5)}</p>
+                          <p className="text-sm text-muted-foreground">{formatDate(truck.arrival_date)} • {truck.arrival_time?.substring(0, 5)}</p>
                         </div>
                         <span className={`px-2 py-1 rounded text-sm ${truck.status === 'DONE' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
                           {truck.status}
