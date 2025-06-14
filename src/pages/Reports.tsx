@@ -919,30 +919,30 @@ export const Reports: React.FC = () => {
               <div className="space-y-4">
                 {filteredCompletedTrucks.map((truck) => (
                   <Card key={truck.id} className="border">
-                     <CardContent className="p-3 sm:p-4">
-                       <div className="space-y-3">
-                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                           <div className="flex-1">
-                             <h3 className="font-semibold text-base sm:text-lg">{truck.license_plate}</h3>
-                             <p className="text-xs sm:text-sm text-muted-foreground">
-                                Completed: {formatDate(truck.updated_at)}
-                              </p>
-                             <p className="text-xs sm:text-sm text-muted-foreground">
+                     <CardContent className="p-4">
+                       <div className="space-y-4">
+                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                           <div className="flex-1 space-y-1">
+                             <h3 className="font-semibold text-lg">{truck.license_plate}</h3>
+                             <p className="text-sm text-muted-foreground">
+                               Completed: {formatDate(truck.updated_at)}
+                             </p>
+                             <p className="text-sm text-muted-foreground">
                                Handled by: {truck.handled_by_name || 'Unknown'}
                              </p>
-                             <p className="text-xs sm:text-sm text-muted-foreground">
+                             <p className="text-sm text-muted-foreground">
                                {truck.pallet_count} pallets • {truck.cargo_description}
                              </p>
                            </div>
-                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:space-x-2">
-                             <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                           <div className="flex flex-col items-end gap-2 sm:min-w-[120px]">
+                             <span className="text-sm text-muted-foreground text-right">
                                {truck.truck_completion_photos?.length || 0} photos
                              </span>
                              {truck.truck_completion_photos && truck.truck_completion_photos.length > 0 && (
                                <Button
                                  variant="outline"
                                  size="sm"
-                                 className="w-full sm:w-auto text-xs"
+                                 className="w-full text-xs"
                                  onClick={() => downloadAllPhotosForTruck(truck)}
                                >
                                  <Download className="h-3 w-3 mr-1" />
