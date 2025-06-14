@@ -41,7 +41,8 @@ export const OvertimeApproval: React.FC = () => {
 
   const fetchPendingEntries = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch time entries
+      const { data: timeEntries, error: timeError } = await supabase
         .from('time_entries')
         .select(`
           id,
@@ -55,18 +56,43 @@ export const OvertimeApproval: React.FC = () => {
           is_holiday,
           overtime_reason,
           approval_status,
-          created_at,
-          profiles!user_id (
-            display_name,
-            email
-          )
+          created_at
         `)
         .eq('approval_status', 'pending')
         .gt('overtime_hours', 0)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setPendingEntries((data as any) || []);
+      if (timeError) throw timeError;
+
+      if (!timeEntries || timeEntries.length === 0) {
+        setPendingEntries([]);
+        return;
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(timeEntries.map(entry => entry.user_id))];
+
+      // Fetch profiles for these users
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Create a map of user_id to profile
+      const profileMap = new Map();
+      profiles?.forEach(profile => {
+        profileMap.set(profile.user_id, profile);
+      });
+
+      // Merge time entries with profile data
+      const entriesWithProfiles = timeEntries.map(entry => ({
+        ...entry,
+        profiles: profileMap.get(entry.user_id) || null
+      }));
+
+      setPendingEntries(entriesWithProfiles as any);
     } catch (error) {
       console.error('Error fetching pending entries:', error);
       toast({
