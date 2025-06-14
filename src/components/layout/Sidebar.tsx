@@ -51,8 +51,8 @@ const sidebarItems: SidebarItem[] = [
     icon: <Truck className="h-4 w-4" />,
   },
   {
-    label: 'Mobile Trucks',
-    path: '/mobile-trucks',
+    label: 'Mobile App',
+    path: '/mobile-app',
     roles: ['WAREHOUSE_STAFF'],
     icon: <Smartphone className="h-4 w-4" />,
   },
