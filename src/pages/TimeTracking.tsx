@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCheckInStatus } from '@/hooks/useCheckInStatus';
+import { useWorkSchedule } from '@/hooks/useWorkSchedule';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/dateUtils';
+import { OvertimeWarning } from '@/components/time/OvertimeWarning';
 
 interface TimeEntry {
   id: string;
   user_id: string;
   check_in_time: string;
   check_out_time: string | null;
+  total_hours: number;
+  regular_hours: number;
+  overtime_hours: number;
+  is_weekend: boolean;
+  is_holiday: boolean;
+  overtime_reason: string[];
+  approval_status: string;
+  approved_by_user_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +33,7 @@ interface TimeEntry {
 export const TimeTracking: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
   const { isCheckedIn, currentEntry, refreshStatus } = useCheckInStatus();
+  const { isWorkingDay, isHoliday, getHolidayName, isWeekend } = useWorkSchedule();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
@@ -80,6 +91,26 @@ export const TimeTracking: React.FC = () => {
   const handleCheckIn = async () => {
     setIsCheckingIn(true);
     try {
+      const now = new Date();
+      const todayIsWorkingDay = isWorkingDay(now);
+      const todayIsHoliday = isHoliday(now);
+      const todayIsWeekend = isWeekend(now);
+      
+      // Show warning for non-working days
+      if (!todayIsWorkingDay || todayIsHoliday || todayIsWeekend) {
+        const warningMessage = todayIsHoliday 
+          ? `You're checking in on ${getHolidayName(now)}. All hours will be overtime.`
+          : todayIsWeekend 
+          ? 'You\'re checking in on a weekend. All hours will be overtime.'
+          : 'You\'re checking in on a non-working day. All hours will be overtime.';
+        
+        toast({
+          title: "Overtime Warning",
+          description: warningMessage,
+          variant: "default",
+        });
+      }
+      
       await checkIn();
       await Promise.all([refreshData(), refreshStatus()]);
       toast({
@@ -125,25 +156,30 @@ export const TimeTracking: React.FC = () => {
     });
   };
 
-  const calculateHours = (checkInTime: string, checkOutTime?: string | null) => {
-    const checkIn = new Date(checkInTime);
-    const checkOut = checkOutTime ? new Date(checkOutTime) : new Date();
+  const calculateHours = (entry: TimeEntry) => {
+    // Use database-calculated values if available, otherwise calculate
+    if (entry.total_hours !== undefined) {
+      return {
+        total: entry.total_hours,
+        regular: entry.regular_hours,
+        overtime: entry.overtime_hours
+      };
+    }
+    
+    // Fallback calculation for legacy entries
+    const checkIn = new Date(entry.check_in_time);
+    const checkOut = entry.check_out_time ? new Date(entry.check_out_time) : new Date();
     const diffMs = checkOut.getTime() - checkIn.getTime();
     const hours = diffMs / (1000 * 60 * 60);
     
-    // Check if it's weekend (Saturday = 6, Sunday = 0)
     const dayOfWeek = checkIn.getDay();
-    
     let regularHours = 0;
     let overtimeHours = 0;
     
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-      // Monday to Friday: 8 hours standard, rest is overtime
-      const standardHours = 8;
-      regularHours = Math.min(hours, standardHours);
-      overtimeHours = Math.max(0, hours - standardHours);
+      regularHours = Math.min(hours, 8);
+      overtimeHours = Math.max(0, hours - 8);
     } else {
-      // Saturday and Sunday: all hours are overtime
       overtimeHours = hours;
     }
     
@@ -168,21 +204,33 @@ export const TimeTracking: React.FC = () => {
         checkedIn: false,
         checkInTime: '',
         currentHours: '0:00',
-        overtimeHours: '0:00'
+        overtimeHours: '0:00',
+        isWeekend: false,
+        isHoliday: false,
+        holidayName: null,
+        totalHours: 0,
+        overtimeHoursNum: 0
       };
     }
 
-    const hours = calculateHours(currentEntry.check_in_time, currentEntry.check_out_time);
+    const hours = calculateHours(currentEntry);
     const currentHours = Math.floor(hours.regular);
     const currentMinutes = Math.floor((hours.regular - currentHours) * 60);
     const overtimeHoursCalc = Math.floor(hours.overtime);
     const overtimeMinutes = Math.floor((hours.overtime - overtimeHoursCalc) * 60);
 
+    const checkInDate = new Date(currentEntry.check_in_time);
+
     return {
       checkedIn: isCheckedIn,
       checkInTime: formatTime(currentEntry.check_in_time),
       currentHours: `${currentHours}:${currentMinutes.toString().padStart(2, '0')}`,
-      overtimeHours: `${overtimeHoursCalc}:${overtimeMinutes.toString().padStart(2, '0')}`
+      overtimeHours: `${overtimeHoursCalc}:${overtimeMinutes.toString().padStart(2, '0')}`,
+      isWeekend: currentEntry.is_weekend ?? isWeekend(checkInDate),
+      isHoliday: currentEntry.is_holiday ?? isHoliday(checkInDate),
+      holidayName: getHolidayName(checkInDate),
+      totalHours: hours.total,
+      overtimeHoursNum: hours.overtime
     };
   };
 
@@ -199,7 +247,7 @@ export const TimeTracking: React.FC = () => {
     let totalOvertime = 0;
 
     weeklyEntries.forEach(entry => {
-      const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+      const hours = calculateHours(entry);
       totalRegular += hours.regular;
       totalOvertime += hours.overtime;
     });
@@ -275,6 +323,15 @@ export const TimeTracking: React.FC = () => {
         </Card>
       </div>
 
+      {/* Overtime Warning */}
+      <OvertimeWarning
+        isWeekend={workingTime.isWeekend}
+        isHoliday={workingTime.isHoliday}
+        holidayName={workingTime.holidayName}
+        currentHours={workingTime.totalHours}
+        overtimeHours={workingTime.overtimeHoursNum}
+      />
+
       {/* Time Clock Actions */}
       <Card>
         <CardHeader>
@@ -311,8 +368,9 @@ export const TimeTracking: React.FC = () => {
           </div>
           
           <div className="text-sm text-muted-foreground">
-            <p>• Standard hours: 08:00 - 17:00 (8 hours)</p>
-            <p>• Overtime applies for time outside standard hours</p>
+            <p>• Standard hours: Monday-Friday 09:00 - 17:00 (8 hours)</p>
+            <p>• Weekend work is automatically overtime</p>
+            <p>• Holiday work requires approval</p>
             <p>• All times are recorded in 24-hour format</p>
           </div>
         </CardContent>
@@ -352,17 +410,30 @@ export const TimeTracking: React.FC = () => {
                 </div>
               ) : (
                 timeEntries.map((entry) => {
-                  const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+                  const hours = calculateHours(entry);
                   return (
                     <div key={entry.id} className="border rounded-lg p-4 bg-card">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <span className="font-medium text-muted-foreground">Date:</span>
-                          <div>{formatDate(entry.check_in_time)}</div>
+                          <div className="flex items-center space-x-2">
+                            <span>{formatDate(entry.check_in_time)}</span>
+                            {entry.is_weekend && (
+                              <Badge variant="outline" className="bg-orange-100 text-orange-800 text-xs">Weekend</Badge>
+                            )}
+                            {entry.is_holiday && (
+                              <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">Holiday</Badge>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <span className="font-medium text-muted-foreground">Status:</span>
-                          <div>{entry.check_out_time ? 'Complete' : 'Working'}</div>
+                          <div className="flex items-center space-x-2">
+                            <span>{entry.check_out_time ? 'Complete' : 'Working'}</span>
+                            {entry.approval_status === 'pending' && (
+                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending Approval</Badge>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <span className="font-medium text-muted-foreground">In:</span>
@@ -380,6 +451,11 @@ export const TimeTracking: React.FC = () => {
                           <span className="font-medium text-muted-foreground">Overtime:</span>
                           <div className={hours.overtime > 0 ? "text-orange-600 font-medium" : ""}>
                             {hours.overtime.toFixed(1)}h
+                            {entry.overtime_reason && entry.overtime_reason.length > 0 && (
+                              <span className="ml-1 text-xs text-muted-foreground">
+                                ({entry.overtime_reason.join(', ')})
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -399,7 +475,7 @@ export const TimeTracking: React.FC = () => {
                     <TableHead>Out</TableHead>
                     <TableHead>Regular</TableHead>
                     <TableHead>Overtime</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -417,27 +493,57 @@ export const TimeTracking: React.FC = () => {
                     </TableRow>
                   ) : (
                     timeEntries.map((entry) => {
-                      const hours = calculateHours(entry.check_in_time, entry.check_out_time);
+                      const hours = calculateHours(entry);
                       return (
                         <TableRow key={entry.id}>
                           <TableCell className="font-medium">
-                            {formatDate(entry.check_in_time)}
+                            <div className="flex items-center space-x-2">
+                              <span>{formatDate(entry.check_in_time)}</span>
+                              {entry.is_weekend && (
+                                <Badge variant="outline" className="bg-orange-100 text-orange-800 text-xs">Weekend</Badge>
+                              )}
+                              {entry.is_holiday && (
+                                <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">Holiday</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>{formatTime(entry.check_in_time)}</TableCell>
                           <TableCell>
-                            {entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}
+                            <div className="flex items-center space-x-2">
+                              <span>{entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}</span>
+                              {entry.approval_status === 'pending' && (
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>{hours.regular.toFixed(1)}h</TableCell>
                           <TableCell>
                             {hours.overtime > 0 ? (
-                              <span className="text-orange-600 font-medium">
-                                {hours.overtime.toFixed(1)}h
-                              </span>
+                              <div className="flex items-center space-x-1">
+                                <span className="text-orange-600 font-medium">
+                                  {hours.overtime.toFixed(1)}h
+                                </span>
+                                {entry.overtime_reason && entry.overtime_reason.length > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({entry.overtime_reason.join(', ')})
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               '0h'
                             )}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">-</TableCell>
+                          <TableCell>
+                            {entry.approval_status === 'approved' ? (
+                              <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>
+                            ) : entry.approval_status === 'rejected' ? (
+                              <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>
+                            ) : entry.approval_status === 'pending' ? (
+                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
                         </TableRow>
                       );
                     })
