@@ -241,6 +241,12 @@ export const TVDashboard: React.FC = () => {
                       <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">{truck.pallet_count}</div>
                     </div>
                   </div>
+                  {(truck.status === 'IN_PROGRESS' || truck.status === 'ARRIVED') && truck.handled_by_name && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm lg:text-lg 4xl:text-xl">
+                      <span className="text-blue-700 font-medium">Handled by:</span> 
+                      <span className="text-blue-900 font-bold ml-1">{truck.handled_by_name}</span>
+                    </div>
+                  )}
                   <div className="mt-2 text-sm lg:text-lg 4xl:text-xl">
                     <span className="text-muted-foreground">Cargo:</span> {truck.cargo_description}
                   </div>
