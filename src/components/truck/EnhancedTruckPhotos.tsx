@@ -237,17 +237,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
   const uploadPhotos = async () => {
     if (!user?.id || selectedFiles.length === 0) return;
 
-    // Check if documents category is required and selected
-    const documentsCategory = categories.find(cat => cat.name === 'documents' && cat.is_required);
-    if (documentsCategory && !uploadCategory) {
-      toast({
-        title: 'Category required',
-        description: 'Please select a category. Documents category is required for truck completion.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     // Check for file size limits to prevent numeric overflow
     const maxFileSize = 50 * 1024 * 1024; // 50MB limit
     const oversizedFiles = selectedFiles.filter(file => file.size > maxFileSize);
@@ -536,26 +525,23 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     
                     <div>
                       <Label htmlFor="category">
-                        Category <span className="text-red-500">*</span>
+                        Category (Optional)
                       </Label>
-                      <Select value={uploadCategory} onValueChange={setUploadCategory} required>
+                      <Select value={uploadCategory} onValueChange={setUploadCategory}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category (required)" />
+                          <SelectValue placeholder="Select category (optional)" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map(category => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
-                              {category.is_required && <span className="text-red-500"> *</span>}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {categories.find(cat => cat.name === 'documents')?.is_required && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Documents category is required for truck completion
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You can categorize photos for better organization
+                      </p>
                     </div>
                     
                     {selectedFiles.length > 0 && (
@@ -575,7 +561,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     <div className="flex gap-2">
                       <Button
                         onClick={uploadPhotos}
-                        disabled={uploading || selectedFiles.length === 0 || !uploadCategory}
+                        disabled={uploading || selectedFiles.length === 0}
                         className="flex-1"
                       >
                         {uploading ? 'Uploading...' : 'Upload Photos'}
