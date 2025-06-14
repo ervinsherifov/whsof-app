@@ -178,10 +178,10 @@ export const UserManagement: React.FC = () => {
   };
 
   const getRoleBadgeVariant = (role: string, isCreator?: boolean) => {
-    if (isCreator) return 'outline';
+    if (isCreator) return 'default';
     switch (role) {
       case 'SUPER_ADMIN': return 'destructive';
-      case 'OFFICE_ADMIN': return 'outline'; // Changed from 'default' to make it distinct
+      case 'OFFICE_ADMIN': return 'default';
       case 'WAREHOUSE_STAFF': return 'secondary';
       default: return 'outline';
     }
@@ -604,8 +604,8 @@ export const UserManagement: React.FC = () => {
                           onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
                           disabled={user.is_creator}
                         >
-                           <SelectTrigger className="w-40">
-                             <Badge variant={getRoleBadgeVariant(user.role, user.is_creator)} className="gap-1">
+                           <SelectTrigger className="w-44 h-9">
+                             <Badge variant={getRoleBadgeVariant(user.role, user.is_creator)} className="text-xs font-medium w-full justify-center">
                                {getRoleLabel(user.role, user.is_creator)}
                              </Badge>
                            </SelectTrigger>
