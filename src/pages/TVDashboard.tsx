@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DynamicBackground } from '@/components/ui/dynamic-background';
 import { SoundControls } from '@/components/ui/sound-controls';
-import { Fullscreen, Tv } from 'lucide-react';
+import { Fullscreen, Tv, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getTodayISO, formatDate } from '@/lib/dateUtils';
 import { useSoundNotifications } from '@/hooks/useSoundNotifications';
@@ -198,8 +198,23 @@ export const TVDashboard: React.FC = () => {
       
       {/* Subtle overlay for better readability */}
       <div className="absolute inset-0 bg-background/20 backdrop-blur-[0.5px]" />
-      {/* Fullscreen Toggle */}
-      <div className="absolute top-2 right-2 z-20">
+      {/* Top Right Controls */}
+      <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
+        {/* Sound Controls Icon */}
+        <Button
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          variant="outline"
+          size="sm"
+          className="bg-background/80 backdrop-blur"
+        >
+          {soundEnabled ? (
+            <Volume2 className="w-4 h-4" />
+          ) : (
+            <VolumeX className="w-4 h-4" />
+          )}
+        </Button>
+        
+        {/* Fullscreen Toggle */}
         <Button 
           onClick={toggleFullscreen}
           variant="outline"
@@ -208,26 +223,6 @@ export const TVDashboard: React.FC = () => {
         >
           {isFullscreen ? <Tv className="w-4 h-4" /> : <Fullscreen className="w-4 h-4" />}
         </Button>
-      </div>
-
-      {/* Time/Date Header - Separate blocks for better readability */}
-      <div className="absolute top-2 right-16 z-20 space-y-1">
-        {/* Time Block */}
-        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
-          <div className="text-2xl lg:text-3xl 4xl:text-4xl font-mono text-foreground font-black text-right tracking-wider">
-            {currentTime.toLocaleTimeString('en-GB', { 
-              hour12: false,
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </div>
-        </div>
-        {/* Date Block */}
-        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
-          <div className="text-base lg:text-lg 4xl:text-xl text-muted-foreground font-semibold text-right">
-            {formatDate(currentTime)}
-          </div>
-        </div>
       </div>
 
       {/* Main Content Grid */}
@@ -466,15 +461,31 @@ export const TVDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Sound Controls */}
-      <div className="fixed bottom-2 right-2 z-20">
-        <SoundControls
-          enabled={soundEnabled}
-          onToggle={() => setSoundEnabled(!soundEnabled)}
-          onTestSound={playTestSound}
-          className="w-64"
-        />
+      {/* Current Time Display */}
+      <div className="absolute top-2 left-2 z-20">
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
+          <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground font-black tracking-wider">
+            {currentTime.toLocaleTimeString('en-GB', { 
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            })}
+          </div>
+        </div>
       </div>
+
+      {/* Sound Test Controls (hidden, but accessible for testing) */}
+      {soundEnabled && (
+        <div className="fixed bottom-2 right-2 z-20 opacity-0 hover:opacity-100 transition-opacity">
+          <SoundControls
+            enabled={soundEnabled}
+            onToggle={() => setSoundEnabled(!soundEnabled)}
+            onTestSound={playTestSound}
+            className="w-64"
+          />
+        </div>
+      )}
 
       {/* Auto-refresh indicator */}
       <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded z-20">
