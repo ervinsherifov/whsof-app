@@ -461,10 +461,10 @@ export const TVDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Current Time Display - Center Top */}
-      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="bg-background/95 backdrop-blur-md rounded-xl p-3 lg:p-4 4xl:p-6 border border-border/40 shadow-lg">
-          <div className="text-2xl lg:text-3xl 4xl:text-4xl font-mono text-foreground font-black tracking-wider text-center">
+      {/* Current Time Display - Top Left */}
+      <div className="absolute top-2 left-2 z-20">
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
+          <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground font-black tracking-wider">
             {currentTime.toLocaleTimeString('en-GB', { 
               hour12: false,
               hour: '2-digit',
@@ -472,7 +472,7 @@ export const TVDashboard: React.FC = () => {
               second: '2-digit'
             })}
           </div>
-          <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground text-center mt-1 font-medium">
+          <div className="text-xs lg:text-sm text-muted-foreground font-medium">
             {formatDate(currentTime)}
           </div>
         </div>
