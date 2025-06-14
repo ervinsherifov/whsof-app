@@ -552,10 +552,7 @@ export const UserManagement: React.FC = () => {
                             <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
                             <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                           </SelectContent>
-                        </Select>
-                        {user.is_creator && (
-                          <span className="text-xs text-muted-foreground ml-1">Protected</span>
-                        )}
+                         </Select>
                       </div>
                     </TableCell>
                     
