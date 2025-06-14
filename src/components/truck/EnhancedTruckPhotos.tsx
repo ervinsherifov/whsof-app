@@ -248,6 +248,18 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
       return;
     }
 
+    // Check for file size limits to prevent numeric overflow
+    const maxFileSize = 50 * 1024 * 1024; // 50MB limit
+    const oversizedFiles = selectedFiles.filter(file => file.size > maxFileSize);
+    if (oversizedFiles.length > 0) {
+      toast({
+        title: 'File too large',
+        description: `Files must be smaller than 50MB. Found ${oversizedFiles.length} oversized file(s).`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setUploading(true);
     
     try {
@@ -268,6 +280,9 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           .from('truck-photos')
           .getPublicUrl(fileName);
 
+        // Calculate file size in KB, ensuring it doesn't exceed integer limits
+        const fileSizeKb = Math.min(Math.round(file.size / 1024), 2147483647);
+
         // Save record to database
         const { error: dbError } = await supabase
           .from('truck_completion_photos')
@@ -276,7 +291,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
             photo_url: publicUrl,
             category_id: uploadCategory || null,
             file_name: file.name,
-            file_size_kb: Math.round(file.size / 1024),
+            file_size_kb: fileSizeKb,
             mime_type: file.type,
             capture_timestamp: new Date().toISOString(),
             uploaded_by_user_id: user.id,
