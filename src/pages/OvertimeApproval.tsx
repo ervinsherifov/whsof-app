@@ -21,7 +21,7 @@ interface PendingOvertimeEntry {
   overtime_hours: number;
   is_weekend: boolean;
   is_holiday: boolean;
-  overtime_reason: string[];
+  overtime_reason: string[] | null;
   approval_status: string;
   created_at: string;
   profiles: {
@@ -155,7 +155,11 @@ export const OvertimeApproval: React.FC = () => {
     });
   };
 
-  const getOvertimeReasonBadge = (reasons: string[]) => {
+  const getOvertimeReasonBadge = (reasons: string[] | null | undefined) => {
+    if (!reasons || reasons.length === 0) {
+      return <Badge variant="outline" className="mr-1">No reason specified</Badge>;
+    }
+    
     return reasons.map((reason, index) => {
       let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
       let colorClass = "";
