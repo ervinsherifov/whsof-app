@@ -114,7 +114,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadCategory, setUploadCategory] = useState<string>('');
-  const [uploadTags, setUploadTags] = useState<string>('');
+  
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -200,7 +200,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
     if (searchTerm) {
       filtered = filtered.filter(photo =>
         photo.file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        photo.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
         photo.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -258,9 +257,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           .from('truck-photos')
           .getPublicUrl(fileName);
 
-        // Parse tags
-        const tags = uploadTags.split(',').map(tag => tag.trim()).filter(tag => tag);
-
         // Save record to database
         const { error: dbError } = await supabase
           .from('truck_completion_photos')
@@ -272,7 +268,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
             file_size_kb: Math.round(file.size / 1024),
             mime_type: file.type,
             capture_timestamp: new Date().toISOString(),
-            tags: tags.length > 0 ? tags : null,
             uploaded_by_user_id: user.id,
           });
 
@@ -290,7 +285,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
 
       setSelectedFiles([]);
       setUploadCategory('');
-      setUploadTags('');
       setShowUploadDialog(false);
       fetchPhotos();
       fetchCompliance();
@@ -498,7 +492,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   <DialogHeader>
                     <DialogTitle>Upload Photos</DialogTitle>
                     <DialogDescription>
-                      Upload up to 10 photos with category and tags
+                      Upload photos for truck documentation
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -515,7 +509,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     </div>
                     
                     <div>
-                      <Label htmlFor="category">Category (Optional)</Label>
+                      <Label htmlFor="category">Category</Label>
                       <Select value={uploadCategory} onValueChange={setUploadCategory}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -523,21 +517,12 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         <SelectContent>
                           {categories.map(category => (
                             <SelectItem key={category.id} value={category.id}>
-                              {category.name.replace('_', ' ')}
+                              {category.name}
+                              {category.is_required && <span className="text-red-500"> *</span>}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="tags">Tags (comma-separated)</Label>
-                      <Input
-                        id="tags"
-                        value={uploadTags}
-                        onChange={(e) => setUploadTags(e.target.value)}
-                        placeholder="damage, safety, equipment"
-                      />
                     </div>
                     
                     {selectedFiles.length > 0 && (
@@ -582,7 +567,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search photos by name, tags, or category..."
+                  placeholder="Search photos by name or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -599,7 +584,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                 <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category.id} value={category.id}>
-                    {category.name.replace('_', ' ')}
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -667,7 +652,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         className="absolute top-2 right-2 text-xs"
                         style={{ backgroundColor: photo.category.color_code + '20', color: photo.category.color_code }}
                       >
-                        {photo.category.name.replace('_', ' ')}
+                        {photo.category.name}
                       </Badge>
                     )}
                     
@@ -693,18 +678,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         <span>Q: {photo.quality_metrics[0].quality_score.toFixed(1)}</span>
                       )}
                     </div>
-                    {photo.tags && photo.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {photo.tags.slice(0, 2).map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs px-1 py-0">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {photo.tags.length > 2 && (
-                          <span className="text-xs text-muted-foreground">+{photo.tags.length - 2}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -736,7 +709,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                           className="text-xs"
                           style={{ backgroundColor: photo.category.color_code + '20', color: photo.category.color_code }}
                         >
-                          {photo.category.name.replace('_', ' ')}
+                          {photo.category.name}
                         </Badge>
                       )}
                     </div>
@@ -760,17 +733,6 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         <span>Quality: {photo.quality_metrics[0].quality_score.toFixed(1)}/10</span>
                       )}
                     </div>
-                    
-                    {photo.tags && photo.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {photo.tags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            <Tag className="h-3 w-3 mr-1" />
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
                   
                   <div className="flex gap-2">
@@ -905,24 +867,12 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                   </div>
                   {selectedPhoto.category && (
                     <div>
-                      <strong>Category:</strong> {selectedPhoto.category.name.replace('_', ' ')}
+                      <strong>Category:</strong> {selectedPhoto.category.name}
                     </div>
                   )}
                   {selectedPhoto.quality_metrics && selectedPhoto.quality_metrics.length > 0 && selectedPhoto.quality_metrics[0]?.quality_score && (
                     <div>
                       <strong>Quality Score:</strong> {selectedPhoto.quality_metrics[0].quality_score.toFixed(1)}/10
-                    </div>
-                  )}
-                  {selectedPhoto.tags && selectedPhoto.tags.length > 0 && (
-                    <div className="col-span-2">
-                      <strong>Tags:</strong>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedPhoto.tags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
                     </div>
                   )}
                   {selectedPhoto.annotations && selectedPhoto.annotations.length > 0 && (
