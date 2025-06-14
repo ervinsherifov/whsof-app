@@ -261,188 +261,188 @@ export const Reports: React.FC = () => {
   const summary = getReportSummary();
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="max-w-full mx-auto space-y-4 p-4">
-        <div className="text-center sm:text-left">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Reports</h1>
-          <p className="text-muted-foreground text-sm">
-            Generate and export warehouse operation reports
-          </p>
+    <div className="min-h-screen w-full overflow-x-hidden bg-background">
+      <div className="max-w-7xl mx-auto space-y-6 p-4 lg:p-6">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-display text-3xl font-bold flex items-center gap-3">
+              <Download className="h-8 w-8 text-primary" />
+              Reports & Analytics
+            </h1>
+            <p className="text-caption mt-2">
+              Generate comprehensive reports and export warehouse operation data
+            </p>
+          </div>
         </div>
 
       {/* Report Generation - Role-based access */}
       {hasOfficeAccess && (
-        <Card>
+        <Card className="card-elevated">
           <CardHeader>
-            <CardTitle>Generate Report</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5 text-primary" />
+              Generate Custom Reports
+            </CardTitle>
             <CardDescription>
-              Select report parameters and export data
+              Configure and export detailed warehouse operation reports
             </CardDescription>
           </CardHeader>
           <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reportType" className="text-sm">Report Type</Label>
-                <Select value={reportType} onValueChange={setReportType}>
-                  <SelectTrigger className="w-full text-sm">
-                    <SelectValue placeholder="Select report type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hasFullAccess && <SelectItem value="time_logs">Time Logs</SelectItem>}
-                    <SelectItem value="truck_activity">Truck Activity</SelectItem>
-                    {hasOfficeAccess && <SelectItem value="task_management">Task Management</SelectItem>}
-                    {hasFullAccess && <SelectItem value="task_summary">Task Summary</SelectItem>}
-                    {hasFullAccess && <SelectItem value="productivity">Productivity Report</SelectItem>}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="form-group">
+                  <Label className="form-label">Report Type</Label>
+                  <Select value={reportType} onValueChange={setReportType}>
+                    <SelectTrigger className="form-input">
+                      <SelectValue placeholder="Select report type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hasFullAccess && <SelectItem value="time_logs">📊 Time Logs</SelectItem>}
+                      <SelectItem value="truck_activity">🚛 Truck Activity</SelectItem>
+                      {hasOfficeAccess && <SelectItem value="task_management">📋 Task Management</SelectItem>}
+                      {hasFullAccess && <SelectItem value="task_summary">📈 Task Summary</SelectItem>}
+                      {hasFullAccess && <SelectItem value="productivity">⚡ Productivity Report</SelectItem>}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">Filter by User</Label>
+                  <Select value={selectedUser} onValueChange={setSelectedUser}>
+                    <SelectTrigger className="form-input">
+                      <SelectValue placeholder="All users" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">👥 All users</SelectItem>
+                       {users.map((user) => (
+                         <SelectItem key={user.user_id} value={user.user_id}>
+                           👤 {user.display_name || user.email}
+                         </SelectItem>
+                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="selectedUser" className="text-sm">Filter by User</Label>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger className="w-full text-sm">
-                    <SelectValue placeholder="All users" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All users</SelectItem>
-                     {users.map((user) => (
-                       <SelectItem key={user.user_id} value={user.user_id}>
-                         {user.display_name || user.email}
-                       </SelectItem>
-                     ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="form-group">
+                  <Label className="form-label">Start Date</Label>
+                  <Input
+                    type="text"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    placeholder="DD/MM/YYYY"
+                    pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                    title="Please enter date in DD/MM/YYYY format"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">End Date</Label>
+                  <Input
+                    type="text"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    placeholder="DD/MM/YYYY"
+                    pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                    title="Please enter date in DD/MM/YYYY format"
+                    className="form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button onClick={generateReport} className="btn-primary flex-1">
+                  <Search className="h-4 w-4 mr-2" />
+                  Generate Report
+                </Button>
+                <Button
+                  variant="outline" 
+                  className="btn-outline flex-1"
+                  onClick={() => {
+                    if (reportType === 'time_logs') {
+                      exportToXLSX(timeEntries.map(entry => ({
+                        userName: entry.profiles?.display_name || entry.profiles?.email,
+                        date: formatDate(entry.check_in_time),
+                        checkIn: formatTime(entry.check_in_time),
+                        checkOut: entry.check_out_time ? formatTime(entry.check_out_time) : 'Not checked out',
+                        regularHours: entry.regular_hours || 0,
+                        overtimeHours: entry.overtime_hours || 0,
+                        totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
+                      })), 'time_logs');
+                    } else if (reportType === 'truck_activity') {
+                      exportToXLSX(trucks.map(truck => ({
+                        licensePlate: truck.license_plate,
+                        arrivalDate: truck.arrival_date,
+                        arrivalTime: truck.arrival_time,
+                        rampNumber: truck.ramp_number,
+                        palletCount: truck.pallet_count,
+                        status: truck.status,
+                        assignedStaff: truck.assigned_staff_name,
+                        handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
+                        cargoDescription: truck.cargo_description
+                      })), 'truck_activity');
+                    } else if (reportType === 'task_management') {
+                       exportToXLSX(tasks.map(task => ({
+                         title: task.title,
+                         description: task.description,
+                         priority: task.priority,
+                         status: task.status,
+                         completedBy: task.status === 'COMPLETED' 
+                           ? (task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : 'Unknown') 
+                           : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
+                         dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
+                         createdAt: formatDate(task.created_at),
+                         completedAt: task.completed_at ? formatDate(task.completed_at) : '',
+                         completionComment: task.completion_comment || ''
+                       })), 'task_management');
+                    }
+                  }}
+                  disabled={!reportType}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Excel
+                </Button>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="startDate" className="text-sm">Start Date (DD/MM/YYYY)</Label>
-                <Input
-                  id="startDate"
-                  type="text"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  placeholder="12/06/2025"
-                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
-                  title="Please enter date in DD/MM/YYYY format"
-                  className="w-full text-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="endDate" className="text-sm">End Date (DD/MM/YYYY)</Label>
-                <Input
-                  id="endDate"
-                  type="text"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  placeholder="12/06/2025"
-                  pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
-                  title="Please enter date in DD/MM/YYYY format"
-                  className="w-full text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Button onClick={generateReport} className="w-full text-sm" size="sm">
-                Generate
-              </Button>
-              <Button
-                variant="outline" 
-                size="sm"
-                className="w-full text-sm"
-                onClick={() => {
-                  if (reportType === 'time_logs') {
-                    exportToXLSX(timeEntries.map(entry => ({
-                      userName: entry.profiles?.display_name || entry.profiles?.email,
-                      date: formatDate(entry.check_in_time),
-                      checkIn: formatTime(entry.check_in_time),
-                      checkOut: entry.check_out_time ? formatTime(entry.check_out_time) : 'Not checked out',
-                      regularHours: entry.regular_hours || 0,
-                      overtimeHours: entry.overtime_hours || 0,
-                      totalHours: (entry.regular_hours || 0) + (entry.overtime_hours || 0)
-                    })), 'time_logs');
-                  } else if (reportType === 'truck_activity') {
-                    exportToXLSX(trucks.map(truck => ({
-                      licensePlate: truck.license_plate,
-                      arrivalDate: truck.arrival_date,
-                      arrivalTime: truck.arrival_time,
-                      rampNumber: truck.ramp_number,
-                      palletCount: truck.pallet_count,
-                      status: truck.status,
-                      assignedStaff: truck.assigned_staff_name,
-                      handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
-                      cargoDescription: truck.cargo_description
-                    })), 'truck_activity');
-                  } else if (reportType === 'task_management') {
-                     exportToXLSX(tasks.map(task => ({
-                       title: task.title,
-                       description: task.description,
-                       priority: task.priority,
-                       status: task.status,
-                       completedBy: task.status === 'COMPLETED' 
-                         ? (task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : 'Unknown') 
-                         : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
-                       dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
-                       createdAt: formatDate(task.created_at),
-                       completedAt: task.completed_at ? formatDate(task.completed_at) : '',
-                       completionComment: task.completion_comment || ''
-                     })), 'task_management');
-                  }
-                }}
-                disabled={!reportType}
-              >
-                Export Excel
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
       )}
 
         {/* Summary Statistics - Only for Super Admin */}
         {hasFullAccess && (
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Hours Today</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{summary.totalHours}</div>
-              <p className="text-xs text-muted-foreground">All staff combined</p>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="card-elevated">
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold font-mono text-success">{summary.totalHours}</div>
+              <div className="text-overline mt-1">Total Hours Today</div>
+              <div className="text-caption mt-2">All staff combined</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Overtime Hours</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600">{summary.totalOvertime}</div>
-              <p className="text-xs text-muted-foreground">Beyond standard hours</p>
+          <Card className="card-elevated">
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold font-mono text-warning">{summary.totalOvertime}</div>
+              <div className="text-overline mt-1">Overtime Hours</div>
+              <div className="text-caption mt-2">Beyond standard hours</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Trucks Processed</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{summary.totalTrucks}</div>
-              <p className="text-xs text-muted-foreground">Completed today</p>
+          <Card className="card-elevated">
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold font-mono text-primary">{summary.totalTrucks}</div>
+              <div className="text-overline mt-1">Trucks Processed</div>
+              <div className="text-caption mt-2">Completed today</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Completed Tasks</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{summary.totalTasks}</div>
-              <p className="text-xs text-muted-foreground">Tasks completed</p>
+          <Card className="card-elevated">
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold font-mono text-success">{summary.totalTasks}</div>
+              <div className="text-overline mt-1">Completed Tasks</div>
+              <div className="text-caption mt-2">Tasks completed</div>
             </CardContent>
           </Card>
         </div>
