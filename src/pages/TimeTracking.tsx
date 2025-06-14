@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/dateUtils';
+import { formatHoursDisplay, formatHoursToTime } from '@/lib/timeUtils';
 import { OvertimeWarning } from '@/components/time/OvertimeWarning';
 
 interface TimeEntry {
@@ -204,7 +205,7 @@ export const TimeTracking: React.FC = () => {
         checkedIn: false,
         checkInTime: '',
         currentHours: '0:00',
-        overtimeHours: '0:00',
+        overtimeHours: '0 min',
         isWeekend: false,
         isHoliday: false,
         holidayName: null,
@@ -214,18 +215,13 @@ export const TimeTracking: React.FC = () => {
     }
 
     const hours = calculateHours(currentEntry);
-    const currentHours = Math.floor(hours.regular);
-    const currentMinutes = Math.floor((hours.regular - currentHours) * 60);
-    const overtimeHoursCalc = Math.floor(hours.overtime);
-    const overtimeMinutes = Math.floor((hours.overtime - overtimeHoursCalc) * 60);
-
     const checkInDate = new Date(currentEntry.check_in_time);
 
     return {
       checkedIn: isCheckedIn,
       checkInTime: formatTime(currentEntry.check_in_time),
-      currentHours: `${currentHours}:${currentMinutes.toString().padStart(2, '0')}`,
-      overtimeHours: `${overtimeHoursCalc}:${overtimeMinutes.toString().padStart(2, '0')}`,
+      currentHours: formatHoursToTime(hours.regular),
+      overtimeHours: formatHoursDisplay(hours.overtime),
       isWeekend: currentEntry.is_weekend ?? isWeekend(checkInDate),
       isHoliday: currentEntry.is_holiday ?? isHoliday(checkInDate),
       holidayName: getHolidayName(checkInDate),
@@ -443,21 +439,21 @@ export const TimeTracking: React.FC = () => {
                           <span className="font-medium text-muted-foreground">Out:</span>
                           <div>{entry.check_out_time ? formatTime(entry.check_out_time) : '-'}</div>
                         </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Regular:</span>
-                          <div>{hours.regular.toFixed(1)}h</div>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Overtime:</span>
-                          <div className={hours.overtime > 0 ? "text-orange-600 font-medium" : ""}>
-                            {hours.overtime.toFixed(1)}h
-                            {entry.overtime_reason && entry.overtime_reason.length > 0 && (
-                              <span className="ml-1 text-xs text-muted-foreground">
-                                ({entry.overtime_reason.join(', ')})
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                         <div>
+                           <span className="font-medium text-muted-foreground">Regular:</span>
+                           <div>{formatHoursDisplay(hours.regular)}</div>
+                         </div>
+                         <div>
+                           <span className="font-medium text-muted-foreground">Overtime:</span>
+                           <div className={hours.overtime > 0 ? "text-orange-600 font-medium" : ""}>
+                             {formatHoursDisplay(hours.overtime)}
+                             {entry.overtime_reason && entry.overtime_reason.length > 0 && (
+                               <span className="ml-1 text-xs text-muted-foreground">
+                                 ({entry.overtime_reason.join(', ')})
+                               </span>
+                             )}
+                           </div>
+                         </div>
                       </div>
                     </div>
                   );
@@ -516,23 +512,23 @@ export const TimeTracking: React.FC = () => {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>{hours.regular.toFixed(1)}h</TableCell>
-                          <TableCell>
-                            {hours.overtime > 0 ? (
-                              <div className="flex items-center space-x-1">
-                                <span className="text-orange-600 font-medium">
-                                  {hours.overtime.toFixed(1)}h
-                                </span>
-                                {entry.overtime_reason && entry.overtime_reason.length > 0 && (
-                                  <span className="text-xs text-muted-foreground">
-                                    ({entry.overtime_reason.join(', ')})
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              '0h'
-                            )}
-                          </TableCell>
+                           <TableCell>{formatHoursDisplay(hours.regular)}</TableCell>
+                           <TableCell>
+                             {hours.overtime > 0 ? (
+                               <div className="flex items-center space-x-1">
+                                 <span className="text-orange-600 font-medium">
+                                   {formatHoursDisplay(hours.overtime)}
+                                 </span>
+                                 {entry.overtime_reason && entry.overtime_reason.length > 0 && (
+                                   <span className="text-xs text-muted-foreground">
+                                     ({entry.overtime_reason.join(', ')})
+                                   </span>
+                                 )}
+                               </div>
+                             ) : (
+                               '0 min'
+                             )}
+                           </TableCell>
                           <TableCell>
                             {entry.approval_status === 'approved' ? (
                               <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>
@@ -566,15 +562,15 @@ export const TimeTracking: React.FC = () => {
         <CardContent>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <div className="text-center">
-              <div className="text-2xl font-bold">{weeklySummary.regular}</div>
+              <div className="text-2xl font-bold">{formatHoursDisplay(weeklySummary.regular)}</div>
               <p className="text-sm text-muted-foreground">Regular Hours</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{weeklySummary.overtime}</div>
+              <div className="text-2xl font-bold text-orange-600">{formatHoursDisplay(weeklySummary.overtime)}</div>
               <p className="text-sm text-muted-foreground">Overtime Hours</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{weeklySummary.total}</div>
+              <div className="text-2xl font-bold">{formatHoursDisplay(weeklySummary.total)}</div>
               <p className="text-sm text-muted-foreground">Total Hours</p>
             </div>
           </div>
