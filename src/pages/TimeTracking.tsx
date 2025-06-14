@@ -71,16 +71,10 @@ export const TimeTracking: React.FC = () => {
       let query;
       
       if (isAdmin) {
-        // Super admins can see all entries with user profiles
+        // Super admins can see all entries - we'll fetch profiles separately
         query = supabase
           .from('time_entries')
-          .select(`
-            *,
-            profiles (
-              display_name,
-              email
-            )
-          `);
+          .select('*');
       } else {
         // Regular users only see their own entries
         query = supabase
@@ -109,7 +103,25 @@ export const TimeTracking: React.FC = () => {
         .limit(50);
 
       if (error) throw error;
-      setTimeEntries(data || []);
+      
+      let entriesWithProfiles = data || [];
+      
+      // If admin, fetch profile information for each entry
+      if (isAdmin && data && data.length > 0) {
+        const userIds = [...new Set(data.map((entry: any) => entry.user_id).filter((id: any) => typeof id === 'string'))] as string[];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', userIds);
+        
+        // Attach profile data to entries
+        entriesWithProfiles = data.map(entry => ({
+          ...entry,
+          profiles: profiles?.find(p => p.user_id === entry.user_id) || null
+        }));
+      }
+      
+      setTimeEntries(entriesWithProfiles);
     } catch (error) {
       console.error('Error fetching time entries:', error);
     }
