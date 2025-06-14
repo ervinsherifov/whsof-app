@@ -114,16 +114,24 @@ export const OvertimeApproval: React.FC = () => {
     
     setIsProcessing(true);
     try {
-      const { error } = await supabase
+      console.log('Attempting to update time entry:', { entryId, status, userId: user.id });
+      
+      const { data, error } = await supabase
         .from('time_entries')
         .update({
           approval_status: status,
           approved_by_user_id: user.id,
           updated_at: new Date().toISOString()
         })
-        .eq('id', entryId);
+        .eq('id', entryId)
+        .select('id, approval_status, approved_by_user_id');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
+
+      console.log('Update successful:', data);
 
       toast({
         title: status === 'approved' ? "Overtime Approved" : "Overtime Rejected",
