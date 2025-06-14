@@ -108,6 +108,142 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_annotations: {
+        Row: {
+          annotation_text: string
+          annotation_type: string | null
+          created_at: string
+          created_by_user_id: string
+          id: string
+          photo_id: string
+          updated_at: string
+          x_coordinate: number | null
+          y_coordinate: number | null
+        }
+        Insert: {
+          annotation_text: string
+          annotation_type?: string | null
+          created_at?: string
+          created_by_user_id: string
+          id?: string
+          photo_id: string
+          updated_at?: string
+          x_coordinate?: number | null
+          y_coordinate?: number | null
+        }
+        Update: {
+          annotation_text?: string
+          annotation_type?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          id?: string
+          photo_id?: string
+          updated_at?: string
+          x_coordinate?: number | null
+          y_coordinate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_annotations_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "truck_completion_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_categories: {
+        Row: {
+          color_code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      photo_quality_metrics: {
+        Row: {
+          blur_score: number | null
+          brightness_score: number | null
+          created_at: string
+          file_size_kb: number | null
+          has_geolocation: boolean | null
+          has_timestamp: boolean | null
+          id: string
+          photo_id: string
+          processing_status: string | null
+          quality_score: number | null
+          resolution_height: number | null
+          resolution_width: number | null
+          updated_at: string
+        }
+        Insert: {
+          blur_score?: number | null
+          brightness_score?: number | null
+          created_at?: string
+          file_size_kb?: number | null
+          has_geolocation?: boolean | null
+          has_timestamp?: boolean | null
+          id?: string
+          photo_id: string
+          processing_status?: string | null
+          quality_score?: number | null
+          resolution_height?: number | null
+          resolution_width?: number | null
+          updated_at?: string
+        }
+        Update: {
+          blur_score?: number | null
+          brightness_score?: number | null
+          created_at?: string
+          file_size_kb?: number | null
+          has_geolocation?: boolean | null
+          has_timestamp?: boolean | null
+          id?: string
+          photo_id?: string
+          processing_status?: string | null
+          quality_score?: number | null
+          resolution_height?: number | null
+          resolution_width?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_quality_metrics_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "truck_completion_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -271,23 +407,65 @@ export type Database = {
       }
       truck_completion_photos: {
         Row: {
+          capture_timestamp: string | null
+          category_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by_user_id: string | null
+          device_info: Json | null
+          file_name: string | null
+          file_size_kb: number | null
+          geo_latitude: number | null
+          geo_longitude: number | null
           id: string
+          is_deleted: boolean | null
+          is_primary: boolean | null
+          mime_type: string | null
           photo_url: string
+          processing_status: string | null
+          tags: string[] | null
           truck_id: string
           uploaded_by_user_id: string
         }
         Insert: {
+          capture_timestamp?: string | null
+          category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by_user_id?: string | null
+          device_info?: Json | null
+          file_name?: string | null
+          file_size_kb?: number | null
+          geo_latitude?: number | null
+          geo_longitude?: number | null
           id?: string
+          is_deleted?: boolean | null
+          is_primary?: boolean | null
+          mime_type?: string | null
           photo_url: string
+          processing_status?: string | null
+          tags?: string[] | null
           truck_id: string
           uploaded_by_user_id: string
         }
         Update: {
+          capture_timestamp?: string | null
+          category_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by_user_id?: string | null
+          device_info?: Json | null
+          file_name?: string | null
+          file_size_kb?: number | null
+          geo_latitude?: number | null
+          geo_longitude?: number | null
           id?: string
+          is_deleted?: boolean | null
+          is_primary?: boolean | null
+          mime_type?: string | null
           photo_url?: string
+          processing_status?: string | null
+          tags?: string[] | null
           truck_id?: string
           uploaded_by_user_id?: string
         }
@@ -297,6 +475,13 @@ export type Database = {
             columns: ["truck_id"]
             isOneToOne: false
             referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "truck_completion_photos_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "photo_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -389,6 +574,56 @@ export type Database = {
           },
           {
             foreignKeyName: "truck_handlers_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      truck_photo_compliance: {
+        Row: {
+          completed_categories: string[] | null
+          compliance_score: number | null
+          created_at: string
+          id: string
+          is_compliant: boolean | null
+          notes: string | null
+          required_categories: string[] | null
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
+          truck_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_categories?: string[] | null
+          compliance_score?: number | null
+          created_at?: string
+          id?: string
+          is_compliant?: boolean | null
+          notes?: string | null
+          required_categories?: string[] | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          truck_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_categories?: string[] | null
+          compliance_score?: number | null
+          created_at?: string
+          id?: string
+          is_compliant?: boolean | null
+          notes?: string | null
+          required_categories?: string[] | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          truck_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "truck_photo_compliance_truck_id_fkey"
             columns: ["truck_id"]
             isOneToOne: false
             referencedRelation: "trucks"
@@ -597,6 +832,14 @@ export type Database = {
       }
     }
     Functions: {
+      check_truck_photo_compliance: {
+        Args: { truck_id_param: string }
+        Returns: Json
+      }
+      generate_truck_photo_summary: {
+        Args: { truck_id_param: string }
+        Returns: Json
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
