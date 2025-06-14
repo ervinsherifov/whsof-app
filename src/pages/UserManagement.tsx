@@ -177,7 +177,8 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
+  const getRoleBadgeVariant = (role: string, isCreator?: boolean) => {
+    if (isCreator) return 'outline';
     switch (role) {
       case 'SUPER_ADMIN': return 'destructive';
       case 'OFFICE_ADMIN': return 'outline'; // Changed from 'default' to make it distinct
@@ -186,7 +187,8 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const getRoleLabel = (role: string) => {
+  const getRoleLabel = (role: string, isCreator?: boolean) => {
+    if (isCreator) return 'System Owner';
     switch (role) {
       case 'SUPER_ADMIN': return 'Super Admin';
       case 'OFFICE_ADMIN': return 'Office Admin';
@@ -607,12 +609,11 @@ export const UserManagement: React.FC = () => {
                           onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
                           disabled={user.is_creator}
                         >
-                          <SelectTrigger className="w-40">
-                            <Badge variant={getRoleBadgeVariant(user.role)} className="gap-1">
-                              {getRoleLabel(user.role)}
-                              {user.is_creator && '👑'}
-                            </Badge>
-                          </SelectTrigger>
+                           <SelectTrigger className="w-40">
+                             <Badge variant={getRoleBadgeVariant(user.role, user.is_creator)} className="gap-1">
+                               {getRoleLabel(user.role, user.is_creator)}
+                             </Badge>
+                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
                             <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
