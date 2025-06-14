@@ -483,12 +483,12 @@ export const TimeTracking: React.FC = () => {
                          </div>
                          <div>
                            <span className="font-medium text-muted-foreground">Status:</span>
-                           <div className="flex items-center space-x-2">
-                             <span>{entry.check_out_time ? 'Complete' : 'Working'}</span>
-                             {entry.approval_status === 'pending' && (
-                               <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending Approval</Badge>
-                             )}
-                           </div>
+                            <div className="flex items-center space-x-2">
+                              <span>{entry.check_out_time ? 'Complete' : 'Working'}</span>
+                              {entry.approval_status === 'pending' && hours.overtime > 0 && (
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending Approval</Badge>
+                              )}
+                            </div>
                          </div>
                          <div>
                            <span className="font-medium text-muted-foreground">In:</span>
@@ -592,17 +592,17 @@ export const TimeTracking: React.FC = () => {
                                '0 min'
                              )}
                            </TableCell>
-                          <TableCell>
-                            {entry.approval_status === 'approved' ? (
-                              <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>
-                            ) : entry.approval_status === 'rejected' ? (
-                              <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>
-                            ) : entry.approval_status === 'pending' ? (
-                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
+                           <TableCell>
+                             {entry.approval_status === 'approved' ? (
+                               <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>
+                             ) : entry.approval_status === 'rejected' ? (
+                               <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>
+                             ) : entry.approval_status === 'pending' && hours.overtime > 0 ? (
+                               <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
+                             ) : (
+                               '-'
+                             )}
+                           </TableCell>
                         </TableRow>
                       );
                     })
