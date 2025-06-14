@@ -273,8 +273,8 @@ export const TVDashboard: React.FC = () => {
                     </Badge>
                   </div>
 
-                  {/* Main Info Grid - Better spacing between items */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 xl:gap-16 mb-6">
+                  {/* Main Info Grid - Maximum spacing between items */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 xl:gap-20 2xl:gap-24 mb-6">
                     <div className="space-y-3">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Date
@@ -283,12 +283,12 @@ export const TVDashboard: React.FC = () => {
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-3 sm:justify-self-end lg:justify-self-center">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono">
-                        {truck.arrival_time.substring(0, 5)}
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono tracking-wider">
+                        <span className="font-black">{truck.arrival_time.substring(0, 5)}</span>
                       </div>
                     </div>
                     <div className="space-y-3">
