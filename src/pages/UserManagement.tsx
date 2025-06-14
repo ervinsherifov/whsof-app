@@ -518,8 +518,8 @@ export const UserManagement: React.FC = () => {
       {/* Filters */}
       <Card className="card-elevated">
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-6">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
@@ -529,7 +529,7 @@ export const UserManagement: React.FC = () => {
               />
             </div>
             
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-48 sm:flex-shrink-0">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by role" />
