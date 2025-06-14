@@ -206,50 +206,136 @@ export const TVDashboard: React.FC = () => {
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
             <div className="space-y-3 lg:space-y-4 4xl:space-y-6">
-              {trucks.map((truck) => (
+              {trucks.map((truck, index) => (
                 <div 
                   key={truck.id}
-                  className="border border-border rounded-lg p-3 lg:p-4 4xl:p-6 bg-card"
+                  className={`
+                    relative border-2 rounded-xl p-4 lg:p-6 4xl:p-8 
+                    transform transition-all duration-500 ease-out
+                    animate-fade-in bg-card/80 backdrop-blur-sm
+                    hover:scale-102 hover:shadow-lg
+                    ${truck.status === 'IN_PROGRESS' 
+                      ? 'border-orange-500/50 shadow-orange-500/20 shadow-lg animate-pulse' 
+                      : truck.status === 'ARRIVED'
+                      ? 'border-green-500/50 shadow-green-500/20 shadow-md'
+                      : 'border-border/50 shadow-sm'
+                    }
+                  `}
+                  style={{ 
+                    animationDelay: `${index * 100}ms`,
+                    animationFillMode: 'both'
+                  }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-xl lg:text-2xl 4xl:text-3xl font-bold">{truck.license_plate}</div>
-                    <Badge className={`text-sm lg:text-lg 4xl:text-xl px-3 py-1 ${getStatusColor(truck.status)}`}>
-                      {truck.status}
+                  {/* Status Indicator Bar */}
+                  <div className={`
+                    absolute top-0 left-0 right-0 h-1.5 rounded-t-xl
+                    ${truck.status === 'IN_PROGRESS' 
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-400' 
+                      : truck.status === 'ARRIVED'
+                      ? 'bg-gradient-to-r from-green-500 to-green-400'
+                      : 'bg-gradient-to-r from-secondary to-secondary/80'
+                    }
+                  `} />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl lg:text-3xl 4xl:text-4xl font-bold tracking-tight">
+                        {truck.license_plate}
+                      </div>
+                      {truck.priority === 'URGENT' && (
+                        <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
+                      )}
+                    </div>
+                    <Badge className={`
+                      text-sm lg:text-lg 4xl:text-xl px-4 py-2 font-semibold
+                      ${truck.status === 'SCHEDULED' 
+                        ? 'bg-secondary/20 text-secondary-foreground border-secondary/30'
+                        : truck.status === 'ARRIVED'
+                        ? 'bg-green-500/20 text-green-700 border-green-500/30'
+                        : truck.status === 'IN_PROGRESS'
+                        ? 'bg-orange-500/20 text-orange-700 border-orange-500/30'
+                        : 'bg-muted/20 text-muted-foreground border-muted/30'
+                      }
+                    `}>
+                      {truck.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 lg:gap-3 text-sm lg:text-lg 4xl:text-xl">
-                    <div>
-                      <span className="text-muted-foreground">Date:</span>
-                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
+
+                  {/* Main Info Grid */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-4">
+                    <div className="space-y-1">
+                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                        Date
+                      </div>
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Time:</span>
-                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
+                    <div className="space-y-1">
+                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                        Time
+                      </div>
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground font-mono">
                         {truck.arrival_time.substring(0, 5)}
                       </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Ramp:</span>
-                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">
-                        {truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}
+                    <div className="space-y-1">
+                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                        Ramp
+                      </div>
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                        {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
                       </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Pallets:</span>
-                      <div className="font-bold text-lg lg:text-xl 4xl:text-2xl">{truck.pallet_count}</div>
+                    <div className="space-y-1">
+                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                        Pallets
+                      </div>
+                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                        {truck.pallet_count}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Staff Assignment */}
                   {(truck.status === 'IN_PROGRESS' || truck.status === 'ARRIVED') && truck.handled_by_name && (
-                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm lg:text-lg 4xl:text-xl">
-                      <span className="text-blue-700 font-medium">Handled by:</span> 
-                      <span className="text-blue-900 font-bold ml-1">{truck.handled_by_name}</span>
+                    <div className="mb-4 p-3 lg:p-4 rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                        <span className="text-sm lg:text-base 4xl:text-lg text-blue-700 font-medium">
+                          Handled by:
+                        </span>
+                        <span className="text-sm lg:text-base 4xl:text-lg text-blue-900 font-bold">
+                          {truck.handled_by_name}
+                        </span>
+                      </div>
                     </div>
                   )}
-                  <div className="mt-2 text-sm lg:text-lg 4xl:text-xl">
-                    <span className="text-muted-foreground">Cargo:</span> {truck.cargo_description}
+
+                  {/* Cargo Description */}
+                  <div className="space-y-2">
+                    <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                      Cargo
+                    </div>
+                    <div className="text-sm lg:text-base 4xl:text-lg text-foreground leading-relaxed">
+                      {truck.cargo_description}
+                    </div>
                   </div>
+
+                  {/* Progress Indicator for In-Progress Trucks */}
+                  {truck.status === 'IN_PROGRESS' && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between text-xs lg:text-sm text-muted-foreground">
+                        <span>Processing...</span>
+                        <span>Est. 50 min</span>
+                      </div>
+                      <div className="w-full bg-secondary/30 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full animate-pulse" 
+                             style={{ width: '65%' }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {trucks.length === 0 && (
