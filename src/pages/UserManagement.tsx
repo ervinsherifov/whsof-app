@@ -591,11 +591,6 @@ export const UserManagement: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{user.display_name || 'No Name'}</span>
-                            {user.is_creator && (
-                              <Badge variant="outline" className="text-xs px-2 py-0.5 border-primary/40 text-primary">
-                                System Owner
-                              </Badge>
-                            )}
                           </div>
                           <div className="text-caption">{user.email}</div>
                         </div>
