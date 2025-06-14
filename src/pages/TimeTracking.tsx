@@ -36,7 +36,13 @@ export const TimeTracking: React.FC = () => {
   const { isCheckedIn, currentEntry, refreshStatus } = useCheckInStatus();
   const { isWorkingDay, isHoliday, getHolidayName, isWeekend } = useWorkSchedule();
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year = today.getFullYear();
+    return `${day}/${month}/${year}`;
+  });
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
@@ -504,14 +510,9 @@ export const TimeTracking: React.FC = () => {
                             </div>
                           </TableCell>
                           <TableCell>{formatTime(entry.check_in_time)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <span>{entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}</span>
-                              {entry.approval_status === 'pending' && (
-                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 text-xs">Pending</Badge>
-                              )}
-                            </div>
-                          </TableCell>
+                           <TableCell>
+                             {entry.check_out_time ? formatTime(entry.check_out_time) : 'Working'}
+                           </TableCell>
                            <TableCell>{formatHoursDisplay(hours.regular)}</TableCell>
                            <TableCell>
                              {hours.overtime > 0 ? (
