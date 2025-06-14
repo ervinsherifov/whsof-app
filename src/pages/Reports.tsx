@@ -415,7 +415,7 @@ export const Reports: React.FC = () => {
         {hasFullAccess && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="card-elevated">
-            <CardContent className="p-6">
+            <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold font-mono text-success">{summary.totalHours}</div>
               <div className="text-overline mt-1">Total Hours Today</div>
               <div className="text-caption mt-2">All staff combined</div>
@@ -423,7 +423,7 @@ export const Reports: React.FC = () => {
           </Card>
 
           <Card className="card-elevated">
-            <CardContent className="p-6">
+            <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold font-mono text-warning">{summary.totalOvertime}</div>
               <div className="text-overline mt-1">Overtime Hours</div>
               <div className="text-caption mt-2">Beyond standard hours</div>
@@ -431,7 +431,7 @@ export const Reports: React.FC = () => {
           </Card>
 
           <Card className="card-elevated">
-            <CardContent className="p-6">
+            <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold font-mono text-primary">{summary.totalTrucks}</div>
               <div className="text-overline mt-1">Trucks Processed</div>
               <div className="text-caption mt-2">Completed today</div>
@@ -439,7 +439,7 @@ export const Reports: React.FC = () => {
           </Card>
 
           <Card className="card-elevated">
-            <CardContent className="p-6">
+            <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold font-mono text-success">{summary.totalTasks}</div>
               <div className="text-overline mt-1">Completed Tasks</div>
               <div className="text-caption mt-2">Tasks completed</div>
