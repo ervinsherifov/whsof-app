@@ -273,40 +273,40 @@ export const TVDashboard: React.FC = () => {
                     </Badge>
                   </div>
 
-                  {/* Main Info Grid - Force wide separation between Date and Time */}
-                  <div className="flex flex-wrap justify-between items-start gap-8 lg:gap-12 xl:gap-16 mb-6">
-                    <div className="flex-1 min-w-[200px] space-y-3">
-                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                  {/* Main Info Grid - Compact layout with proper spacing */}
+                  <div className="flex flex-wrap justify-between items-start gap-4 lg:gap-6 mb-4">
+                    <div className="flex-1 min-w-[120px] space-y-1">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
                         Date
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
+                      <div className="text-lg lg:text-xl font-black text-foreground">
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
                     
-                    <div className="flex-1 min-w-[200px] space-y-3">
-                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                    <div className="flex-1 min-w-[120px] space-y-1">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono tracking-wider">
+                      <div className="text-lg lg:text-xl font-black text-foreground font-mono tracking-wider">
                         <span className="font-black">{truck.arrival_time.substring(0, 5)}</span>
                       </div>
                     </div>
                     
-                    <div className="flex-1 min-w-[150px] space-y-3">
-                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                    <div className="flex-1 min-w-[100px] space-y-1">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
                         Ramp
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
+                      <div className="text-lg lg:text-xl font-black text-foreground">
                         {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
                       </div>
                     </div>
                     
-                    <div className="flex-1 min-w-[150px] space-y-3">
-                      <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
+                    <div className="flex-1 min-w-[100px] space-y-1">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
                         Pallets
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
+                      <div className="text-lg lg:text-xl font-black text-foreground">
                         {truck.pallet_count}
                       </div>
                     </div>
