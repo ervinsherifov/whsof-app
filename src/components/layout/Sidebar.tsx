@@ -19,7 +19,8 @@ import {
   ClipboardList, 
   BarChart3, 
   Tv, 
-  Users 
+  Users,
+  Smartphone
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,6 +49,12 @@ const sidebarItems: SidebarItem[] = [
     path: '/trucks',
     roles: ['WAREHOUSE_STAFF', 'OFFICE_ADMIN', 'SUPER_ADMIN'],
     icon: <Truck className="h-4 w-4" />,
+  },
+  {
+    label: 'Mobile Trucks',
+    path: '/mobile-trucks',
+    roles: ['WAREHOUSE_STAFF'],
+    icon: <Smartphone className="h-4 w-4" />,
   },
   {
     label: 'Task Management',

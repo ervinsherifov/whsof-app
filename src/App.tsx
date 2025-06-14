@@ -17,6 +17,7 @@ import { TVDashboard } from "@/pages/TVDashboard";
 import KPIDashboard from "@/pages/KPIDashboard";
 import { UserManagement } from "@/pages/UserManagement";
 import { OvertimeApproval } from "@/pages/OvertimeApproval";
+import { MobileTruckDashboard } from "@/pages/MobileTruckDashboard";
 import { Unauthorized } from "@/pages/Unauthorized";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -105,6 +106,12 @@ const App = () => (
                 <Layout>
                   <OvertimeApproval />
                 </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/mobile-trucks" element={
+              <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']}>
+                <MobileTruckDashboard />
               </ProtectedRoute>
             } />
             

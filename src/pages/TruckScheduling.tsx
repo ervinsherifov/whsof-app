@@ -290,6 +290,18 @@ export const TruckScheduling: React.FC = () => {
     setIsRescheduleDialogOpen(true);
   };
 
+  // Redirect warehouse staff to mobile interface on small screens
+  React.useEffect(() => {
+    if (user?.role === 'WAREHOUSE_STAFF' && window.innerWidth < 768) {
+      const shouldRedirect = window.confirm(
+        'Mobile interface available! Would you like to use the mobile-optimized truck dashboard?'
+      );
+      if (shouldRedirect) {
+        window.location.href = '/mobile-trucks';
+      }
+    }
+  }, [user?.role]);
+
   return (
     <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -303,7 +315,8 @@ export const TruckScheduling: React.FC = () => {
         <TruckSchedulingForm onSuccess={refreshData} />
       </div>
 
-      <RampStatusGrid trucks={trucks} />
+      {/* Ramp Status Grid - Hidden for warehouse staff */}
+      {user?.role !== 'WAREHOUSE_STAFF' && <RampStatusGrid trucks={trucks} />}
 
       <TruckList 
         trucks={trucks}
