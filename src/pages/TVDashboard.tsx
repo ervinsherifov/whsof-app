@@ -212,20 +212,20 @@ export const TVDashboard: React.FC = () => {
           <CardContent className="flex-1 overflow-y-auto">
             <div className="space-y-3 lg:space-y-4 4xl:space-y-6">
               {trucks.map((truck, index) => (
-                <div 
-                  key={truck.id}
-                  className={`
-                    relative border-2 rounded-xl p-4 lg:p-6 4xl:p-8 
-                    transform transition-all duration-500 ease-out
-                    animate-fade-in truck-card backdrop-blur-sm
-                    hover:scale-102 hover:shadow-lg
-                    ${truck.status === 'IN_PROGRESS' 
-                      ? 'border-orange-500/60 shadow-orange-500/30 shadow-lg tv-glow' 
-                      : truck.status === 'ARRIVED'
-                      ? 'border-green-500/60 shadow-green-500/30 shadow-md'
-                      : 'border-border/50 shadow-sm'
-                    }
-                  `}
+                  <div 
+                    key={truck.id}
+                    className={`
+                      relative border-2 rounded-xl p-6 lg:p-8 4xl:p-10 
+                      transform transition-all duration-500 ease-out
+                      animate-fade-in truck-card backdrop-blur-sm
+                      hover:scale-[1.01] hover:shadow-lg
+                      ${truck.status === 'IN_PROGRESS' 
+                        ? 'border-orange-500/60 shadow-orange-500/30 shadow-lg animate-pulse' 
+                        : truck.status === 'ARRIVED'
+                        ? 'border-green-500/60 shadow-green-500/30 shadow-md'
+                        : 'border-border/50 shadow-sm'
+                      }
+                    `}
                   style={{ 
                     animationDelay: `${index * 100}ms`,
                     animationFillMode: 'both'
@@ -243,13 +243,13 @@ export const TVDashboard: React.FC = () => {
                   `} />
 
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl lg:text-3xl 4xl:text-4xl font-bold tracking-tight display-text">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl lg:text-4xl 4xl:text-5xl font-black tracking-tight text-foreground">
                         {truck.license_plate}
                       </div>
                       {truck.priority === 'URGENT' && (
-                        <div className="w-3 h-3 bg-destructive rounded-full tv-pulse" />
+                        <div className="w-4 h-4 bg-destructive rounded-full animate-pulse" />
                       )}
                     </div>
                     <Badge className={`
@@ -268,36 +268,36 @@ export const TVDashboard: React.FC = () => {
                   </div>
 
                   {/* Main Info Grid */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-4">
-                    <div className="space-y-1">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-6">
+                    <div className="space-y-2">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Date
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground metric-value">
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground font-mono metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono metric-value">
                         {truck.arrival_time.substring(0, 5)}
                       </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Ramp
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
                         {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
                       </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Pallets
                       </div>
-                      <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground metric-value">
                         {truck.pallet_count}
                       </div>
                     </div>
