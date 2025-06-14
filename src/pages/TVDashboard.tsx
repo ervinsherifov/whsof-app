@@ -188,17 +188,16 @@ export const TVDashboard: React.FC = () => {
         </Button>
       </div>
 
-      {/* Header */}
-      <div className="relative text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0 z-10">
-        <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4 display-text">Warehouse Operations</h1>
-        <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground metric-value">
+      {/* Compact Time/Date Header */}
+      <div className="absolute top-2 left-2 z-20 bg-background/80 backdrop-blur rounded-lg p-2 lg:p-3">
+        <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground metric-value">
           {currentTime.toLocaleTimeString('en-GB', { 
             hour12: false,
             hour: '2-digit',
             minute: '2-digit'
           })}
         </div>
-        <div className="text-lg lg:text-2xl 4xl:text-3xl text-muted-foreground">
+        <div className="text-sm lg:text-base 4xl:text-lg text-muted-foreground">
           {formatDate(currentTime)}
         </div>
       </div>
