@@ -517,7 +517,7 @@ export const UserManagement: React.FC = () => {
 
       {/* Filters */}
       <Card className="card-elevated">
-        <CardContent className="p-6">
+        <CardContent className="p-6 pt-8">
           <div className="space-y-4 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
             <div className="relative flex-1 max-w-none">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
