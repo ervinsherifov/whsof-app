@@ -92,13 +92,20 @@ export const Reports: React.FC = () => {
         setUsers([]);
       }
 
-      // Fetch tasks
+      // Fetch tasks with user profile information
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*');
       
       if (taskError) throw taskError;
-      setTasks(taskData || []);
+
+      // Enrich tasks with user profile data
+      const tasksWithProfiles = (taskData || []).map(task => ({
+        ...task,
+        completed_by_profile: profilesData?.find(profile => profile.user_id === task.completed_by_user_id) || null
+      }));
+      
+      setTasks(tasksWithProfiles);
 
       // Fetch completed trucks separately to avoid foreign key conflicts
       const { data: completedTrucksData, error: completedTrucksError } = await supabase
@@ -390,9 +397,9 @@ export const Reports: React.FC = () => {
                          description: task.description,
                          priority: task.priority,
                          status: task.status,
-                         completedBy: task.status === 'COMPLETED' 
-                           ? (task.completed_by_user_id ? 'User ID: ' + task.completed_by_user_id : 'Unknown') 
-                           : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
+                          completedBy: task.status === 'COMPLETED' 
+                            ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
+                            : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
                          dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
                          createdAt: formatDate(task.created_at),
                          completedAt: task.completed_at ? formatDate(task.completed_at) : '',
@@ -738,11 +745,11 @@ export const Reports: React.FC = () => {
                             {task.status.replace('_', ' ')}
                           </span>
                         </TableCell>
-                         <TableCell>
-                           {task.status === 'COMPLETED' 
-                             ? (task.completed_by_user_id ? `User ID: ${task.completed_by_user_id}` : 'Unknown') 
-                             : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
-                         </TableCell>
+                          <TableCell>
+                            {task.status === 'COMPLETED' 
+                              ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
+                              : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
+                          </TableCell>
                         <TableCell>
                           {task.due_date ? formatDate(task.due_date) : 'No deadline'}
                         </TableCell>
@@ -789,11 +796,11 @@ export const Reports: React.FC = () => {
                            <div className="text-muted-foreground">
                              {task.status === 'COMPLETED' ? 'Completed By' : 'Processing By'}
                            </div>
-                           <div>
-                             {task.status === 'COMPLETED' 
-                               ? (task.completed_by_user_id ? `User ID: ${task.completed_by_user_id}` : 'Unknown') 
-                               : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
-                           </div>
+                            <div>
+                              {task.status === 'COMPLETED' 
+                                ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
+                                : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
+                            </div>
                          </div>
                         <div>
                           <div className="text-muted-foreground">Due Date</div>
