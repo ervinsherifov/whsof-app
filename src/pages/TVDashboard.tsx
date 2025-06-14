@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DynamicBackground } from '@/components/ui/dynamic-background';
+import { SoundControls } from '@/components/ui/sound-controls';
 import { Fullscreen, Tv } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getTodayISO, formatDate } from '@/lib/dateUtils';
+import { useSoundNotifications } from '@/hooks/useSoundNotifications';
 
 export const TVDashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -13,6 +15,13 @@ export const TVDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Initialize sound notifications
+  const { handleTruckStatusChange, playTestSound, enabled: soundSystemEnabled } = useSoundNotifications({
+    enabled: soundEnabled,
+    volume: 0.7
+  });
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -86,6 +95,9 @@ export const TVDashboard: React.FC = () => {
 
       setTrucks(sortedTrucks);
       setTasks(tasksData || []);
+
+      // Handle sound notifications for truck status changes
+      handleTruckStatusChange(sortedTrucks);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -444,9 +456,19 @@ export const TVDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Sound Controls */}
+      <div className="fixed bottom-2 right-2 z-20">
+        <SoundControls
+          enabled={soundEnabled}
+          onToggle={() => setSoundEnabled(!soundEnabled)}
+          onTestSound={playTestSound}
+          className="w-64"
+        />
+      </div>
+
       {/* Auto-refresh indicator */}
       <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded z-20">
-        Auto-refresh: 10s • Realtime
+        Auto-refresh: 10s • Realtime • 🔊 {soundEnabled ? 'ON' : 'OFF'}
       </div>
     </div>
   );
