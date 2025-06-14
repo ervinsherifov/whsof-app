@@ -13,7 +13,9 @@ import {
   CheckCircle, 
   PlayCircle,
   AlertTriangle,
-  MapPin
+  MapPin,
+  Calendar,
+  Hash
 } from 'lucide-react';
 import { Truck as TruckType } from '@/types';
 
@@ -31,10 +33,11 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [processingTruckId, setProcessingTruckId] = useState<string | null>(null);
+  const [assigningRamp, setAssigningRamp] = useState<string | null>(null);
 
   // Filter trucks relevant for warehouse staff
   const relevantTrucks = trucks.filter(truck => 
-    truck.status !== 'DONE' && truck.status !== 'SCHEDULED'
+    truck.status !== 'DONE'
   );
 
   const updateTruckStatus = async (truckId: string, newStatus: string) => {
@@ -86,8 +89,46 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
     }
   };
 
+  const assignRamp = async (truckId: string, rampNumber: number) => {
+    if (!user?.id || assigningRamp) return;
+
+    setAssigningRamp(truckId);
+
+    try {
+      const { error } = await supabase
+        .from('trucks')
+        .update({ ramp_number: rampNumber })
+        .eq('id', truckId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Ramp Assigned! ✅',
+        description: `Truck assigned to ramp #${rampNumber}`,
+      });
+      
+      onRefresh();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setAssigningRamp(null);
+    }
+  };
+
   const getStatusInfo = (status: string) => {
     switch (status) {
+      case 'SCHEDULED':
+        return { 
+          color: 'bg-blue-500', 
+          textColor: 'text-blue-700',
+          bgColor: 'bg-blue-50',
+          icon: Calendar,
+          label: 'Scheduled' 
+        };
       case 'ARRIVED':
         return { 
           color: 'bg-green-500', 
@@ -116,7 +157,14 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
   };
 
   const getNextAction = (truck: TruckType) => {
-    if (truck.status === 'ARRIVED') {
+    if (truck.status === 'SCHEDULED') {
+      return {
+        label: 'Mark Arrived',
+        action: () => updateTruckStatus(truck.id, 'ARRIVED'),
+        variant: 'default' as const,
+        icon: MapPin
+      };
+    } else if (truck.status === 'ARRIVED') {
       return {
         label: 'Start Work',
         action: () => updateTruckStatus(truck.id, 'IN_PROGRESS'),
@@ -167,14 +215,28 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
   return (
     <div className="space-y-4 pb-6">
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-          <CardContent className="p-4">
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-3">
             <div className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5 text-green-600" />
+              <Calendar className="h-4 w-4 text-blue-600" />
               <div>
-                <p className="text-sm text-green-600 font-medium">Arrived</p>
-                <p className="text-2xl font-bold text-green-700">
+                <p className="text-xs text-blue-600 font-medium">Scheduled</p>
+                <p className="text-xl font-bold text-blue-700">
+                  {trucks.filter(t => t.status === 'SCHEDULED').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4 text-green-600" />
+              <div>
+                <p className="text-xs text-green-600 font-medium">Arrived</p>
+                <p className="text-xl font-bold text-green-700">
                   {trucks.filter(t => t.status === 'ARRIVED').length}
                 </p>
               </div>
@@ -183,12 +245,12 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
         </Card>
 
         <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center space-x-2">
-              <PlayCircle className="h-5 w-5 text-orange-600" />
+              <PlayCircle className="h-4 w-4 text-orange-600" />
               <div>
-                <p className="text-sm text-orange-600 font-medium">Working</p>
-                <p className="text-2xl font-bold text-orange-700">
+                <p className="text-xs text-orange-600 font-medium">Working</p>
+                <p className="text-xl font-bold text-orange-700">
                   {trucks.filter(t => t.status === 'IN_PROGRESS').length}
                 </p>
               </div>
@@ -269,6 +331,28 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
                       <div className="w-2 h-2 bg-blue-500 rounded-full" />
                       <span className="text-muted-foreground">Handler:</span>
                       <span className="font-medium">{truck.handled_by_name}</span>
+                    </div>
+                  )}
+
+                  {/* Ramp Assignment for Scheduled Trucks */}
+                  {truck.status === 'SCHEDULED' && !truck.ramp_number && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Assign Ramp:</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((rampNum) => (
+                          <Button
+                            key={rampNum}
+                            onClick={() => assignRamp(truck.id, rampNum)}
+                            disabled={assigningRamp === truck.id}
+                            variant="outline"
+                            size="sm"
+                            className="h-10"
+                          >
+                            <Hash className="h-3 w-3 mr-1" />
+                            {rampNum}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
