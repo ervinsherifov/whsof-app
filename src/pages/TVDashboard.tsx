@@ -490,9 +490,16 @@ export const TVDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Auto-refresh indicator */}
-      <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded z-20">
-        Auto-refresh: 10s • Realtime • 🔊 {soundEnabled ? 'ON' : 'OFF'}
+      {/* Date and Time indicator */}
+      <div className="fixed bottom-2 left-2 text-foreground text-sm lg:text-base 4xl:text-lg bg-background/90 backdrop-blur px-3 py-2 rounded z-20 border border-border/30">
+        <div className="font-black">
+          {currentTime.toLocaleTimeString('en-GB', { 
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })} • {formatDate(currentTime)}
+        </div>
       </div>
     </div>
   );
