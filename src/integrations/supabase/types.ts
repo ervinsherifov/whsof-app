@@ -720,7 +720,7 @@ export type Database = {
           {
             foreignKeyName: "truck_photo_compliance_truck_id_fkey"
             columns: ["truck_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "trucks"
             referencedColumns: ["id"]
           },
