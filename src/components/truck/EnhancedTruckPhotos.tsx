@@ -237,6 +237,17 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
   const uploadPhotos = async () => {
     if (!user?.id || selectedFiles.length === 0) return;
 
+    // Check if documents category is required and selected
+    const documentsCategory = categories.find(cat => cat.name === 'documents' && cat.is_required);
+    if (documentsCategory && !uploadCategory) {
+      toast({
+        title: 'Category required',
+        description: 'Please select a category. Documents category is required for truck completion.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setUploading(true);
     
     try {
@@ -509,10 +520,12 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     </div>
                     
                     <div>
-                      <Label htmlFor="category">Category</Label>
-                      <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                      <Label htmlFor="category">
+                        Category <span className="text-red-500">*</span>
+                      </Label>
+                      <Select value={uploadCategory} onValueChange={setUploadCategory} required>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder="Select category (required)" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map(category => (
@@ -523,6 +536,11 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                           ))}
                         </SelectContent>
                       </Select>
+                      {categories.find(cat => cat.name === 'documents')?.is_required && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Documents category is required for truck completion
+                        </p>
+                      )}
                     </div>
                     
                     {selectedFiles.length > 0 && (
@@ -542,7 +560,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     <div className="flex gap-2">
                       <Button
                         onClick={uploadPhotos}
-                        disabled={uploading || selectedFiles.length === 0}
+                        disabled={uploading || selectedFiles.length === 0 || !uploadCategory}
                         className="flex-1"
                       >
                         {uploading ? 'Uploading...' : 'Upload Photos'}
