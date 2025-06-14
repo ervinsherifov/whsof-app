@@ -362,7 +362,9 @@ export type Database = {
       }
       user_kpi_metrics: {
         Row: {
+          avg_pallets_per_truck: number | null
           avg_processing_hours: number | null
+          avg_unloading_speed_pallets_per_hour: number | null
           completed_trucks: number | null
           created_at: string
           exceptions_reported: number | null
@@ -370,12 +372,15 @@ export type Database = {
           id: string
           metric_date: string
           tasks_completed: number | null
+          total_pallets_handled: number | null
           total_trucks_handled: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          avg_pallets_per_truck?: number | null
           avg_processing_hours?: number | null
+          avg_unloading_speed_pallets_per_hour?: number | null
           completed_trucks?: number | null
           created_at?: string
           exceptions_reported?: number | null
@@ -383,12 +388,15 @@ export type Database = {
           id?: string
           metric_date?: string
           tasks_completed?: number | null
+          total_pallets_handled?: number | null
           total_trucks_handled?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          avg_pallets_per_truck?: number | null
           avg_processing_hours?: number | null
+          avg_unloading_speed_pallets_per_hour?: number | null
           completed_trucks?: number | null
           created_at?: string
           exceptions_reported?: number | null
@@ -396,6 +404,7 @@ export type Database = {
           id?: string
           metric_date?: string
           tasks_completed?: number | null
+          total_pallets_handled?: number | null
           total_trucks_handled?: number | null
           updated_at?: string
           user_id?: string

@@ -1,0 +1,72 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { KPIMetrics } from '@/types';
+
+interface KPIMetricsCardsProps {
+  kpiMetrics: KPIMetrics;
+  selectedPeriod: string;
+}
+
+export function KPIMetricsCards({ kpiMetrics, selectedPeriod }: KPIMetricsCardsProps) {
+  const completionRate = kpiMetrics.total_trucks > 0 
+    ? Math.round((kpiMetrics.completed_trucks / kpiMetrics.total_trucks) * 100) 
+    : 0;
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <Card className="card-professional">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-foreground">Total Trucks</CardTitle>
+          <TrendingUp className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.total_trucks}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {completionRate}% completion rate
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-professional">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-foreground">Avg Processing Time</CardTitle>
+          <Clock className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl md:text-3xl font-bold text-display">
+            {kpiMetrics.avg_processing_hours?.toFixed(1) || '0.0'}h
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Per truck completion
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-professional">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-foreground">Active Exceptions</CardTitle>
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.pending_exceptions}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {kpiMetrics.resolved_exceptions} resolved
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-professional">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-foreground">Completed</CardTitle>
+          <CheckCircle className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl md:text-3xl font-bold text-display">{kpiMetrics.completed_trucks}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Last {selectedPeriod} days
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
