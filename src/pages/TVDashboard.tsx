@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DynamicBackground } from '@/components/ui/dynamic-background';
 import { Fullscreen, Tv } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getTodayISO, formatDate } from '@/lib/dateUtils';
@@ -169,9 +170,14 @@ export const TVDashboard: React.FC = () => {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6">
+    <div className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6">
+      {/* Dynamic Background */}
+      <DynamicBackground trucks={trucks} />
+      
+      {/* Subtle overlay for better readability */}
+      <div className="absolute inset-0 bg-background/20 backdrop-blur-[0.5px]" />
       {/* Fullscreen Toggle */}
-      <div className="absolute top-2 right-2 z-10">
+      <div className="absolute top-2 right-2 z-20">
         <Button 
           onClick={toggleFullscreen}
           variant="outline"
@@ -183,7 +189,7 @@ export const TVDashboard: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0">
+      <div className="relative text-center mb-2 lg:mb-4 4xl:mb-6 flex-shrink-0 z-10">
         <h1 className="text-4xl lg:text-6xl 4xl:text-8xl font-bold mb-1 lg:mb-2 4xl:mb-4">Warehouse Operations</h1>
         <div className="text-3xl lg:text-5xl 4xl:text-7xl font-mono text-muted-foreground">
           {currentTime.toLocaleTimeString('en-GB', { 
@@ -198,9 +204,9 @@ export const TVDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0">
+      <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
-        <Card className="xl:col-span-1 flex flex-col min-h-0">
+        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-card/90 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
             <CardTitle className="text-2xl lg:text-3xl 4xl:text-5xl">All Trucks</CardTitle>
           </CardHeader>
@@ -350,7 +356,7 @@ export const TVDashboard: React.FC = () => {
         {/* Secondary Info Column */}
         <div className="xl:col-span-1 flex flex-col gap-2 lg:gap-4 4xl:gap-6">
           {/* Urgent Tasks - Smaller */}
-          <Card className="flex flex-col min-h-0 flex-1">
+          <Card className="flex flex-col min-h-0 flex-1 bg-card/90 backdrop-blur-sm border-border/50">
             <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
               <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Urgent Tasks</CardTitle>
             </CardHeader>
@@ -386,7 +392,7 @@ export const TVDashboard: React.FC = () => {
           </Card>
 
           {/* Ramp Status Grid - Smaller */}
-          <Card className="flex flex-col min-h-0 flex-1">
+          <Card className="flex flex-col min-h-0 flex-1 bg-card/90 backdrop-blur-sm border-border/50">
             <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
               <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Ramp Status</CardTitle>
             </CardHeader>
@@ -431,7 +437,7 @@ export const TVDashboard: React.FC = () => {
       </div>
 
       {/* Auto-refresh indicator */}
-      <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded">
+      <div className="fixed bottom-2 left-2 text-muted-foreground text-xs lg:text-sm 4xl:text-lg bg-background/80 backdrop-blur px-2 py-1 rounded z-20">
         Auto-refresh: 10s • Realtime
       </div>
     </div>
