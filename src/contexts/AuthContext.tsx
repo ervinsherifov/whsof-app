@@ -266,38 +266,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No active check-in found. Please check in first.');
       }
 
-      const checkOutTime = new Date();
-      const checkInTime = new Date(activeEntry.check_in_time);
-      
-      // Calculate worked hours and overtime
-      const workedHours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-      const dayOfWeek = checkOutTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      
-      let regularHours = 0;
-      let overtimeHours = 0;
-      
-      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        // Monday to Friday: 8 hours standard, rest is overtime
-        regularHours = Math.min(workedHours, 8);
-        overtimeHours = Math.max(workedHours - 8, 0);
-      } else {
-        // Saturday and Sunday: all hours are overtime
-        overtimeHours = workedHours;
-      }
-
-      // Update entry with check-out time
+      // Update entry with check-out time only - let the database trigger calculate hours
       const { error } = await supabase
         .from('time_entries')
         .update({
-          check_out_time: checkOutTime.toISOString(),
-          regular_hours: regularHours,
-          overtime_hours: overtimeHours
+          check_out_time: new Date().toISOString()
         })
         .eq('id', activeEntry.id);
 
       if (error) throw error;
-      console.log('Checking out at:', checkOutTime.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }));
-      console.log(`Worked: ${workedHours.toFixed(2)}h (Regular: ${regularHours.toFixed(2)}h, Overtime: ${overtimeHours.toFixed(2)}h)`);
+      console.log('Checking out at:', new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }));
     } catch (error) {
       console.error('Check-out failed:', error);
       throw error;
