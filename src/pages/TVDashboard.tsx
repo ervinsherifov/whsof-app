@@ -189,15 +189,15 @@ export const TVDashboard: React.FC = () => {
       </div>
 
       {/* Compact Time/Date Header */}
-      <div className="absolute top-2 left-2 z-20 bg-background/80 backdrop-blur rounded-lg p-2 lg:p-3">
-        <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground metric-value">
+      <div className="absolute top-2 right-16 z-20 bg-background/80 backdrop-blur rounded-lg p-2 lg:p-3">
+        <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground metric-value text-right">
           {currentTime.toLocaleTimeString('en-GB', { 
             hour12: false,
             hour: '2-digit',
             minute: '2-digit'
           })}
         </div>
-        <div className="text-sm lg:text-base 4xl:text-lg text-muted-foreground">
+        <div className="text-sm lg:text-base 4xl:text-lg text-muted-foreground text-right">
           {formatDate(currentTime)}
         </div>
       </div>
