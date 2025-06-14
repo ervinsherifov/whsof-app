@@ -400,11 +400,10 @@
       letter-spacing: 0.025em;
     }
 
-    /* Improved number visibility */
+    /* Improved number visibility - remove text shadow */
     .metric-value {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
     }
   }
 

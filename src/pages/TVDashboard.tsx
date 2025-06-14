@@ -191,7 +191,7 @@ export const TVDashboard: React.FC = () => {
       {/* Time/Date Header - Separate blocks for better readability */}
       <div className="absolute top-2 right-16 z-20 space-y-1">
         {/* Time Block */}
-        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3">
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
           <div className="text-2xl lg:text-3xl 4xl:text-4xl font-mono text-foreground font-black text-right tracking-wider">
             {currentTime.toLocaleTimeString('en-GB', { 
               hour12: false,
@@ -201,7 +201,7 @@ export const TVDashboard: React.FC = () => {
           </div>
         </div>
         {/* Date Block */}
-        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3">
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
           <div className="text-base lg:text-lg 4xl:text-xl text-muted-foreground font-semibold text-right">
             {formatDate(currentTime)}
           </div>
@@ -273,13 +273,13 @@ export const TVDashboard: React.FC = () => {
                     </Badge>
                   </div>
 
-                  {/* Main Info Grid */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-6">
+                  {/* Main Info Grid - Fixed layout for proper spacing */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8 mb-6">
                     <div className="space-y-2">
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Date
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
                         {formatDate(truck.arrival_date)}
                       </div>
                     </div>
@@ -287,7 +287,7 @@ export const TVDashboard: React.FC = () => {
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Time
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground font-mono">
                         {truck.arrival_time.substring(0, 5)}
                       </div>
                     </div>
@@ -303,7 +303,7 @@ export const TVDashboard: React.FC = () => {
                       <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
                         Pallets
                       </div>
-                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground metric-value">
+                      <div className="text-xl lg:text-2xl 4xl:text-3xl font-black text-foreground">
                         {truck.pallet_count}
                       </div>
                     </div>
