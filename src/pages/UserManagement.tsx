@@ -478,39 +478,39 @@ export const UserManagement: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card className="card-elevated">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold font-mono">{stats.total}</div>
-            <div className="text-caption">Total Users</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold font-mono text-foreground mb-1">{stats.total}</div>
+            <div className="text-sm text-muted-foreground font-medium">Total Users</div>
           </CardContent>
         </Card>
         
         <Card className="card-elevated">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold font-mono text-green-600">{stats.active_today}</div>
-            <div className="text-caption">Active Today</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold font-mono text-green-600 mb-1">{stats.active_today}</div>
+            <div className="text-sm text-muted-foreground font-medium">Active Today</div>
           </CardContent>
         </Card>
 
         <Card className="card-elevated">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold font-mono text-red-600">{stats.super_admins}</div>
-            <div className="text-caption">Super Admins</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold font-mono text-red-600 mb-1">{stats.super_admins}</div>
+            <div className="text-sm text-muted-foreground font-medium">Super Admins</div>
           </CardContent>
         </Card>
 
         <Card className="card-elevated">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold font-mono text-blue-600">{stats.office_admins}</div>
-            <div className="text-caption">Office Admins</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold font-mono text-blue-600 mb-1">{stats.office_admins}</div>
+            <div className="text-sm text-muted-foreground font-medium">Office Admins</div>
           </CardContent>
         </Card>
 
         <Card className="card-elevated">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold font-mono text-green-600">{stats.warehouse_staff}</div>
-            <div className="text-caption">Warehouse Staff</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold font-mono text-green-600 mb-1">{stats.warehouse_staff}</div>
+            <div className="text-sm text-muted-foreground font-medium">Warehouse Staff</div>
           </CardContent>
         </Card>
       </div>
