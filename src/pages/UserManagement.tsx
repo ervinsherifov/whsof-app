@@ -579,19 +579,19 @@ export const UserManagement: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           user.is_creator 
-                            ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-lg border-2 border-yellow-300' 
+                            ? 'bg-primary/10 border-2 border-primary/30' 
                             : 'bg-primary/10'
                         }`}>
-                          <span className={`text-sm font-medium ${user.is_creator ? 'text-white' : 'text-primary'}`}>
-                            {user.is_creator ? '👑' : (user.display_name || user.email || 'U').charAt(0).toUpperCase()}
+                          <span className="text-sm font-medium text-primary">
+                            {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{user.display_name || 'No Name'}</span>
                             {user.is_creator && (
-                              <Badge variant="outline" className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 text-xs px-2 py-0.5">
-                                ⭐ APP CREATOR
+                              <Badge variant="outline" className="text-xs px-2 py-0.5 border-primary/40 text-primary">
+                                System Owner
                               </Badge>
                             )}
                           </div>
