@@ -22,6 +22,7 @@ interface UserProfile {
   role: 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN';
   last_active?: string;
   is_active?: boolean;
+  is_creator?: boolean;
 }
 
 interface UserStats {
@@ -123,22 +124,43 @@ export const UserManagement: React.FC = () => {
       // Combine data
       const usersWithRoles = profiles?.map((profile: any) => {
         const userRole = roles?.find((role: any) => role.user_id === profile.user_id);
+        const isCreator = profile.email === 'Ervin.sherifov@Dhl.com';
         return {
           ...profile,
           role: (userRole?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN',
-          is_active: activeUserIds.has(profile.user_id)
+          is_active: activeUserIds.has(profile.user_id),
+          is_creator: isCreator
         };
       }) || [];
 
-      setUsers(usersWithRoles);
+      // Sort users: Creator first, then by role hierarchy, then by name
+      const sortedUsers = usersWithRoles.sort((a, b) => {
+        // Creator always first
+        if (a.is_creator && !b.is_creator) return -1;
+        if (!a.is_creator && b.is_creator) return 1;
+        
+        // Role hierarchy
+        const roleOrder = { 'SUPER_ADMIN': 1, 'OFFICE_ADMIN': 2, 'WAREHOUSE_STAFF': 3 };
+        const aOrder = roleOrder[a.role];
+        const bOrder = roleOrder[b.role];
+        
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        
+        // Then by name
+        const aName = a.display_name || a.email || '';
+        const bName = b.display_name || b.email || '';
+        return aName.localeCompare(bName);
+      });
+
+      setUsers(sortedUsers);
       
       // Calculate stats
       const newStats: UserStats = {
-        total: usersWithRoles.length,
+        total: sortedUsers.length,
         active_today: activeUserIds.size,
-        super_admins: usersWithRoles.filter(u => u.role === 'SUPER_ADMIN').length,
-        office_admins: usersWithRoles.filter(u => u.role === 'OFFICE_ADMIN').length,
-        warehouse_staff: usersWithRoles.filter(u => u.role === 'WAREHOUSE_STAFF').length
+        super_admins: sortedUsers.filter(u => u.role === 'SUPER_ADMIN').length,
+        office_admins: sortedUsers.filter(u => u.role === 'OFFICE_ADMIN').length,
+        warehouse_staff: sortedUsers.filter(u => u.role === 'WAREHOUSE_STAFF').length
       };
       setStats(newStats);
 
@@ -554,36 +576,52 @@ export const UserManagement: React.FC = () => {
                   <TableRow key={user.id} className="hover:bg-muted/50">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-medium text-primary">
-                            {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          user.is_creator 
+                            ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-lg border-2 border-yellow-300' 
+                            : 'bg-primary/10'
+                        }`}>
+                          <span className={`text-sm font-medium ${user.is_creator ? 'text-white' : 'text-primary'}`}>
+                            {user.is_creator ? '👑' : (user.display_name || user.email || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <div className="font-medium">{user.display_name || 'No Name'}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{user.display_name || 'No Name'}</span>
+                            {user.is_creator && (
+                              <Badge variant="outline" className="bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200 text-xs px-2 py-0.5">
+                                ⭐ APP CREATOR
+                              </Badge>
+                            )}
+                          </div>
                           <div className="text-caption">{user.email}</div>
                         </div>
                       </div>
                     </TableCell>
                     
                     <TableCell>
-                      <Select 
-                        value={user.role} 
-                        onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
-                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
-                      >
-                        <SelectTrigger className="w-40">
-                          <Badge variant={getRoleBadgeVariant(user.role)} className="gap-1">
-                            {getRoleLabel(user.role)}
-                            {user.email === 'Ervin.sherifov@Dhl.com' && '🔒'}
-                          </Badge>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                          <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                          <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2">
+                        <Select 
+                          value={user.role} 
+                          onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
+                          disabled={user.is_creator}
+                        >
+                          <SelectTrigger className="w-40">
+                            <Badge variant={getRoleBadgeVariant(user.role)} className="gap-1">
+                              {getRoleLabel(user.role)}
+                              {user.is_creator && '👑'}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                            <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                            <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {user.is_creator && (
+                          <span className="text-xs text-muted-foreground ml-1">Protected</span>
+                        )}
+                      </div>
                     </TableCell>
                     
                     <TableCell>
@@ -612,7 +650,7 @@ export const UserManagement: React.FC = () => {
                               size="sm" 
                               variant="outline" 
                               className="gap-1 text-destructive hover:text-destructive"
-                              disabled={user.email === 'Ervin.sherifov@Dhl.com'}
+                              disabled={user.is_creator}
                             >
                               <Trash2 className="h-3 w-3" />
                               Delete
