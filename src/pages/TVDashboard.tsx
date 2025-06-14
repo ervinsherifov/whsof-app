@@ -188,17 +188,23 @@ export const TVDashboard: React.FC = () => {
         </Button>
       </div>
 
-      {/* Compact Time/Date Header */}
-      <div className="absolute top-2 right-16 z-20 bg-background/80 backdrop-blur rounded-lg p-2 lg:p-3">
-        <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground metric-value text-right">
-          {currentTime.toLocaleTimeString('en-GB', { 
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
+      {/* Time/Date Header - Separate blocks for better readability */}
+      <div className="absolute top-2 right-16 z-20 space-y-1">
+        {/* Time Block */}
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3">
+          <div className="text-2xl lg:text-3xl 4xl:text-4xl font-mono text-foreground font-black text-right tracking-wider">
+            {currentTime.toLocaleTimeString('en-GB', { 
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </div>
         </div>
-        <div className="text-sm lg:text-base 4xl:text-lg text-muted-foreground text-right">
-          {formatDate(currentTime)}
+        {/* Date Block */}
+        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3">
+          <div className="text-base lg:text-lg 4xl:text-xl text-muted-foreground font-semibold text-right">
+            {formatDate(currentTime)}
+          </div>
         </div>
       </div>
 
@@ -218,12 +224,12 @@ export const TVDashboard: React.FC = () => {
                       relative border-2 rounded-xl p-6 lg:p-8 4xl:p-10 
                       transform transition-all duration-500 ease-out
                       animate-fade-in truck-card backdrop-blur-sm
-                      hover:scale-[1.01] hover:shadow-lg
+                      hover:scale-[1.01]
                       ${truck.status === 'IN_PROGRESS' 
-                        ? 'border-orange-500/60 shadow-orange-500/30 shadow-lg animate-pulse' 
+                        ? 'border-orange-500/60 animate-pulse' 
                         : truck.status === 'ARRIVED'
-                        ? 'border-green-500/60 shadow-green-500/30 shadow-md'
-                        : 'border-border/50 shadow-sm'
+                        ? 'border-green-500/60'
+                        : 'border-border/50'
                       }
                     `}
                   style={{ 
