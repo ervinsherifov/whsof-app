@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { KPIMetricsCards } from '@/components/kpi/KPIMetricsCards';
 import { KPICharts } from '@/components/kpi/KPICharts';
 import { EnhancedUserPerformance } from '@/components/kpi/EnhancedUserPerformance';
+import { WorkSummaryCards } from '@/components/kpi/WorkSummaryCards';
 import { KPIFilters } from '@/components/kpi/KPIFilters';
 import { ExceptionsSection } from '@/components/kpi/ExceptionsSection';
 import { TrendChart } from '@/components/kpi/TrendChart';
@@ -90,6 +91,9 @@ export default function KPIDashboard() {
           onPeriodChange={setSelectedPeriod}
         />
       </div>
+
+      {/* Work Summary Cards */}
+      <WorkSummaryCards kpiMetrics={kpiMetrics} selectedPeriod={selectedPeriod} />
 
       {/* Key Metrics Cards */}
       <KPIMetricsCards kpiMetrics={kpiMetrics} selectedPeriod={selectedPeriod} />
