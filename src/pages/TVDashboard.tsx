@@ -115,9 +115,14 @@ export const TVDashboard: React.FC = () => {
   useEffect(() => {
     fetchData();
 
-    const timer = setInterval(() => {
+    // Timer for updating time every second
+    const timeTimer = setInterval(() => {
       setCurrentTime(new Date());
-      fetchData(); // Refresh data every 10 seconds
+    }, 1000);
+
+    // Timer for refreshing data every 10 seconds
+    const dataTimer = setInterval(() => {
+      fetchData();
     }, 10000);
 
     // Set up realtime subscriptions
@@ -144,7 +149,8 @@ export const TVDashboard: React.FC = () => {
       .subscribe();
 
     return () => {
-      clearInterval(timer);
+      clearInterval(timeTimer);
+      clearInterval(dataTimer);
       supabase.removeChannel(trucksChannel);
       supabase.removeChannel(tasksChannel);
     };
@@ -461,22 +467,6 @@ export const TVDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Current Time Display - Top Left */}
-      <div className="absolute top-2 left-2 z-20">
-        <div className="bg-background/90 backdrop-blur rounded-lg p-2 lg:p-3 border border-border/30">
-          <div className="text-xl lg:text-2xl 4xl:text-3xl font-mono text-foreground font-black tracking-wider">
-            {currentTime.toLocaleTimeString('en-GB', { 
-              hour12: false,
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            })}
-          </div>
-          <div className="text-xs lg:text-sm text-muted-foreground font-medium">
-            {formatDate(currentTime)}
-          </div>
-        </div>
-      </div>
 
       {/* Sound Test Controls (hidden, but accessible for testing) */}
       {soundEnabled && (
