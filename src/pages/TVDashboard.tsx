@@ -18,10 +18,17 @@ export const TVDashboard: React.FC = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Initialize sound notifications
-  const { handleTruckStatusChange, playTestSound, enabled: soundSystemEnabled } = useSoundNotifications({
+  const { handleTruckStatusChange, playTestSound, initializeAudio, enabled: soundSystemEnabled } = useSoundNotifications({
     enabled: soundEnabled,
     volume: 0.7
   });
+
+  // Initialize audio on first user interaction
+  const handleUserInteraction = () => {
+    if (soundEnabled) {
+      initializeAudio();
+    }
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -182,7 +189,10 @@ export const TVDashboard: React.FC = () => {
   }
 
   return (
-    <div className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard">
+    <div 
+      className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
+      onClick={handleUserInteraction}
+    >
       {/* Dynamic Background */}
       <DynamicBackground trucks={trucks} />
       

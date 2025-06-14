@@ -8,6 +8,7 @@ interface SoundControlsProps {
   enabled: boolean;
   onToggle: () => void;
   onTestSound: (status: string) => void;
+  onInitializeAudio?: () => void;
   className?: string;
 }
 

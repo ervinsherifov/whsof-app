@@ -20,26 +20,40 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
   // Initialize audio context
   useEffect(() => {
     if (enabled && !audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      try {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log(`🔊 Audio context initialized, state: ${audioContextRef.current.state}`);
+      } catch (error) {
+        console.error('🔇 Failed to initialize audio context:', error);
+      }
     }
     
     return () => {
-      if (audioContextRef.current) {
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close();
+        console.log('🔇 Audio context closed');
       }
     };
   }, [enabled]);
 
   // Create different sound patterns for each status
   const playStatusSound = (status: string) => {
-    if (!enabled || !audioContextRef.current) return;
+    console.log(`🔊 Attempting to play sound for status: ${status}, enabled: ${enabled}`);
+    
+    if (!enabled || !audioContextRef.current) {
+      console.log(`🔇 Sound disabled or no audio context`);
+      return;
+    }
 
     const audioContext = audioContextRef.current;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    
+    // Resume audio context if suspended (browser autoplay policy)
+    if (audioContext.state === 'suspended') {
+      console.log(`🔊 Resuming suspended audio context`);
+      audioContext.resume();
+    }
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    console.log(`🔊 Playing ${status} sound`);
 
     // Configure sound based on status
     switch (status) {
@@ -156,12 +170,36 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
   };
 
   const playTestSound = (status: string) => {
+    console.log(`🔊 Test sound requested for: ${status}`);
     playStatusSound(status);
+  };
+
+  const initializeAudio = async () => {
+    console.log('🔊 Manual audio initialization requested');
+    if (!audioContextRef.current) {
+      try {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log(`🔊 Audio context created manually, state: ${audioContextRef.current.state}`);
+      } catch (error) {
+        console.error('🔇 Failed to create audio context manually:', error);
+        return;
+      }
+    }
+    
+    if (audioContextRef.current.state === 'suspended') {
+      try {
+        await audioContextRef.current.resume();
+        console.log('🔊 Audio context resumed successfully');
+      } catch (error) {
+        console.error('🔇 Failed to resume audio context:', error);
+      }
+    }
   };
 
   return {
     handleTruckStatusChange,
     playTestSound,
+    initializeAudio,
     enabled
   };
 };
