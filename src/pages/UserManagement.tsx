@@ -7,9 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '@/lib/dateUtils';
+import { Users, UserPlus, Shield, Trash2, RefreshCw, Search, Filter } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -18,12 +20,25 @@ interface UserProfile {
   email: string | null;
   created_at: string;
   role: 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN';
+  last_active?: string;
+  is_active?: boolean;
+}
+
+interface UserStats {
+  total: number;
+  active_today: number;
+  super_admins: number;
+  office_admins: number;
+  warehouse_staff: number;
 }
 
 export const UserManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -34,36 +49,99 @@ export const UserManagement: React.FC = () => {
     confirmPassword: ''
   });
 
+  const [stats, setStats] = useState<UserStats>({
+    total: 0,
+    active_today: 0,
+    super_admins: 0,
+    office_admins: 0,
+    warehouse_staff: 0
+  });
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    filterUsers();
+  }, [users, searchTerm, roleFilter]);
+
+  const filterUsers = () => {
+    let filtered = users;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(user => 
+        user.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Role filter
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter(user => user.role === roleFilter);
+    }
+
+    setFilteredUsers(filtered);
+  };
+
   const fetchUsers = async () => {
     try {
-      // First get all profiles
+      setIsLoading(true);
+      
+      // Fetch profiles with recent activity
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, user_id, display_name, email, created_at');
+        .select(`
+          id, 
+          user_id, 
+          display_name, 
+          email, 
+          created_at
+        `);
 
       if (profilesError) throw profilesError;
 
-      // Then get all user roles
+      // Fetch user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
 
       if (rolesError) throw rolesError;
 
-      // Combine the data
+      // Get recent activity (check-ins today)
+      const today = new Date().toISOString().split('T')[0];
+      const { data: activeUsers, error: activityError } = await supabase
+        .from('time_entries')
+        .select('user_id')
+        .gte('check_in_time', `${today}T00:00:00.000Z`)
+        .lt('check_in_time', `${today}T23:59:59.999Z`);
+
+      if (activityError) console.warn('Could not fetch activity data:', activityError);
+
+      const activeUserIds = new Set(activeUsers?.map(entry => entry.user_id) || []);
+
+      // Combine data
       const usersWithRoles = profiles?.map((profile: any) => {
         const userRole = roles?.find((role: any) => role.user_id === profile.user_id);
         return {
           ...profile,
-          role: (userRole?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN'
+          role: (userRole?.role || 'WAREHOUSE_STAFF') as 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN',
+          is_active: activeUserIds.has(profile.user_id)
         };
       }) || [];
 
       setUsers(usersWithRoles);
+      
+      // Calculate stats
+      const newStats: UserStats = {
+        total: usersWithRoles.length,
+        active_today: activeUserIds.size,
+        super_admins: usersWithRoles.filter(u => u.role === 'SUPER_ADMIN').length,
+        office_admins: usersWithRoles.filter(u => u.role === 'OFFICE_ADMIN').length,
+        warehouse_staff: usersWithRoles.filter(u => u.role === 'WAREHOUSE_STAFF').length
+      };
+      setStats(newStats);
+
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -78,33 +156,26 @@ export const UserManagement: React.FC = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'destructive';
-      case 'OFFICE_ADMIN':
-        return 'default';
-      case 'WAREHOUSE_STAFF':
-        return 'secondary';
-      default:
-        return 'outline';
+      case 'SUPER_ADMIN': return 'destructive';
+      case 'OFFICE_ADMIN': return 'default';
+      case 'WAREHOUSE_STAFF': return 'secondary';
+      default: return 'outline';
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'Super Admin';
-      case 'OFFICE_ADMIN':
-        return 'Office Admin';
-      case 'WAREHOUSE_STAFF':
-        return 'Warehouse Staff';
-      default:
-        return role;
+      case 'SUPER_ADMIN': return 'Super Admin';
+      case 'OFFICE_ADMIN': return 'Office Admin';
+      case 'WAREHOUSE_STAFF': return 'Warehouse Staff';
+      default: return role;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: 'Password mismatch',
@@ -114,74 +185,66 @@ export const UserManagement: React.FC = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (formData.password.length < 8) {
       toast({
-        title: 'Password too short',
-        description: 'Password must be at least 6 characters long',
+        title: 'Password too weak',
+        description: 'Password must be at least 8 characters long',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.email.includes('@')) {
+      toast({
+        title: 'Invalid email',
+        description: 'Please enter a valid email address',
         variant: 'destructive',
       });
       return;
     }
 
     try {
-      // Get current session to restore it after signup
+      // Create user
       const { data: currentSession } = await supabase.auth.getSession();
       
-      // Create user using regular signup
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: {
-            name: formData.name
-          }
+          data: { name: formData.name }
         }
       });
 
       if (authError) throw authError;
 
-      // Immediately sign out the new user to prevent auto-login
       await supabase.auth.signOut();
       
-      // Restore the original session
       if (currentSession?.session) {
         await supabase.auth.setSession(currentSession.session);
       }
 
       if (authData.user) {
-        // Update the user's role if it's different from default
-        if (formData.role !== 'WAREHOUSE_STAFF') {
-          const { error: roleError } = await supabase
+        // Update role and profile
+        await Promise.all([
+          formData.role !== 'WAREHOUSE_STAFF' ? supabase
             .from('user_roles')
             .update({ role: formData.role as any })
-            .eq('user_id', authData.user.id);
-
-          if (roleError) throw roleError;
-        }
-
-        // Update the profile with the display name
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ display_name: formData.name })
-          .eq('user_id', authData.user.id);
-
-        if (profileError) throw profileError;
+            .eq('user_id', authData.user.id) : Promise.resolve(),
+          supabase
+            .from('profiles')
+            .update({ display_name: formData.name })
+            .eq('user_id', authData.user.id)
+        ]);
       }
 
       toast({
         title: 'User created successfully',
-        description: `User ${formData.name} has been added to the system`,
+        description: `${formData.name} has been added to the system`,
       });
 
-      setFormData({
-        name: '',
-        email: '',
-        role: '',
-        password: '',
-        confirmPassword: ''
-      });
+      setFormData({ name: '', email: '', role: '', password: '', confirmPassword: '' });
       setIsDialogOpen(false);
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: 'Error creating user',
@@ -192,7 +255,6 @@ export const UserManagement: React.FC = () => {
   };
 
   const updateUserRole = async (userId: string, newRole: string, userName: string, userEmail?: string) => {
-    // Check if this is the main super admin
     if (userEmail === 'Ervin.sherifov@Dhl.com') {
       toast({
         title: 'Cannot modify main super admin',
@@ -215,7 +277,7 @@ export const UserManagement: React.FC = () => {
         description: `${userName}'s role has been updated to ${getRoleLabel(newRole)}`,
       });
 
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: 'Error updating role',
@@ -226,42 +288,27 @@ export const UserManagement: React.FC = () => {
   };
 
   const deleteUser = async (userId: string, userName: string, userEmail?: string) => {
-    // Check if this is the main super admin
     if (userEmail === 'Ervin.sherifov@Dhl.com') {
       toast({
         title: 'Cannot delete main super admin',
-        description: 'The main super admin account cannot be deleted or modified',
+        description: 'The main super admin account cannot be deleted',
         variant: 'destructive',
       });
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
-      return;
-    }
-
     try {
-      // First delete the user's profile and role (we can't delete auth users from client)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (profileError) throw profileError;
-
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (roleError) throw roleError;
+      await Promise.all([
+        supabase.from('profiles').delete().eq('user_id', userId),
+        supabase.from('user_roles').delete().eq('user_id', userId)
+      ]);
 
       toast({
         title: 'User deleted',
         description: `${userName} has been removed from the system`,
       });
 
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: 'Error deleting user',
@@ -271,277 +318,265 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const getRoleStats = () => {
-    const stats = {
-      SUPER_ADMIN: 0,
-      OFFICE_ADMIN: 0,
-      WAREHOUSE_STAFF: 0,
-    };
-
-    users.forEach(user => {
-      if (stats.hasOwnProperty(user.role)) {
-        stats[user.role as keyof typeof stats]++;
-      }
-    });
-
-    return stats;
-  };
-
-  const stats = getRoleStats();
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading user management...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary">User Management</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Manage system users and permissions
+    <div className="space-y-6 p-4 lg:p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-display text-3xl font-bold flex items-center gap-3">
+            <Users className="h-8 w-8 text-primary" />
+            User Management
+          </h1>
+          <p className="text-caption mt-2">
+            Manage system users, roles, and permissions
           </p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto">Add New User</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-4">
-            <DialogHeader>
-              <DialogTitle>Add New User</DialogTitle>
-              <DialogDescription>
-                Create a new user account
-              </DialogDescription>
-            </DialogHeader>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={fetchUsers} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Add User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New User</DialogTitle>
+                <DialogDescription>
+                  Create a new user account with role-based permissions
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="form-group">
+                  <Label className="form-label">Full Name</Label>
+                  <Input
+                    className="form-input"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="John Smith"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">Email Address</Label>
+                  <Input
+                    className="form-input"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="john.smith@company.com"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">Role</Label>
+                  <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+                    <SelectTrigger className="form-input">
+                      <SelectValue placeholder="Select user role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WAREHOUSE_STAFF">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          Warehouse Staff
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="OFFICE_ADMIN">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          Office Admin
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="SUPER_ADMIN">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                          Super Admin
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">Password</Label>
+                  <Input
+                    className="form-input"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    placeholder="Minimum 8 characters"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Label className="form-label">Confirm Password</Label>
+                  <Input
+                    className="form-input"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                    placeholder="Confirm password"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button type="submit" className="flex-1">Create User</Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card className="card-elevated">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold font-mono">{stats.total}</div>
+            <div className="text-caption">Total Users</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="card-elevated">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold font-mono text-green-600">{stats.active_today}</div>
+            <div className="text-caption">Active Today</div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-elevated">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold font-mono text-red-600">{stats.super_admins}</div>
+            <div className="text-caption">Super Admins</div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-elevated">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold font-mono text-blue-600">{stats.office_admins}</div>
+            <div className="text-caption">Office Admins</div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-elevated">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold font-mono text-green-600">{stats.warehouse_staff}</div>
+            <div className="text-caption">Warehouse Staff</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="card-elevated">
+        <CardContent className="p-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Filter className="h-4 w-4 text-primary" />
+              Filters:
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="John Smith"
-                  required
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="john.smith@warehouse.com"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                    <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  placeholder="Minimum 6 characters"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                  placeholder="Confirm password"
-                  required
-                />
-              </div>
-
-              <div className="flex space-x-2">
-                <Button type="submit" className="flex-1">Create User</Button>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* User Statistics */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.SUPER_ADMIN}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Office Admins</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.OFFICE_ADMIN}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Warehouse Staff</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.WAREHOUSE_STAFF}</div>
-          </CardContent>
-        </Card>
-      </div>
+              
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
+                  <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
+                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Users Table */}
-      <Card>
+      <Card className="card-elevated">
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            All Users ({filteredUsers.length})
+          </CardTitle>
           <CardDescription>
-            Manage user accounts and permissions
+            Manage user accounts and role-based permissions
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Desktop Table View */}
-          <div className="hidden md:block w-full overflow-x-auto">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    {user.display_name || 'No Name'}
-                  </TableCell>
-                  <TableCell>
-                    {user.email}
-                  </TableCell>
-                  <TableCell>
-                    <Select 
-                      value={user.role} 
-                      onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
-                      disabled={user.email === 'Ervin.sherifov@Dhl.com'}
-                    >
-                      <SelectTrigger className="w-full">
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {getRoleLabel(user.role)}
-                          {user.email === 'Ervin.sherifov@Dhl.com' && <span className="ml-1">🔒</span>}
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
-                        <SelectItem value="OFFICE_ADMIN">Office Admin</SelectItem>
-                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(user.created_at)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          toast({
-                            title: 'Feature not implemented',
-                            description: 'Password reset functionality will be added soon',
-                          });
-                        }}
-                      >
-                        Reset
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User', user.email)}
-                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-4">
-            {users.map((user) => (
-              <Card key={user.id} className="p-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium text-lg">{user.display_name || 'No Name'}</h3>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                    </div>
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                      {getRoleLabel(user.role)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="text-sm text-muted-foreground">
-                    Created: {formatDate(user.created_at)}
-                  </div>
-
-                  <div className="space-y-2">
-                    <div>
-                      <Label className="text-sm font-medium">Role</Label>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">
+                            {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium">{user.display_name || 'No Name'}</div>
+                          <div className="text-caption">{user.email}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell>
                       <Select 
                         value={user.role} 
                         onValueChange={(newRole) => updateUserRole(user.user_id, newRole, user.display_name || user.email || 'User', user.email)}
                         disabled={user.email === 'Ervin.sherifov@Dhl.com'}
                       >
-                        <SelectTrigger className="w-full mt-1">
-                          <SelectValue />
+                        <SelectTrigger className="w-40">
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="gap-1">
+                            {getRoleLabel(user.role)}
+                            {user.email === 'Ervin.sherifov@Dhl.com' && '🔒'}
+                          </Badge>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
@@ -549,37 +584,79 @@ export const UserManagement: React.FC = () => {
                           <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    <div className="flex space-x-2 pt-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          toast({
-                            title: 'Feature not implemented',
-                            description: 'Password reset functionality will be added soon',
-                          });
-                        }}
-                      >
-                        Reset Password
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        className="flex-1"
-                        onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User', user.email)}
-                        disabled={user.email === 'Ervin.sherifov@Dhl.com'}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                    </TableCell>
+                    
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className={`status-dot ${user.is_active ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                        <span className="text-sm">
+                          {user.is_active ? 'Active Today' : 'Inactive'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell>
+                      <div className="text-sm font-mono">{formatDate(user.created_at)}</div>
+                    </TableCell>
+                    
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button size="sm" variant="outline" className="gap-1">
+                          <RefreshCw className="h-3 w-3" />
+                          Reset
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="gap-1 text-destructive hover:text-destructive"
+                              disabled={user.email === 'Ervin.sherifov@Dhl.com'}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {user.display_name || user.email}? 
+                                This action cannot be undone and will remove all associated data.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteUser(user.user_id, user.display_name || user.email || 'User', user.email)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete User
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
+          
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No users found</h3>
+              <p className="text-caption">
+                {searchTerm || roleFilter !== 'all' 
+                  ? 'Try adjusting your filters' 
+                  : 'Get started by adding your first user'
+                }
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

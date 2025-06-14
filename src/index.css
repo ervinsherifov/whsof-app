@@ -1,19 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Enhanced Design System with Professional Typography */
 
 @layer base {
   :root {
     --background: 0 0% 100%; /* #FFFFFF */
-    --foreground: 0 0% 0%; /* #000000 */
+    --foreground: 220 13% 18%; /* #1e293b - Better contrast */
 
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 0 0% 0%; /* #000000 */
+    --card-foreground: 220 13% 18%; /* #1e293b */
 
     --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 0 0% 0%; /* #000000 */
+    --popover-foreground: 220 13% 18%; /* #1e293b */
 
     --primary: 0 84% 41%; /* #D40511 */
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
@@ -21,8 +23,8 @@
     --secondary: 49 100% 50%; /* #FFCC00 */
     --secondary-foreground: 0 0% 0%; /* #000000 */
 
-    --muted: 0 0% 97%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 220 14% 96%; /* #f8fafc */
+    --muted-foreground: 220 9% 46%; /* #64748b */
 
     --accent: 49 100% 50%; /* #FFCC00 */
     --accent-foreground: 0 0% 0%; /* #000000 */
@@ -30,38 +32,64 @@
     --destructive: 0 84% 41%; /* #D40511 */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 0 0% 92%;
-    --input: 0 0% 96%;
+    --border: 220 13% 91%; /* #e2e8f0 */
+    --input: 220 13% 96%; /* #f1f5f9 */
     --ring: 0 84% 41%; /* #D40511 */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Increased for modern look */
 
-    --sidebar-background: 0 0% 99%;
+    /* Success states */
+    --success: 142 76% 36%; /* #16a34a */
+    --success-foreground: 0 0% 100%;
 
-    --sidebar-foreground: 0 0% 15%;
+    /* Warning states */
+    --warning: 38 92% 50%; /* #f59e0b */
+    --warning-foreground: 0 0% 0%;
 
-    --sidebar-primary: 0 84% 41%; /* #D40511 */
+    /* Info states */
+    --info: 204 94% 94%; /* #e0f2fe */
+    --info-foreground: 197 71% 52%; /* #0ea5e9 */
 
-    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    /* Professional spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
 
-    --sidebar-accent: 49 100% 50%; /* #FFCC00 */
+    /* Typography scale */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
 
-    --sidebar-accent-foreground: 0 0% 0%; /* #000000 */
+    /* Line heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
 
-    --sidebar-border: 0 0% 90%;
-
-    --sidebar-ring: 0 84% 41%; /* #D40511 */
+    /* Shadows */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
   .dark {
-    --background: 0 0% 0%; /* #000000 */
-    --foreground: 0 0% 100%; /* #FFFFFF */
+    --background: 222 84% 5%; /* #020817 */
+    --foreground: 210 40% 98%; /* #f8fafc */
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 100%; /* #FFFFFF */
+    --card: 222 84% 5%; /* #020817 */
+    --card-foreground: 210 40% 98%; /* #f8fafc */
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 100%; /* #FFFFFF */
+    --popover: 222 47% 11%; /* #0f172a */
+    --popover-foreground: 210 40% 98%; /* #f8fafc */
 
     --primary: 0 84% 41%; /* #D40511 */
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
@@ -69,8 +97,8 @@
     --secondary: 49 100% 50%; /* #FFCC00 */
     --secondary-foreground: 0 0% 0%; /* #000000 */
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 217 33% 17%; /* #1e293b */
+    --muted-foreground: 215 20% 65%; /* #94a3b8 */
 
     --accent: 49 100% 50%; /* #FFCC00 */
     --accent-foreground: 0 0% 0%; /* #000000 */
@@ -78,17 +106,17 @@
     --destructive: 0 84% 41%; /* #D40511 */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 217 33% 17%; /* #1e293b */
+    --input: 217 33% 17%; /* #1e293b */
     --ring: 0 84% 41%; /* #D40511 */
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 84% 41%; /* #D40511 */
-    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-accent: 49 100% 50%; /* #FFCC00 */
-    --sidebar-accent-foreground: 0 0% 0%; /* #000000 */
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 84% 41%; /* #D40511 */
+
+    /* Dark mode success/warning/info */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 204 94% 94%;
+    --info-foreground: 197 71% 52%;
   }
 }
 
@@ -98,197 +126,203 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Professional Typography */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-semibold;
+  /* Enhanced Typography Hierarchy */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.025em;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold tracking-tight;
+    line-height: var(--line-height-tight);
     letter-spacing: -0.02em;
   }
 
+  h3 {
+    @apply text-2xl font-semibold;
+    line-height: var(--line-height-normal);
+    letter-spacing: -0.015em;
+  }
+
+  h4 {
+    @apply text-xl font-medium;
+    line-height: var(--line-height-normal);
+  }
+
+  h5 {
+    @apply text-lg font-medium;
+    line-height: var(--line-height-normal);
+  }
+
+  h6 {
+    @apply text-base font-medium;
+    line-height: var(--line-height-normal);
+  }
+
+  /* Body text improvements */
+  p {
+    @apply leading-relaxed;
+  }
+
+  /* Monospace for data/numbers */
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Enhanced text utilities */
   .text-display {
-    @apply font-display;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
     letter-spacing: -0.02em;
   }
 
-  /* Professional button styles */
-  .btn-professional {
-    @apply font-medium tracking-wide transition-all duration-200 ease-in-out;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  .text-body {
+    line-height: var(--line-height-relaxed);
+  }
+
+  .text-caption {
+    @apply text-sm text-muted-foreground;
+    line-height: var(--line-height-normal);
+  }
+
+  .text-overline {
+    @apply text-xs uppercase tracking-wider font-medium text-muted-foreground;
+  }
+
+  /* Professional component styles */
+  .card-elevated {
+    @apply bg-card rounded-xl border shadow-lg;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:border-border/60;
+    backdrop-filter: blur(8px);
+  }
+
+  .card-interactive {
+    @apply card-elevated cursor-pointer;
+    @apply hover:scale-[1.02] hover:border-primary/20;
+    @apply active:scale-[0.98];
+  }
+
+  /* Status indicators with better contrast */
+  .status-dot {
+    @apply w-2 h-2 rounded-full animate-pulse;
+  }
+
+  .status-scheduled { @apply bg-slate-100 text-slate-700 border-slate-200; }
+  .status-arrived { @apply bg-blue-100 text-blue-700 border-blue-200; }
+  .status-in-progress { @apply bg-amber-100 text-amber-700 border-amber-200; }
+  .status-completed { @apply bg-green-100 text-green-700 border-green-200; }
+  .status-urgent { @apply bg-red-100 text-red-700 border-red-200; }
+
+  /* Priority badges with semantic colors */
+  .priority-low { @apply bg-gray-50 text-gray-600 border-gray-200; }
+  .priority-normal { @apply bg-blue-50 text-blue-600 border-blue-200; }
+  .priority-high { @apply bg-orange-50 text-orange-600 border-orange-200; }
+  .priority-urgent { @apply bg-red-50 text-red-600 border-red-200; }
+
+  /* Form enhancements */
+  .form-group {
+    @apply space-y-2;
+  }
+
+  .form-label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 text-sm;
+    @apply bg-background border border-input rounded-lg;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+    @apply placeholder:text-muted-foreground;
+  }
+
+  .form-error {
+    @apply text-sm text-destructive;
+  }
+
+  /* Button enhancements */
+  .btn-base {
+    @apply inline-flex items-center justify-center;
+    @apply px-4 py-2 text-sm font-medium;
+    @apply rounded-lg transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply btn-professional bg-dhl-red text-white shadow-soft;
-    @apply hover:bg-dhl-dark-red hover:shadow-bold hover:scale-[1.02];
-    @apply active:scale-[0.98];
+    @apply btn-base bg-primary text-primary-foreground;
+    @apply hover:bg-primary/90 hover:shadow-md;
+    @apply active:scale-95;
   }
 
   .btn-secondary {
-    @apply btn-professional bg-dhl-yellow text-black shadow-soft;
-    @apply hover:bg-yellow-300 hover:shadow-yellow hover:scale-[1.02];
-    @apply active:scale-[0.98];
+    @apply btn-base bg-secondary text-secondary-foreground;
+    @apply hover:bg-secondary/90 hover:shadow-md;
+    @apply active:scale-95;
   }
 
-  /* Professional card styles */
-  .card-professional {
-    @apply bg-card rounded-2xl shadow-soft border border-gray-100;
-    @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-bold hover:border-gray-200;
+  .btn-outline {
+    @apply btn-base border border-input bg-background;
+    @apply hover:bg-accent hover:text-accent-foreground;
+    @apply active:scale-95;
   }
 
-  .card-glass {
-    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-glass;
-    @apply dark:bg-gray-900/80 dark:border-gray-800/20;
-  }
-
-  /* Status indicators */
-  .status-scheduled {
-    @apply bg-status-scheduled/10 text-status-scheduled border-status-scheduled/20;
-  }
-
-  .status-arrived {
-    @apply bg-status-arrived/10 text-status-arrived border-status-arrived/20;
-  }
-
-  .status-in-progress {
-    @apply bg-status-in-progress/10 text-status-in-progress border-status-in-progress/20;
-  }
-
-  .status-completed {
-    @apply bg-status-completed/10 text-status-completed border-status-completed/20;
-  }
-
-  .status-urgent {
-    @apply bg-status-urgent/10 text-status-urgent border-status-urgent/20;
-  }
-
-  /* Priority badges */
-  .priority-low {
-    @apply bg-gray-100 text-gray-700 border-gray-200;
-  }
-
-  .priority-normal {
-    @apply bg-blue-50 text-blue-700 border-blue-200;
-  }
-
-  .priority-high {
-    @apply bg-orange-50 text-orange-700 border-orange-200;
-  }
-
-  .priority-urgent {
-    @apply bg-red-50 text-red-700 border-red-200;
-  }
-
-  /* Enhanced form styling */
-  .form-professional input,
-  .form-professional select,
-  .form-professional textarea {
-    @apply border-gray-200 rounded-xl transition-all duration-200;
-    @apply focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/10;
-    @apply hover:border-gray-300;
+  .btn-ghost {
+    @apply btn-base;
+    @apply hover:bg-accent hover:text-accent-foreground;
+    @apply active:scale-95;
   }
 
   /* Loading states */
   .loading-skeleton {
-    @apply animate-pulse bg-gray-200 rounded;
+    @apply animate-pulse bg-muted rounded-lg;
   }
 
-  .loading-dots::after {
-    content: '';
-    animation: loading-dots 1.4s infinite;
+  .loading-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
   }
 
-  @keyframes loading-dots {
-    0%, 80%, 100% { opacity: 0; }
-    40% { opacity: 1; }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
-  /* Modern grid layouts */
-  .grid-professional {
-    @apply grid gap-6;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-
-  /* Responsive utilities */
+  /* Responsive improvements */
   @media (max-width: 640px) {
-    .mobile-hidden {
-      @apply hidden;
-    }
+    h1 { @apply text-3xl; }
+    h2 { @apply text-2xl; }
+    h3 { @apply text-xl; }
     
-    .mobile-full {
-      @apply w-full;
-    }
-    
-    .mobile-text-sm {
-      @apply text-sm;
-    }
+    .mobile-stack { @apply flex-col space-y-2 space-x-0; }
+    .mobile-full { @apply w-full; }
+    .mobile-text-center { @apply text-center; }
   }
 
-  @media (min-width: 1024px) {
-    .desktop-grid {
-      @apply grid-cols-3;
-    }
+  /* Print optimizations */
+  @media print {
+    .no-print { display: none !important; }
+    body { font-size: 12pt; color: black !important; }
+    .card-elevated { @apply shadow-none border-gray-400; }
   }
 
-  /* Large screen optimizations for TV dashboards */
-  @media (min-width: 1920px) {
-    body {
-      font-size: 1.125rem;
-    }
-    
-    .tv-text-scale {
-      transform: scale(1.2);
-      transform-origin: left top;
-    }
-    
-    .tv-card-scale {
-      transform: scale(1.1);
-    }
-  }
-
-  /* Ultra-large screen optimizations (4K/8K displays) */
-  @media (min-width: 2560px) {
-    body {
-      font-size: 1.375rem;
-    }
-    
-    .ultra-text-scale {
-      transform: scale(1.5);
-      transform-origin: left top;
-    }
-    
-    .ultra-card-scale {
-      transform: scale(1.3);
-    }
-    
-    .text-4xl {
-      font-size: 4rem;
-    }
-    
-    .text-3xl {
-      font-size: 3.5rem;
-    }
-  }
-
-  /* Enhanced accessibility */
-  .focus-visible:focus-visible {
-    @apply outline-none ring-2 ring-dhl-red ring-offset-2 ring-offset-background;
-  }
-
-  /* High contrast mode support */
+  /* High contrast mode */
   @media (prefers-contrast: high) {
-    .card-professional {
-      @apply border-2 border-black;
-    }
-    
-    .btn-primary {
-      @apply border-2 border-black;
-    }
+    .card-elevated { @apply border-2 border-foreground; }
+    .btn-primary { @apply border-2 border-foreground; }
   }
 
-  /* Reduced motion support */
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, ::before, ::after {
       animation-duration: 0.01ms !important;
@@ -297,34 +331,16 @@
     }
   }
 
-  /* Print optimizations */
-  @media print {
-    .no-print {
-      display: none !important;
-    }
-    
-    .card-professional {
-      @apply shadow-none border border-gray-400;
-    }
-    
-    body {
-      font-size: 12pt;
-      line-height: 1.4;
-    }
-  }
-
-  /* Dark mode enhancements */
+  /* Dark mode refinements */
   .dark {
-    .card-professional {
-      @apply bg-gray-800 border-gray-700;
-      @apply hover:bg-gray-700 hover:border-gray-600;
+    .card-elevated {
+      @apply bg-card/95 border-border/50;
+      backdrop-filter: blur(12px);
     }
     
-    .form-professional input,
-    .form-professional select,
-    .form-professional textarea {
-      @apply bg-gray-800 border-gray-600 text-white;
-      @apply focus:border-dhl-red focus:ring-dhl-red/20;
+    .form-input {
+      @apply bg-background/50 border-border/50;
+      @apply focus:bg-background focus:border-primary/50;
     }
   }
 }
