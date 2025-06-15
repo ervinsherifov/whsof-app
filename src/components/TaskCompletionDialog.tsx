@@ -68,14 +68,7 @@ export const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({
       return;
     }
 
-    if (!comment.trim()) {
-      toast({
-        title: 'Comment required',
-        description: 'Please add a completion comment',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // Comment is now optional - no validation needed
 
     setSubmitting(true);
 
@@ -114,7 +107,7 @@ export const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({
           status: 'COMPLETED',
           completed_by_user_id: user.id,
           completed_at: new Date().toISOString(),
-          completion_comment: comment
+          completion_comment: comment.trim() || null
         })
         .eq('id', taskId);
 
@@ -176,7 +169,7 @@ export const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="comment">Completion Comment *</Label>
+            <Label htmlFor="comment">Completion Comment (optional)</Label>
             <Textarea
               id="comment"
               placeholder="Describe what was completed, any issues encountered, or notes for future reference..."
@@ -228,7 +221,7 @@ export const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={submitting || !comment.trim()}
+            disabled={submitting}
             className="w-full sm:w-auto"
           >
             {submitting ? (

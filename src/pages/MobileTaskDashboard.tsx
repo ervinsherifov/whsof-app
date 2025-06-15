@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useTaskData, Task } from '@/hooks/useTaskData';
+import { MobileTaskCompletionDialog } from '@/components/MobileTaskCompletionDialog';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -61,6 +62,8 @@ export const MobileTaskDashboard: React.FC = () => {
   const { toast } = useToast();
   const { tasks, loading, refreshTasks, updateTaskStatus } = useTaskData();
   const [filter, setFilter] = useState('pending');
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleRefresh = async () => {
     await refreshTasks();
@@ -83,9 +86,10 @@ export const MobileTaskDashboard: React.FC = () => {
         actionText = 'started';
         break;
       case 'complete':
-        newStatus = 'COMPLETED';
-        actionText = 'completed';
-        break;
+        // Open completion dialog instead of directly completing
+        setSelectedTask(task);
+        setCompletionDialogOpen(true);
+        return;
       case 'pause':
         newStatus = 'PENDING';
         actionText = 'paused';
@@ -305,6 +309,21 @@ export const MobileTaskDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <MobileTaskCompletionDialog
+        taskId={selectedTask?.id || ''}
+        taskTitle={selectedTask?.title || ''}
+        isOpen={completionDialogOpen}
+        onClose={() => {
+          setCompletionDialogOpen(false);
+          setSelectedTask(null);
+        }}
+        onComplete={() => {
+          refreshTasks();
+          setCompletionDialogOpen(false);
+          setSelectedTask(null);
+        }}
+      />
     </div>
   );
 };
