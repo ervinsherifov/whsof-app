@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Truck as TruckType } from '@/types';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
+import { MobileTruckCompletionDialog } from '@/components/truck/MobileTruckCompletionDialog';
 
 interface MobileTruckInterfaceProps {
   trucks: TruckType[];
@@ -37,6 +38,33 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
   const { toast } = useToast();
   const [processingTruckId, setProcessingTruckId] = useState<string | null>(null);
   const [assigningRamp, setAssigningRamp] = useState<string | null>(null);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [selectedTruckForCompletion, setSelectedTruckForCompletion] = useState<TruckType | null>(null);
+  const [warehouseStaff, setWarehouseStaff] = useState<any[]>([]);
+
+  // Fetch warehouse staff on component mount
+  useEffect(() => {
+    const fetchWarehouseStaff = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(`
+            user_id, 
+            display_name, 
+            email,
+            user_roles!inner(role)
+          `)
+          .eq('user_roles.role', 'WAREHOUSE_STAFF');
+
+        if (error) throw error;
+        setWarehouseStaff(data || []);
+      } catch (error) {
+        console.error('Error fetching warehouse staff:', error);
+      }
+    };
+
+    fetchWarehouseStaff();
+  }, []);
 
   // Filter trucks relevant for warehouse staff
   const relevantTrucks = trucks.filter(truck => 
@@ -178,7 +206,10 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
     } else if (truck.status === 'IN_PROGRESS') {
       return {
         label: 'Mark Done',
-        action: () => updateTruckStatus(truck.id, 'DONE'),
+        action: () => {
+          setSelectedTruckForCompletion(truck);
+          setCompletionDialogOpen(true);
+        },
         variant: 'default' as const,
         icon: CheckCircle
       };
@@ -412,6 +443,23 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
           );
         })}
       </div>
+
+      {/* Truck Completion Dialog */}
+      {selectedTruckForCompletion && (
+        <MobileTruckCompletionDialog
+          truckId={selectedTruckForCompletion.id}
+          truckLicensePlate={selectedTruckForCompletion.license_plate}
+          isOpen={completionDialogOpen}
+          onClose={() => {
+            setCompletionDialogOpen(false);
+            setSelectedTruckForCompletion(null);
+          }}
+          onComplete={() => {
+            onRefresh();
+          }}
+          warehouseStaff={warehouseStaff}
+        />
+      )}
     </div>
   );
 };
