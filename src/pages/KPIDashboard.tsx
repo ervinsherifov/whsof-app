@@ -55,7 +55,7 @@ export default function KPIDashboard() {
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
-              Essential warehouse metrics • Last updated: {lastUpdate.toLocaleTimeString()}
+              Essential warehouse metrics • Last updated: {lastUpdate.toLocaleTimeString('en-US', { hour12: false })}
             </p>
           </div>
           <Badge variant="outline" className="text-sm px-3 py-1">
