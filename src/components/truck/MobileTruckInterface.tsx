@@ -207,10 +207,11 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
             <p className="text-muted-foreground">
               All trucks are either completed or not yet arrived
             </p>
+            <div className="flex items-center justify-center space-x-2 mt-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-xs text-muted-foreground">Auto-refresh active</span>
+            </div>
           </div>
-          <Button onClick={onRefresh} variant="outline">
-            Refresh
-          </Button>
         </div>
       </div>
     );
