@@ -56,7 +56,7 @@ export const Dashboard: React.FC = () => {
       // Calculate metrics
       const trucksScheduled = trucks?.filter(t => t.status === 'SCHEDULED').length || 0;
       const trucksActive = trucks?.filter(t => t.status === 'ARRIVED').length || 0;
-      const trucksCompleted = trucks?.filter(t => t.status === 'DONE').length || 0;
+      const trucksCompleted = trucks?.filter(t => t.status === 'COMPLETED').length || 0;
       const rampsOccupied = trucks?.filter(t => t.status === 'ARRIVED' && t.ramp_number).length || 0;
 
       const totalTasks = tasks?.length || 0;
