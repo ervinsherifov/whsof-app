@@ -324,16 +324,16 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     Upload Photos
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Upload Photos</DialogTitle>
-                    <DialogDescription>
+                <DialogContent className="mx-4 max-w-sm rounded-lg">
+                  <DialogHeader className="text-left">
+                    <DialogTitle className="text-lg">Upload Photos</DialogTitle>
+                    <DialogDescription className="text-sm">
                       Upload photos for documentation
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="photos">Select Photos</Label>
+                      <Label htmlFor="photos" className="text-sm font-medium">Select Photos</Label>
                       <Input
                         id="photos"
                         type="file"
@@ -341,34 +341,51 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                         multiple
                         onChange={handleFileSelect}
                         disabled={uploading}
+                        className="mt-1"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Select up to 10 photos (JPEG, PNG, WebP)
+                      </p>
                     </div>
                     
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <Label>Selected files:</Label>
-                        <div className="text-sm text-muted-foreground space-y-1">
+                        <Label className="text-sm font-medium">Selected files ({selectedFiles.length}):</Label>
+                        <div className="max-h-32 overflow-y-auto space-y-1">
                           {selectedFiles.map((file, index) => (
-                            <div key={index} className="flex justify-between">
-                              <span>{file.name}</span>
-                              <span>{formatFileSize(Math.round(file.size / 1024))}</span>
+                            <div key={index} className="flex justify-between items-center text-xs p-2 bg-muted rounded">
+                              <span className="truncate flex-1 mr-2">{file.name}</span>
+                              <span className="text-muted-foreground">{formatFileSize(Math.round(file.size / 1024))}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
                     
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 pt-2">
                       <Button
                         onClick={uploadPhotos}
                         disabled={uploading || selectedFiles.length === 0}
-                        className="flex-1"
+                        className="w-full"
+                        size="lg"
                       >
-                        {uploading ? 'Uploading...' : 'Upload Photos'}
+                        {uploading ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span>Uploading...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Camera className="h-4 w-4 mr-2" />
+                            Upload {selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Photos
+                          </>
+                        )}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => setShowUploadDialog(false)}
+                        disabled={uploading}
+                        className="w-full"
                       >
                         Cancel
                       </Button>
