@@ -64,6 +64,7 @@ export const TruckScheduling: React.FC = () => {
       if (newStatus === 'ARRIVED') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
+        updateData.started_at = new Date().toISOString();
       } else if (newStatus === 'IN_PROGRESS') {
         updateData.handled_by_user_id = user.id;
         updateData.handled_by_name = user.email;
