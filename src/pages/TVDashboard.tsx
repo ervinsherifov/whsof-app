@@ -405,7 +405,7 @@ export const TVDashboard: React.FC = () => {
               <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Urgent Tasks</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
-              <div className="space-y-1 lg:space-y-2 4xl:space-y-3">
+                <div className="space-y-1 lg:space-y-2 4xl:space-y-3">
                 {tasks.slice(0, 3).map((task) => (
                   <div 
                     key={task.id}
@@ -419,6 +419,11 @@ export const TVDashboard: React.FC = () => {
                     </div>
                     <div className="text-xs lg:text-sm 4xl:text-base">
                       <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
+                      {task.created_by_profile && (
+                        <div className="text-muted-foreground">
+                          Scheduled by: {task.created_by_profile.display_name || task.created_by_profile.email}
+                        </div>
+                      )}
                         {task.due_date && (
                         <div className="font-bold">
                           {new Date(task.due_date).toLocaleTimeString('en-GB', { 
