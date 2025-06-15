@@ -60,6 +60,8 @@ export const useTaskData = () => {
 
   const updateTaskStatus = async (taskId: string, newStatus: Task['status']) => {
     try {
+      console.log('Starting task update:', { taskId, newStatus });
+      
       const updates: any = {
         status: newStatus,
         updated_at: new Date().toISOString(),
@@ -67,6 +69,7 @@ export const useTaskData = () => {
 
       // Get current user data for setting assigned_to_name
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      console.log('Current user:', currentUser?.id);
       
       // If starting the task, set assignment details
       if (newStatus === 'IN_PROGRESS' && currentUser) {
@@ -78,7 +81,9 @@ export const useTaskData = () => {
           .eq('user_id', currentUser.id)
           .maybeSingle();
         
+        console.log('Profile data:', profileData);
         updates.assigned_to_name = profileData?.display_name || profileData?.email || 'Unknown User';
+        console.log('Setting assigned_to_name to:', updates.assigned_to_name);
       }
 
       // If completing the task, set completion details
@@ -86,6 +91,8 @@ export const useTaskData = () => {
         updates.completed_at = new Date().toISOString();
         updates.completed_by_user_id = (await supabase.auth.getUser()).data.user?.id;
       }
+
+      console.log('Updates to apply:', updates);
 
       const { error } = await supabase
         .from('tasks')
