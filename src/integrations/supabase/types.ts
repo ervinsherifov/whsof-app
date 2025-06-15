@@ -1067,14 +1067,18 @@ export type Database = {
       user_performance_summary: {
         Row: {
           active_days: number | null
+          avg_pallets_per_truck: number | null
           avg_processing_hours: number | null
+          avg_unloading_speed_pallets_per_hour: number | null
+          completed_trucks: number | null
           display_name: string | null
           email: string | null
+          exceptions_reported: number | null
+          exceptions_resolved: number | null
           last_activity_date: string | null
-          total_overtime_hours: number | null
-          total_tasks_completed: number | null
-          total_trucks_completed: number | null
-          total_working_hours: number | null
+          tasks_completed: number | null
+          total_pallets_handled: number | null
+          total_trucks_handled: number | null
           user_id: string | null
         }
         Relationships: []
