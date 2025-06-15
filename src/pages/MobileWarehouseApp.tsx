@@ -15,7 +15,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Dashboard } from '@/pages/Dashboard';
-import { TimeTracking } from '@/pages/TimeTracking';
+import { MobileTimeTracking } from '@/components/time/MobileTimeTracking';
 
 import { MobileTaskDashboard } from '@/pages/MobileTaskDashboard';
 import { MobileTruckInterface } from '@/components/truck/MobileTruckInterface';
@@ -98,7 +98,7 @@ export const MobileWarehouseApp: React.FC = () => {
       case 'dashboard':
         return <Dashboard />;
       case 'time':
-        return <TimeTracking />;
+        return <MobileTimeTracking />;
       case 'trucks':
         return (
           <div className="p-4">
