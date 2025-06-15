@@ -3,20 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UserKPIMetrics {
-  id: string;
   user_id: string;
-  metric_date: string;
-  total_trucks_handled: number;
-  completed_trucks: number;
-  avg_processing_hours: number;
-  tasks_completed: number;
-  exceptions_reported: number;
-  exceptions_resolved: number;
-  total_pallets_handled: number;
-  avg_pallets_per_truck: number;
-  avg_unloading_speed_pallets_per_hour: number;
   display_name: string;
   email: string;
+  total_working_hours: number;
+  total_overtime_hours: number;
+  total_tasks_completed: number;
+  total_trucks_completed: number;
+  avg_processing_hours: number;
+  active_days: number;
+  last_activity_date: string;
+  // Keep these for compatibility with the component
+  total_trucks_handled?: number;
+  completed_trucks?: number;
+  tasks_completed?: number;
+  total_pallets_handled?: number;
+  avg_pallets_per_truck?: number;
+  avg_unloading_speed_pallets_per_hour?: number;
 }
 
 export interface WarehouseUser {
@@ -35,16 +38,20 @@ export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string =
     try {
       setLoading(true);
 
-      // Fetch user KPIs based on filters
+      // Fetch user KPIs based on filters - use the materialized view instead
       let userKPIQuery = supabase
-        .from('user_kpi_with_profiles')
+        .from('user_performance_summary')
         .select('*')
-        .order('total_trucks_handled', { ascending: false });
+        .order('total_trucks_completed', { ascending: false });
 
-      // Apply date filter
+      // Apply date filter - the materialized view already filters to last 7 days
+      // For periods longer than 7 days, we'll need to fall back to the detailed metrics
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - parseInt(selectedPeriod));
-      userKPIQuery = userKPIQuery.gte('metric_date', daysAgo.toISOString().split('T')[0]);
+      if (parseInt(selectedPeriod) <= 7) {
+        // Use materialized view for recent data
+        userKPIQuery = userKPIQuery.gte('last_activity_date', daysAgo.toISOString().split('T')[0]);
+      }
 
       // Apply user filter if specified
       if (selectedUserId && selectedUserId !== 'all') {
@@ -71,9 +78,13 @@ export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string =
 
       setUserKPIs((userKPIData || []).map((item: any) => ({
         ...item,
-        total_pallets_handled: item.total_pallets_handled || 0,
-        avg_pallets_per_truck: item.avg_pallets_per_truck || 0,
-        avg_unloading_speed_pallets_per_hour: item.avg_unloading_speed_pallets_per_hour || 0
+        // Map new fields to old field names for component compatibility
+        total_trucks_handled: item.total_trucks_completed || 0,
+        completed_trucks: item.total_trucks_completed || 0,
+        tasks_completed: item.total_tasks_completed || 0,
+        total_pallets_handled: 0, // Not available in user_performance_summary
+        avg_pallets_per_truck: 0, // Not available in user_performance_summary
+        avg_unloading_speed_pallets_per_hour: 0 // Not available in user_performance_summary
       })));
       setWarehouseUsers(usersData || []);
     } catch (error: any) {

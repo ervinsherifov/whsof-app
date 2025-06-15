@@ -32,7 +32,7 @@ export function EnhancedUserPerformance({ userKPIs, selectedUserId, selectedPeri
         ) : (
           <div className="space-y-4">
             {userKPIs.map((userKPI, index) => (
-              <div key={userKPI.id} className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 bg-accent/5 rounded-lg border border-border">
+              <div key={userKPI.user_id} className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 bg-accent/5 rounded-lg border border-border">
                 {/* User Info */}
                 <div className="lg:col-span-3 flex items-center gap-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
