@@ -203,15 +203,23 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // First, add user to approved list
-      const { error: approvedError } = await supabase
+      // First, check if user already exists in approved list, if not add them
+      const { data: existingApproved } = await supabase
         .from('approved_users')
-        .insert({
-          email: formData.email,
-          role: formData.role
-        });
+        .select('id')
+        .eq('email', formData.email)
+        .maybeSingle();
 
-      if (approvedError) throw approvedError;
+      if (!existingApproved) {
+        const { error: approvedError } = await supabase
+          .from('approved_users')
+          .insert({
+            email: formData.email,
+            role: formData.role
+          });
+
+        if (approvedError) throw approvedError;
+      }
 
       // Create user
       const { data: currentSession } = await supabase.auth.getSession();
