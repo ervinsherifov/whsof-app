@@ -203,6 +203,16 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
+      // First, add user to approved list
+      const { error: approvedError } = await supabase
+        .from('approved_users')
+        .insert({
+          email: formData.email,
+          role: formData.role
+        });
+
+      if (approvedError) throw approvedError;
+
       // Create user
       const { data: currentSession } = await supabase.auth.getSession();
       
