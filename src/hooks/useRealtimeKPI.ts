@@ -1,16 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export const useRealtimeKPI = () => {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
-  const { toast } = useToast();
 
-  const triggerRefresh = () => {
+  const triggerRefresh = useCallback(() => {
     setLastUpdate(new Date());
     setRefreshTrigger(prev => prev + 1);
-  };
+    console.log('🔄 KPI Refresh triggered at:', new Date().toISOString());
+  }, []);
 
   useEffect(() => {
     // Subscribe to real-time changes in trucks table
@@ -26,20 +25,6 @@ export const useRealtimeKPI = () => {
         (payload) => {
           console.log('🚛 Truck data changed:', payload);
           triggerRefresh();
-          
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: 'New Truck Scheduled',
-              description: `Truck ${payload.new.license_plate} has been added`,
-              duration: 3000,
-            });
-          } else if (payload.eventType === 'UPDATE' && payload.new.status === 'COMPLETED') {
-            toast({
-              title: 'Truck Completed',
-              description: `Truck ${payload.new.license_plate} has been completed`,
-              duration: 3000,
-            });
-          }
         }
       )
       .subscribe();
@@ -57,15 +42,6 @@ export const useRealtimeKPI = () => {
         (payload) => {
           console.log('⚠️ Exception data changed:', payload);
           triggerRefresh();
-          
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: 'New Exception Reported',
-              description: 'A new truck exception has been reported',
-              variant: 'destructive',
-              duration: 5000,
-            });
-          }
         }
       )
       .subscribe();
@@ -92,7 +68,7 @@ export const useRealtimeKPI = () => {
       supabase.removeChannel(exceptionsSubscription);
       supabase.removeChannel(kpiSubscription);
     };
-  }, [toast]);
+  }, [triggerRefresh]);
 
   return { lastUpdate, refreshTrigger };
 };

@@ -95,7 +95,7 @@ export const useKPIMetrics = (selectedUserId?: string, selectedPeriod: string = 
     } finally {
       setLoading(false);
     }
-  }, [toast, selectedUserId, selectedPeriod]);
+  }, [toast, selectedUserId, selectedPeriod, refreshTrigger]);
 
   useEffect(() => {
     fetchKPIMetrics();

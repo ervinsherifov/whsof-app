@@ -42,7 +42,7 @@ export const useHistoricalTrends = (days: number = 30, refreshTrigger?: number) 
     } finally {
       setLoading(false);
     }
-  }, [days, toast]);
+  }, [days, toast, refreshTrigger]);
 
   useEffect(() => {
     fetchTrends();
