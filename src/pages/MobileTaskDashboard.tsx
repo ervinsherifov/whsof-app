@@ -15,54 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock task data - replace with actual API call
-const mockTasks = [
-  {
-    id: '1',
-    title: 'Unload Truck TR-001',
-    description: 'Unload incoming shipment from Germany',
-    status: 'pending',
-    priority: 'high',
-    assignedTo: 'John Doe',
-    dueDate: '2025-06-15T14:00:00Z',
-    location: 'Dock A',
-    truckId: 'TR-001'
-  },
-  {
-    id: '2',
-    title: 'Quality Check - Electronics',
-    description: 'Inspect electronics shipment for damage',
-    status: 'in_progress',
-    priority: 'medium',
-    assignedTo: 'Jane Smith',
-    dueDate: '2025-06-15T16:30:00Z',
-    location: 'QC Station 2',
-    truckId: 'TR-003'
-  },
-  {
-    id: '3',
-    title: 'Load Truck TR-005',
-    description: 'Load outbound shipment to Bulgaria',
-    status: 'completed',
-    priority: 'high',
-    assignedTo: 'Mike Johnson',
-    dueDate: '2025-06-15T12:00:00Z',
-    location: 'Dock C',
-    truckId: 'TR-005'
-  },
-  {
-    id: '4',
-    title: 'Inventory Count - Zone B',
-    description: 'Monthly inventory check for Zone B',
-    status: 'pending',
-    priority: 'low',
-    assignedTo: 'Sarah Wilson',
-    dueDate: '2025-06-16T10:00:00Z',
-    location: 'Zone B',
-    truckId: null
-  }
-];
+import { useTaskData, Task } from '@/hooks/useTaskData';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -106,23 +59,18 @@ const getStatusIcon = (status: string) => {
 export const MobileTaskDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [tasks, setTasks] = useState(mockTasks);
-  const [loading, setLoading] = useState(false);
+  const { tasks, loading, refreshTasks, updateTaskStatus } = useTaskData();
   const [filter, setFilter] = useState('all');
 
   const handleRefresh = async () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Tasks Updated",
-        description: "Task list has been refreshed",
-      });
-    }, 1000);
+    await refreshTasks();
+    toast({
+      title: "Tasks Updated",
+      description: "Task list has been refreshed",
+    });
   };
 
-  const handleTaskAction = (taskId: string, action: string) => {
+  const handleTaskAction = async (taskId: string, action: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -131,40 +79,39 @@ export const MobileTaskDashboard: React.FC = () => {
 
     switch (action) {
       case 'start':
-        newStatus = 'in_progress';
+        newStatus = 'IN_PROGRESS';
         actionText = 'started';
         break;
       case 'complete':
-        newStatus = 'completed';
+        newStatus = 'COMPLETED';
         actionText = 'completed';
         break;
       case 'pause':
-        newStatus = 'pending';
+        newStatus = 'PENDING';
         actionText = 'paused';
         break;
     }
 
-    setTasks(tasks.map(t => 
-      t.id === taskId ? { ...t, status: newStatus } : t
-    ));
-
-    toast({
-      title: `Task ${actionText}`,
-      description: `"${task.title}" has been ${actionText}`,
-    });
+    const success = await updateTaskStatus(taskId, newStatus);
+    if (success) {
+      toast({
+        title: `Task ${actionText}`,
+        description: `"${task.title}" has been ${actionText}`,
+      });
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
     if (filter === 'all') return true;
-    return task.status === filter;
+    return task.status.toLowerCase() === filter.toLowerCase();
   });
 
   const getTaskCounts = () => {
     return {
       total: tasks.length,
-      pending: tasks.filter(t => t.status === 'pending').length,
-      in_progress: tasks.filter(t => t.status === 'in_progress').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
+      pending: tasks.filter(t => t.status.toLowerCase() === 'pending').length,
+      in_progress: tasks.filter(t => t.status.toLowerCase() === 'in_progress').length,
+      completed: tasks.filter(t => t.status.toLowerCase() === 'completed').length,
     };
   };
 
@@ -271,27 +218,31 @@ export const MobileTaskDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Task Details */}
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center space-x-1 text-muted-foreground">
-                      <User className="h-3 w-3" />
-                      <span>{task.assignedTo}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span>{task.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                    </div>
-                    {task.truckId && (
-                      <div className="flex items-center space-x-1 text-muted-foreground">
-                        <ClipboardList className="h-3 w-3" />
-                        <span>{task.truckId}</span>
-                      </div>
-                    )}
-                  </div>
+                   {/* Task Details */}
+                   <div className="grid grid-cols-2 gap-2 text-xs">
+                     {task.assigned_to_name && (
+                       <div className="flex items-center space-x-1 text-muted-foreground">
+                         <User className="h-3 w-3" />
+                         <span>{task.assigned_to_name}</span>
+                       </div>
+                     )}
+                     {task.due_date && (
+                       <div className="flex items-center space-x-1 text-muted-foreground">
+                         <Calendar className="h-3 w-3" />
+                         <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                       </div>
+                     )}
+                     {task.truck_id && (
+                       <div className="flex items-center space-x-1 text-muted-foreground">
+                         <ClipboardList className="h-3 w-3" />
+                         <span>Truck: {task.truck_id}</span>
+                       </div>
+                     )}
+                     <div className="flex items-center space-x-1 text-muted-foreground">
+                       <Calendar className="h-3 w-3" />
+                       <span>{new Date(task.created_at).toLocaleDateString()}</span>
+                     </div>
+                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
