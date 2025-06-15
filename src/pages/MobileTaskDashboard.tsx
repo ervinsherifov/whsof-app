@@ -21,3 +21,5 @@ export const MobileTaskDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default MobileTaskDashboard;
