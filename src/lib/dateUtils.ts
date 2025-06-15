@@ -74,12 +74,13 @@ export const parseDate = (dateString: string): Date | null => {
   }
   
   const [, day, month, year] = match;
-  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  // Create date in UTC to avoid timezone issues
+  const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
   
-  // Validate the date
-  if (date.getDate() !== parseInt(day) || 
-      date.getMonth() !== parseInt(month) - 1 || 
-      date.getFullYear() !== parseInt(year)) {
+  // Validate the date by checking if the UTC components match
+  if (date.getUTCDate() !== parseInt(day) || 
+      date.getUTCMonth() !== parseInt(month) - 1 || 
+      date.getUTCFullYear() !== parseInt(year)) {
     return null;
   }
   

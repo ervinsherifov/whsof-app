@@ -222,10 +222,9 @@ export const TaskManagement: React.FC = () => {
         
         // Only validate date part, not time (align with database validation)
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        parsedDate.setHours(0, 0, 0, 0);
+        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
         
-        if (parsedDate < today) {
+        if (parsedDate < todayUTC) {
           toast({
             title: 'Invalid due date',
             description: 'Due date cannot be in the past. Please select today or a future date.',
@@ -249,10 +248,9 @@ export const TaskManagement: React.FC = () => {
         }
         
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        parsedDate.setHours(0, 0, 0, 0);
+        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
         
-        if (parsedDate < today) {
+        if (parsedDate < todayUTC) {
           toast({
             title: 'Invalid due date',
             description: 'Due date cannot be in the past. Please select today or a future date.',
