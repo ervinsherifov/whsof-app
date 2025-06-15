@@ -60,7 +60,7 @@ export const MobileTaskDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { tasks, loading, refreshTasks, updateTaskStatus } = useTaskData();
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('pending');
 
   const handleRefresh = async () => {
     await refreshTasks();
@@ -246,7 +246,7 @@ export const MobileTaskDashboard: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    {task.status === 'pending' && (
+                    {task.status.toLowerCase() === 'pending' && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -256,7 +256,7 @@ export const MobileTaskDashboard: React.FC = () => {
                         Start Task
                       </Button>
                     )}
-                    {task.status === 'in_progress' && (
+                    {task.status.toLowerCase() === 'in_progress' && (
                       <>
                         <Button
                           size="sm"
@@ -275,7 +275,7 @@ export const MobileTaskDashboard: React.FC = () => {
                         </Button>
                       </>
                     )}
-                    {task.status === 'completed' && (
+                    {task.status.toLowerCase() === 'completed' && (
                       <div className="flex items-center space-x-1 text-green-600 text-xs">
                         <CheckCircle2 className="h-3 w-3" />
                         <span>Completed</span>
