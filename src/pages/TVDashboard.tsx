@@ -169,6 +169,38 @@ export const TVDashboard: React.FC = () => {
     };
   }, []);
 
+  // Calculate progress percentage based on work time
+  const calculateProgress = (truck: any) => {
+    if (truck.status !== 'IN_PROGRESS' || !truck.started_at) return 0;
+    
+    const startTime = new Date(truck.started_at);
+    const currentTime = new Date();
+    const elapsedMinutes = (currentTime.getTime() - startTime.getTime()) / (1000 * 60);
+    
+    // Assume 50 minutes is 100% completion
+    const estimatedDurationMinutes = 50;
+    const progress = Math.min((elapsedMinutes / estimatedDurationMinutes) * 100, 99); // Cap at 99% until marked done
+    
+    return Math.max(progress, 5); // Minimum 5% to show some progress
+  };
+
+  // Format elapsed time
+  const formatElapsedTime = (truck: any) => {
+    if (truck.status !== 'IN_PROGRESS' || !truck.started_at) return '0min';
+    
+    const startTime = new Date(truck.started_at);
+    const currentTime = new Date();
+    const elapsedMinutes = Math.floor((currentTime.getTime() - startTime.getTime()) / (1000 * 60));
+    
+    if (elapsedMinutes < 60) {
+      return `${elapsedMinutes}min`;
+    } else {
+      const hours = Math.floor(elapsedMinutes / 60);
+      const mins = elapsedMinutes % 60;
+      return `${hours}h ${mins}min`;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
@@ -248,10 +280,7 @@ export const TVDashboard: React.FC = () => {
       <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
         <Card className="xl:col-span-1 flex flex-col min-h-0 bg-card/90 backdrop-blur-sm border-border/50">
-          <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-            <CardTitle className="text-2xl lg:text-3xl 4xl:text-5xl">All Trucks</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto">
+          <CardContent className="flex-1 overflow-y-auto pt-4">
             <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
               {trucks.map((truck, index) => (
                   <div 
@@ -386,23 +415,26 @@ export const TVDashboard: React.FC = () => {
                      </div>
                    </div>
 
-                   {/* Progress Indicator for In-Progress Trucks - Compact */}
+                   {/* Progress Indicator for In-Progress Trucks - Dynamic */}
                    {truck.status === 'IN_PROGRESS' && (
                      <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-400/30">
                        <div className="flex justify-between text-xs text-orange-700 font-semibold mb-2">
                          <span>🚛 Processing...</span>
-                         <span>⏱️ ~50min</span>
+                         <span>⏱️ {formatElapsedTime(truck)}</span>
                        </div>
                        <div className="relative w-full bg-orange-200/50 rounded-full h-2 overflow-hidden">
                          <div 
-                           className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full"
+                           className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out"
                            style={{ 
-                             width: '65%',
-                             animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                             width: `${calculateProgress(truck)}%`
                            }} 
                          />
                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-slide-in-right" 
                               style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} />
+                       </div>
+                       <div className="flex justify-between text-xs text-orange-600 mt-1">
+                         <span>{Math.round(calculateProgress(truck))}% complete</span>
+                         <span>Est. {Math.max(0, 50 - Math.floor((new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60)))}min left</span>
                        </div>
                      </div>
                    )}
