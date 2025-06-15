@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,13 +67,14 @@ export const MobileTaskDashboard: React.FC = () => {
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const handleRefresh = async () => {
-    await refreshTasks();
-    toast({
-      title: "Tasks Updated",
-      description: "Task list has been refreshed",
-    });
-  };
+  // Auto-refresh tasks every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshTasks();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshTasks]);
 
   const handleTaskAction = async (taskId: string, action: string) => {
     const task = tasks.find(t => t.id === taskId);
@@ -155,14 +156,10 @@ export const MobileTaskDashboard: React.FC = () => {
             </div>
           </div>
           
-          <Button 
-            onClick={handleRefresh} 
-            variant="ghost" 
-            size="sm"
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-xs text-muted-foreground">Auto-refresh</span>
+          </div>
         </div>
       </div>
 

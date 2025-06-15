@@ -412,15 +412,6 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
         })}
       </div>
 
-      {/* Refresh Button */}
-      <div className="flex justify-center pt-4">
-        <Button onClick={onRefresh} variant="outline" size="lg" className="w-full max-w-xs">
-          <div className="flex items-center space-x-2">
-            <Truck className="h-4 w-4" />
-            <span>Refresh Trucks</span>
-          </div>
-        </Button>
-      </div>
     </div>
   );
 };

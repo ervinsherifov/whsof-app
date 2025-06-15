@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +27,15 @@ export const MobileWarehouseApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showProfile, setShowProfile] = useState(false);
   const { trucks, loading, refreshData } = useTruckData();
+
+  // Auto-refresh data every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshData]);
 
   // Redirect non-warehouse staff
   if (user?.role !== 'WAREHOUSE_STAFF') {
