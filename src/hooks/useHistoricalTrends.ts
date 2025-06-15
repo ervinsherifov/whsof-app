@@ -31,26 +31,8 @@ export const useHistoricalTrends = (days: number = 30) => {
 
       if (error) throw error;
 
-      // If no data exists, generate sample data for last 30 days
-      if (!data || data.length === 0) {
-        const sampleData: TrendData[] = [];
-        for (let i = days; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          
-          sampleData.push({
-            date: date.toISOString().split('T')[0],
-            total_trucks: Math.floor(Math.random() * 20) + 10,
-            completed_trucks: Math.floor(Math.random() * 15) + 8,
-            avg_processing_hours: Math.random() * 3 + 2,
-            total_pallets: Math.floor(Math.random() * 200) + 100,
-            avg_efficiency: Math.random() * 20 + 15
-          });
-        }
-        setTrends(sampleData);
-      } else {
-        setTrends(data);
-      }
+      // Use actual data or empty array if no data exists
+      setTrends(data || []);
     } catch (error: any) {
       toast({
         title: 'Error fetching trends',
