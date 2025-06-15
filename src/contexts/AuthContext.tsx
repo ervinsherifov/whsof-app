@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { logSecurityEvent, getSecureErrorMessage, checkRateLimit } from '@/lib/security';
+import { setUserContext } from '@/lib/sentry';
 import { toast } from 'sonner';
 
 interface User {
@@ -78,12 +79,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const cached = profileCache.get(userId);
           
           if (cached) {
-            setUser({
-              id: userId,
-              email: session.user.email || '',
-              name: cached.display_name || cached.email || session.user.email || '',
-              role: cached.role
-            });
+                  const userData = {
+                    id: userId,
+                    email: session.user.email || '',
+                    name: cached.display_name || cached.email || session.user.email || '',
+                    role: cached.role
+                  };
+                  setUser(userData);
+                  // Set Sentry user context
+                  setUserContext(userData);
             setIsLoading(false);
           } else {
             // Defer Supabase calls with setTimeout to prevent deadlock
