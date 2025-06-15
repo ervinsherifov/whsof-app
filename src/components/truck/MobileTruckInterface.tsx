@@ -412,7 +412,6 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
           );
         })}
       </div>
-
     </div>
   );
 };
