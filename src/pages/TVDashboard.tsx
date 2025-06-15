@@ -421,6 +421,8 @@ export const TVDashboard: React.FC = () => {
                       <div className="font-semibold">
                         {task.status === 'IN_PROGRESS' && task.assigned_to_name 
                           ? `Started by: ${task.assigned_to_name}` 
+                          : task.status === 'IN_PROGRESS' && !task.assigned_to_name
+                          ? 'Started by: Unknown User'
                           : task.assigned_to_name || 'Unassigned'
                         }
                       </div>

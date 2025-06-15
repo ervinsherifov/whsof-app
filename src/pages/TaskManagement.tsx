@@ -314,7 +314,7 @@ export const TaskManagement: React.FC = () => {
           .from('profiles')
           .select('display_name, email')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         updateData.assigned_to_name = profileData?.display_name || profileData?.email || 'Unknown User';
       }

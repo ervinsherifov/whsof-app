@@ -76,7 +76,7 @@ export const useTaskData = () => {
           .from('profiles')
           .select('display_name, email')
           .eq('user_id', currentUser.id)
-          .single();
+          .maybeSingle();
         
         updates.assigned_to_name = profileData?.display_name || profileData?.email || 'Unknown User';
       }
