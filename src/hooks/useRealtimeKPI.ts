@@ -12,9 +12,11 @@ export const useRealtimeKPI = () => {
   }, []);
 
   useEffect(() => {
-    // Subscribe to real-time changes in trucks table
-    const trucksSubscription = supabase
-      .channel('kpi-trucks-changes')
+    console.log('🔄 Setting up KPI real-time subscriptions');
+    
+    // Use a single channel for all subscriptions to avoid conflicts
+    const channel = supabase
+      .channel('kpi-realtime-updates')
       .on(
         'postgres_changes',
         {
@@ -23,15 +25,10 @@ export const useRealtimeKPI = () => {
           table: 'trucks'
         },
         (payload) => {
-          console.log('🚛 Truck data changed:', payload);
+          console.log('🚛 Truck data changed:', payload.eventType, (payload.new as any)?.license_plate || (payload.old as any)?.license_plate);
           triggerRefresh();
         }
       )
-      .subscribe();
-
-    // Subscribe to real-time changes in truck_exceptions table
-    const exceptionsSubscription = supabase
-      .channel('kpi-exceptions-changes')
       .on(
         'postgres_changes',
         {
@@ -40,15 +37,10 @@ export const useRealtimeKPI = () => {
           table: 'truck_exceptions'
         },
         (payload) => {
-          console.log('⚠️ Exception data changed:', payload);
+          console.log('⚠️ Exception data changed:', payload.eventType);
           triggerRefresh();
         }
       )
-      .subscribe();
-
-    // Subscribe to real-time changes in user_kpi_metrics table
-    const kpiSubscription = supabase
-      .channel('kpi-metrics-changes')
       .on(
         'postgres_changes',
         {
@@ -57,16 +49,29 @@ export const useRealtimeKPI = () => {
           table: 'user_kpi_metrics'
         },
         (payload) => {
-          console.log('📊 KPI metrics changed:', payload);
+          console.log('📊 KPI metrics changed:', payload.eventType);
           triggerRefresh();
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'performance_trends'
+        },
+        (payload) => {
+          console.log('📈 Performance trends changed:', payload.eventType);
+          triggerRefresh();
+        }
+      )
+      .subscribe((status) => {
+        console.log('🔄 KPI subscription status:', status);
+      });
 
     return () => {
-      supabase.removeChannel(trucksSubscription);
-      supabase.removeChannel(exceptionsSubscription);
-      supabase.removeChannel(kpiSubscription);
+      console.log('🔄 Cleaning up KPI subscriptions');
+      supabase.removeChannel(channel);
     };
   }, [triggerRefresh]);
 

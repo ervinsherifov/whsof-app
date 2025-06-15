@@ -38,20 +38,16 @@ export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string =
     try {
       setLoading(true);
 
-      // Fetch user KPIs based on filters - use the materialized view instead
+      // Always use the detailed user_kpi_metrics table for accurate data
       let userKPIQuery = supabase
-        .from('user_performance_summary')
+        .from('user_kpi_with_profiles')
         .select('*')
-        .order('total_trucks_completed', { ascending: false });
+        .order('completed_trucks', { ascending: false });
 
-      // Apply date filter - the materialized view already filters to last 7 days
-      // For periods longer than 7 days, we'll need to fall back to the detailed metrics
+      // Apply date filter
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - parseInt(selectedPeriod));
-      if (parseInt(selectedPeriod) <= 7) {
-        // Use materialized view for recent data
-        userKPIQuery = userKPIQuery.gte('last_activity_date', daysAgo.toISOString().split('T')[0]);
-      }
+      userKPIQuery = userKPIQuery.gte('metric_date', daysAgo.toISOString().split('T')[0]);
 
       // Apply user filter if specified
       if (selectedUserId && selectedUserId !== 'all') {
@@ -76,16 +72,33 @@ export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string =
 
       if (usersError) throw usersError;
 
-      setUserKPIs((userKPIData || []).map((item: any) => ({
-        ...item,
-        // Map new fields to old field names for component compatibility
-        total_trucks_handled: item.total_trucks_completed || 0,
-        completed_trucks: item.total_trucks_completed || 0,
-        tasks_completed: item.total_tasks_completed || 0,
-        total_pallets_handled: 0, // Not available in user_performance_summary
-        avg_pallets_per_truck: 0, // Not available in user_performance_summary
-        avg_unloading_speed_pallets_per_hour: 0 // Not available in user_performance_summary
-      })));
+      // Aggregate data by user if multiple metrics exist for the same user
+      const aggregatedData = (userKPIData || []).reduce((acc: any[], item: any) => {
+        const existingUser = acc.find(u => u.user_id === item.user_id);
+        if (existingUser) {
+          // Sum the metrics
+          existingUser.total_trucks_handled += item.total_trucks_handled || 0;
+          existingUser.completed_trucks += item.completed_trucks || 0;
+          existingUser.tasks_completed += item.tasks_completed || 0;
+          existingUser.total_pallets_handled += item.total_pallets_handled || 0;
+          existingUser.exceptions_reported += item.exceptions_reported || 0;
+          existingUser.exceptions_resolved += item.exceptions_resolved || 0;
+          // Average the time-based metrics
+          const count = existingUser._count + 1;
+          existingUser.avg_processing_hours = (existingUser.avg_processing_hours * existingUser._count + (item.avg_processing_hours || 0)) / count;
+          existingUser.avg_pallets_per_truck = (existingUser.avg_pallets_per_truck * existingUser._count + (item.avg_pallets_per_truck || 0)) / count;
+          existingUser.avg_unloading_speed_pallets_per_hour = (existingUser.avg_unloading_speed_pallets_per_hour * existingUser._count + (item.avg_unloading_speed_pallets_per_hour || 0)) / count;
+          existingUser._count = count;
+        } else {
+          acc.push({
+            ...item,
+            _count: 1
+          });
+        }
+        return acc;
+      }, []);
+
+      setUserKPIs(aggregatedData);
       setWarehouseUsers(usersData || []);
     } catch (error: any) {
       toast({
