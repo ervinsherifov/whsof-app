@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
+# DHL Sofia Warehouse Management System
 
-## Project info
+A comprehensive warehouse management system built for DHL Sofia operations, featuring truck scheduling, task management, time tracking, and KPI monitoring.
 
-**URL**: https://lovable.dev/projects/32f8ebb5-5eba-4527-a5a2-2e93dc8c6908
+## Features
 
-## How can I edit this code?
+- **Multi-role Access Control**: SUPER_ADMIN, OFFICE_ADMIN, WAREHOUSE_STAFF
+- **Truck Management**: Complete lifecycle tracking from scheduling to completion
+- **Task Management**: Assignment, tracking, and completion with photo documentation
+- **Time Tracking**: Check-in/out system with overtime calculation
+- **KPI Dashboard**: Real-time performance metrics and analytics
+- **Mobile Responsive**: Works seamlessly on all devices
 
-There are several ways of editing your application.
+## Technology Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Shadcn UI
+- **Backend**: Supabase (PostgreSQL, Authentication, Real-time)
+- **Build Tool**: Vite
+- **Deployment**: Production-ready with error monitoring
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/32f8ebb5-5eba-4527-a5a2-2e93dc8c6908) and start prompting.
+## Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
+- Node.js 18+ 
+- npm or bun package manager
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Installation
+```bash
+git clone <repository-url>
+cd warehouse-management-system
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Setup
+1. Create a Supabase project
+2. Update database connection in `src/integrations/supabase/client.ts`
+3. Run database migrations from `supabase/migrations/`
+4. Configure authentication settings
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Deployment
 
-**Use GitHub Codespaces**
+### Web Deployment
+```bash
+npm run build
+# Deploy the dist/ folder to your hosting provider
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Mobile App (Optional)
+```bash
+npm run build
+npx cap sync
+npx cap run android/ios
+```
 
-## What technologies are used for this project?
+## System Architecture
 
-This project is built with:
+### Database Schema
+- **Users & Roles**: Profile management with role-based access
+- **Trucks**: Complete truck lifecycle tracking
+- **Tasks**: Task assignment and completion
+- **Time Entries**: Work hour tracking with overtime
+- **KPI Metrics**: Performance analytics and reporting
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Key Features
+- Real-time updates across all connected clients
+- Comprehensive audit trails for all operations
+- Mobile-first responsive design
+- Production-ready error monitoring
+- Role-based data access controls
 
-## How can I deploy this project?
+## Production Checklist
 
-Simply open [Lovable](https://lovable.dev/projects/32f8ebb5-5eba-4527-a5a2-2e93dc8c6908) and click on Share -> Publish.
+- [ ] Configure HTTPS/SSL certificate
+- [ ] Update Supabase authentication URLs
+- [ ] Set up error monitoring (Sentry)
+- [ ] Configure database backups
+- [ ] Test with production data volumes
+- [ ] Set up monitoring alerts
 
-## Can I connect a custom domain to my Lovable project?
+## Support
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For technical support and feature requests, contact the development team.
