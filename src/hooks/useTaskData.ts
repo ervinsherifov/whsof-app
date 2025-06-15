@@ -65,6 +65,22 @@ export const useTaskData = () => {
         updated_at: new Date().toISOString(),
       };
 
+      // Get current user data for setting assigned_to_name
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      // If starting the task, set assignment details
+      if (newStatus === 'IN_PROGRESS' && currentUser) {
+        updates.assigned_to_user_id = currentUser.id;
+        // Get user profile for display name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('display_name, email')
+          .eq('user_id', currentUser.id)
+          .single();
+        
+        updates.assigned_to_name = profileData?.display_name || profileData?.email || 'Unknown User';
+      }
+
       // If completing the task, set completion details
       if (newStatus === 'COMPLETED') {
         updates.completed_at = new Date().toISOString();

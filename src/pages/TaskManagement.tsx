@@ -305,6 +305,20 @@ export const TaskManagement: React.FC = () => {
     try {
       const updateData: any = { status: newStatus };
       
+      // If starting the task, set assignment details
+      if (newStatus === 'IN_PROGRESS') {
+        updateData.assigned_to_user_id = user.id;
+        
+        // Get user profile for display name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('display_name, email')
+          .eq('user_id', user.id)
+          .single();
+        
+        updateData.assigned_to_name = profileData?.display_name || profileData?.email || 'Unknown User';
+      }
+      
       if (newStatus === 'COMPLETED') {
         updateData.completed_by_user_id = user.id;
         updateData.completed_at = new Date().toISOString();
