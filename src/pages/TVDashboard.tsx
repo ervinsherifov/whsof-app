@@ -363,6 +363,21 @@ export const TVDashboard: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Scheduled By Information */}
+                  {truck.created_by_profile && (
+                    <div className="mb-4 p-3 lg:p-4 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        <span className="text-sm lg:text-base 4xl:text-lg text-green-700 font-medium">
+                          Scheduled by:
+                        </span>
+                        <span className="text-sm lg:text-base 4xl:text-lg text-green-900 font-bold">
+                          {truck.created_by_profile.display_name || truck.created_by_profile.email}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Cargo Description */}
                   <div className="space-y-2">
                     <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
