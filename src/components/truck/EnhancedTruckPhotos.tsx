@@ -299,29 +299,27 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
       {/* Controls */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Camera className="h-4 w-4 md:h-5 md:w-5" />
                 Document Photos ({photos.length})
               </CardTitle>
-              <CardDescription>
-                Upload and manage documentation photos
-              </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className="hidden sm:flex"
               >
                 {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
               </Button>
               <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button size="sm" className="w-full sm:w-auto">
                     <Camera className="h-4 w-4 mr-2" />
-                    Upload Photos
+                    Upload
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="mx-4 max-w-sm rounded-lg">
