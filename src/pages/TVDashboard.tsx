@@ -356,9 +356,9 @@ export const TVDashboard: React.FC = () => {
                        <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
                          Time
                        </div>
-                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground font-mono leading-tight">
-                         {truck.arrival_time.substring(0, 5)}
-                       </div>
+                        <div className="text-xs lg:text-sm 4xl:text-base font-black text-foreground font-mono leading-tight">
+                          {truck.arrival_time.substring(0, 5)}
+                        </div>
                      </div>
                      
                      <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
