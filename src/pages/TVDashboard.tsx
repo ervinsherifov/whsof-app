@@ -549,7 +549,7 @@ export const TVDashboard: React.FC = () => {
       )}
 
       {/* Date and Time indicator */}
-      <div className="fixed bottom-2 left-2 text-foreground text-sm lg:text-base 4xl:text-lg bg-background/90 backdrop-blur px-3 py-2 rounded z-20 border border-border/30">
+      <div className="fixed bottom-2 right-2 text-foreground text-sm lg:text-base 4xl:text-lg bg-background/90 backdrop-blur px-3 py-2 rounded z-20 border border-border/30 mr-2 mb-16">
         <div className="font-black">
           {currentTime.toLocaleTimeString('en-GB', { 
             hour12: false,
