@@ -13,7 +13,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { useMobileNotification } from '@/contexts/MobileNotificationContext';
 import { Dashboard } from '@/pages/Dashboard';
 import { MobileTimeTracking } from '@/components/time/MobileTimeTracking';
 
@@ -23,7 +23,7 @@ import { useTruckData } from '@/hooks/useTruckData';
 
 export const MobileWarehouseApp: React.FC = () => {
   const { user, logout, checkIn, checkOut } = useAuth();
-  const { toast } = useToast();
+  const { showSuccess, showError } = useMobileNotification();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showProfile, setShowProfile] = useState(false);
   const { trucks, loading, refreshData } = useTruckData();
@@ -48,48 +48,45 @@ export const MobileWarehouseApp: React.FC = () => {
   const handleCheckIn = async () => {
     try {
       await checkIn();
-      toast({
-        title: "Checked In ✅",
-        description: `Time: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
-      });
+      showSuccess(
+        "Checked In ✅",
+        `Time: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+      );
     } catch (error) {
-      toast({
-        title: "Check-in Failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      showError(
+        "Check-in Failed",
+        "Please try again."
+      );
     }
   };
 
   const handleCheckOut = async () => {
     try {
       await checkOut();
-      toast({
-        title: "Checked Out ✅",
-        description: `Time: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
-      });
+      showSuccess(
+        "Checked Out ✅",
+        `Time: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+      );
     } catch (error) {
-      toast({
-        title: "Check-out Failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      showError(
+        "Check-out Failed",
+        "Please try again."
+      );
     }
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast({
-        title: "Logged Out",
-        description: "See you next time!",
-      });
+      showSuccess(
+        "Logged Out",
+        "See you next time!"
+      );
     } catch (error) {
-      toast({
-        title: "Logout Failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      showError(
+        "Logout Failed",
+        "Please try again."
+      );
     }
   };
 

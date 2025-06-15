@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useMobileNotification } from '@/contexts/MobileNotificationContext';
 import { formatDate } from '@/lib/dateUtils';
 import { formatHoursDisplay, formatHoursToTime } from '@/lib/timeUtils';
 import { Clock, Timer, PlayCircle, StopCircle, RefreshCw } from 'lucide-react';
@@ -30,7 +30,7 @@ export const MobileTimeTracking: React.FC = () => {
   const { user, checkIn, checkOut } = useAuth();
   const { isCheckedIn, currentEntry, refreshStatus } = useCheckInStatus();
   const { isWorkingDay, isHoliday, getHolidayName, isWeekend } = useWorkSchedule();
-  const { toast } = useToast();
+  const { showSuccess, showError, showWarning } = useMobileNotification();
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
@@ -99,25 +99,23 @@ export const MobileTimeTracking: React.FC = () => {
           ? 'Working on weekend - all hours will be overtime'
           : 'Working on non-working day - all hours will be overtime';
         
-        toast({
-          title: "Overtime Notice",
-          description: warningMessage,
-          variant: "default",
-        });
+        showWarning(
+          "Overtime Notice",
+          warningMessage
+        );
       }
       
       await checkIn();
       await Promise.all([refreshData(), refreshStatus()]);
-      toast({
-        title: "Checked In ✅",
-        description: `Welcome! Time: ${getCurrentTime()}`,
-      });
+      showSuccess(
+        "Checked In ✅",
+        `Welcome! Time: ${getCurrentTime()}`
+      );
     } catch (error: any) {
-      toast({
-        title: "Check-in Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError(
+        "Check-in Failed",
+        error.message
+      );
     } finally {
       setIsCheckingIn(false);
     }
@@ -128,16 +126,15 @@ export const MobileTimeTracking: React.FC = () => {
     try {
       await checkOut();
       await Promise.all([refreshData(), refreshStatus()]);
-      toast({
-        title: "Checked Out ✅",
-        description: `See you tomorrow! Time: ${getCurrentTime()}`,
-      });
+      showSuccess(
+        "Checked Out ✅",
+        `See you tomorrow! Time: ${getCurrentTime()}`
+      );
     } catch (error: any) {
-      toast({
-        title: "Check-out Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError(
+        "Check-out Failed",
+        error.message
+      );
     } finally {
       setIsCheckingOut(false);
     }
