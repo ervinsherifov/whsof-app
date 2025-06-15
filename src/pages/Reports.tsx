@@ -107,7 +107,7 @@ export const Reports: React.FC = () => {
       
       setTasks(tasksWithProfiles);
 
-      // Fetch completed trucks separately to avoid foreign key conflicts
+      // Fetch completed trucks with handlers
       const { data: completedTrucksData, error: completedTrucksError } = await supabase
         .from('trucks')
         .select('*')
@@ -118,20 +118,53 @@ export const Reports: React.FC = () => {
 
       let enrichedCompletedTrucks = completedTrucksData || [];
 
-      // Fetch completion photos separately if we have trucks
+      // Fetch completion photos and handlers separately if we have trucks
       if (completedTrucksData && completedTrucksData.length > 0) {
         const truckIds = completedTrucksData.map(truck => truck.id);
         
+        // Fetch photos
         const { data: photosData } = await supabase
           .from('truck_completion_photos')
           .select('id, photo_url, created_at, truck_id')
           .in('truck_id', truckIds);
 
-        // Attach photos to trucks
-        enrichedCompletedTrucks = completedTrucksData.map(truck => ({
-          ...truck,
-          truck_completion_photos: photosData?.filter(photo => photo.truck_id === truck.id) || []
-        }));
+        // Fetch truck handlers
+        const { data: handlersData } = await supabase
+          .from('truck_handlers')
+          .select('truck_id, handler_user_id, handler_name')
+          .in('truck_id', truckIds);
+
+        // Fetch profile data for handlers
+        const handlerUserIds = handlersData?.map(h => h.handler_user_id).filter(Boolean) || [];
+        let handlerProfiles: any[] = [];
+        
+        if (handlerUserIds.length > 0) {
+          const { data: profilesForHandlers } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, email')
+            .in('user_id', handlerUserIds);
+          handlerProfiles = profilesForHandlers || [];
+        }
+
+        // Attach photos and handlers to trucks
+        enrichedCompletedTrucks = completedTrucksData.map(truck => {
+          const truckHandlers = handlersData?.filter(handler => handler.truck_id === truck.id) || [];
+          const handlerCount = truckHandlers.length;
+          const palletsPerHandler = handlerCount > 0 ? Math.floor(truck.pallet_count / handlerCount) : truck.pallet_count;
+          
+          return {
+            ...truck,
+            truck_completion_photos: photosData?.filter(photo => photo.truck_id === truck.id) || [],
+            truck_handlers: truckHandlers.map(handler => {
+              const handlerProfile = handlerProfiles.find(p => p.user_id === handler.handler_user_id);
+              return {
+                ...handler,
+                allocated_pallets: palletsPerHandler,
+                display_name: handlerProfile?.display_name || handler.handler_name
+              };
+            })
+          };
+        });
       }
 
       setCompletedTrucks(enrichedCompletedTrucks);
@@ -931,15 +964,28 @@ export const Reports: React.FC = () => {
                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                            <div className="flex-1 space-y-1">
                              <h3 className="font-semibold text-lg">{truck.license_plate}</h3>
-                             <p className="text-sm text-muted-foreground">
-                               Completed: {formatDate(truck.updated_at)}
-                             </p>
-                             <p className="text-sm text-muted-foreground">
-                               Handled by: {truck.handled_by_name || 'Unknown'}
-                             </p>
-                             <p className="text-sm text-muted-foreground">
-                               {truck.pallet_count} pallets • {truck.cargo_description}
-                             </p>
+                              <p className="text-sm text-muted-foreground">
+                                Completed: {formatDate(truck.updated_at)}
+                              </p>
+                              {truck.truck_handlers && truck.truck_handlers.length > 0 ? (
+                                <div className="space-y-1">
+                                  <p className="text-sm text-muted-foreground font-medium">
+                                    Handled by ({truck.truck_handlers.length} staff):
+                                  </p>
+                                  {truck.truck_handlers.map((handler: any, index: number) => (
+                                    <p key={index} className="text-sm text-muted-foreground pl-2">
+                                      • {handler.display_name} ({handler.allocated_pallets} pallets)
+                                    </p>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">
+                                  Handled by: {truck.handled_by_name || 'Unknown'}
+                                </p>
+                              )}
+                              <p className="text-sm text-muted-foreground">
+                                Total: {truck.pallet_count} pallets • {truck.cargo_description}
+                              </p>
                            </div>
                            <div className="flex flex-col items-end gap-2 sm:min-w-[120px]">
                              <span className="text-sm text-muted-foreground text-right">
