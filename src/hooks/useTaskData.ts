@@ -18,6 +18,10 @@ export interface Task {
   completion_comment: string | null;
   created_at: string;
   updated_at: string;
+  created_by_profile?: {
+    display_name: string | null;
+    email: string | null;
+  };
 }
 
 export const useTaskData = () => {
@@ -30,12 +34,18 @@ export const useTaskData = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          created_by_profile:profiles!tasks_created_by_user_id_fkey(
+            display_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setTasks(data || []);
+      setTasks((data as any) || []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({

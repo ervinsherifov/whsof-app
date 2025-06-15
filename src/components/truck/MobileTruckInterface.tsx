@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
+import { formatDateMobile } from '@/lib/mobileDateUtils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -15,7 +16,8 @@ import {
   AlertTriangle,
   MapPin,
   Calendar,
-  Hash
+  Hash,
+  UserPlus
 } from 'lucide-react';
 import { Truck as TruckType } from '@/types';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
@@ -298,43 +300,55 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
                     )}
                   </div>
 
-                  {/* Key Info Grid */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                      <p className="text-xs text-muted-foreground">Arrival</p>
-                      <p className="font-semibold text-sm">{truck.arrival_time.substring(0, 5)}</p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <MapPin className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                      <p className="text-xs text-muted-foreground">Ramp</p>
-                      <p className="font-semibold text-sm">
-                        {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
-                      </p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <Package className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                      <p className="text-xs text-muted-foreground">Pallets</p>
-                      <p className="font-semibold text-sm">{truck.pallet_count}</p>
-                    </div>
-                  </div>
+                   {/* Key Info Grid */}
+                   <div className="grid grid-cols-3 gap-4">
+                     <div className="text-center">
+                       <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                       <p className="text-xs text-muted-foreground">Arrival</p>
+                       <p className="font-semibold text-sm">{truck.arrival_time.substring(0, 5)}</p>
+                       <p className="text-xs text-muted-foreground">{formatDateMobile(truck.arrival_date)}</p>
+                     </div>
+                     
+                     <div className="text-center">
+                       <MapPin className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                       <p className="text-xs text-muted-foreground">Ramp</p>
+                       <p className="font-semibold text-sm">
+                         {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
+                       </p>
+                     </div>
+                     
+                     <div className="text-center">
+                       <Package className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                       <p className="text-xs text-muted-foreground">Pallets</p>
+                       <p className="font-semibold text-sm">{truck.pallet_count}</p>
+                     </div>
+                   </div>
 
-                  {/* Cargo Description */}
-                  <div className="bg-muted/30 rounded-lg p-3">
-                    <p className="text-sm text-muted-foreground mb-1">Cargo:</p>
-                    <p className="text-sm font-medium line-clamp-2">{truck.cargo_description}</p>
-                  </div>
+                   {/* Cargo Description */}
+                   <div className="bg-muted/30 rounded-lg p-3">
+                     <p className="text-sm text-muted-foreground mb-1">Cargo:</p>
+                     <p className="text-sm font-medium line-clamp-2">{truck.cargo_description}</p>
+                   </div>
 
-                  {/* Handler Info */}
-                  {truck.handled_by_name && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span className="text-muted-foreground">Handler:</span>
-                      <span className="font-medium">{truck.handled_by_name}</span>
-                    </div>
-                  )}
+                   {/* Additional Info */}
+                   <div className="space-y-2 text-sm">
+                     {(truck as any).created_by_profile && (
+                       <div className="flex items-center space-x-2">
+                         <UserPlus className="h-3 w-3 text-muted-foreground" />
+                         <span className="text-muted-foreground">Scheduled by:</span>
+                         <span className="font-medium">{(truck as any).created_by_profile?.display_name || (truck as any).created_by_profile?.email || 'Unknown'}</span>
+                       </div>
+                     )}
+                     
+                     {/* Handler Info */}
+                     {truck.handled_by_name && (
+                       <div className="flex items-center space-x-2">
+                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                         <span className="text-muted-foreground">Handler:</span>
+                         <span className="font-medium">{truck.handled_by_name}</span>
+                       </div>
+                     )}
+                   </div>
 
                   {/* Ramp Assignment for Scheduled Trucks */}
                   {truck.status === 'SCHEDULED' && !truck.ramp_number && (

@@ -35,7 +35,13 @@ export const useTruckData = () => {
     try {
       let query = supabase
         .from('trucks')
-        .select('*');
+        .select(`
+          *,
+          created_by_profile:profiles!trucks_created_by_user_id_fkey(
+            display_name,
+            email
+          )
+        `);
 
       if (user?.role === 'WAREHOUSE_STAFF') {
         query = query.neq('status', 'DONE');

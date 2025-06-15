@@ -11,12 +11,14 @@ import {
   RefreshCw,
   User,
   Calendar,
-  MapPin
+  MapPin,
+  UserPlus
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useTaskData, Task } from '@/hooks/useTaskData';
 import { MobileTaskCompletionDialog } from '@/components/MobileTaskCompletionDialog';
+import { formatDateMobile } from '@/lib/mobileDateUtils';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -247,22 +249,28 @@ export const MobileTaskDashboard: React.FC = () => {
                          <span>{task.assigned_to_name}</span>
                        </div>
                      )}
-                     {task.due_date && (
-                       <div className="flex items-center space-x-1 text-muted-foreground">
-                         <Calendar className="h-3 w-3" />
-                         <span>{new Date(task.due_date).toLocaleDateString()}</span>
-                       </div>
-                     )}
-                     {task.truck_id && (
-                       <div className="flex items-center space-x-1 text-muted-foreground">
-                         <ClipboardList className="h-3 w-3" />
-                         <span>Truck: {task.truck_id}</span>
-                       </div>
-                     )}
-                     <div className="flex items-center space-x-1 text-muted-foreground">
-                       <Calendar className="h-3 w-3" />
-                       <span>{new Date(task.created_at).toLocaleDateString()}</span>
-                     </div>
+                      {task.due_date && (
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>Due: {formatDateMobile(task.due_date)}</span>
+                        </div>
+                      )}
+                      {(task as any).created_by_profile && (
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <UserPlus className="h-3 w-3" />
+                          <span>By: {(task as any).created_by_profile?.display_name || (task as any).created_by_profile?.email || 'Unknown'}</span>
+                        </div>
+                      )}
+                      {task.truck_id && (
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <ClipboardList className="h-3 w-3" />
+                          <span>Truck: {task.truck_id}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center space-x-1 text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Created: {formatDateMobile(task.created_at)}</span>
+                      </div>
                    </div>
 
                   {/* Action Buttons */}
