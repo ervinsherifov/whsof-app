@@ -18,12 +18,15 @@ import { Dashboard } from '@/pages/Dashboard';
 import { TimeTracking } from '@/pages/TimeTracking';
 
 import { MobileTaskDashboard } from '@/pages/MobileTaskDashboard';
+import { MobileTruckInterface } from '@/components/truck/MobileTruckInterface';
+import { useTruckData } from '@/hooks/useTruckData';
 
 export const MobileWarehouseApp: React.FC = () => {
   const { user, logout, checkIn, checkOut } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showProfile, setShowProfile] = useState(false);
+  const { trucks, loading, refreshData } = useTruckData();
 
   // Redirect non-warehouse staff
   if (user?.role !== 'WAREHOUSE_STAFF') {
@@ -97,7 +100,15 @@ export const MobileWarehouseApp: React.FC = () => {
       case 'time':
         return <TimeTracking />;
       case 'trucks':
-        return <div className="p-4"><div className="text-center text-muted-foreground">Truck interface will be added here</div></div>;
+        return (
+          <div className="p-4">
+            <MobileTruckInterface 
+              trucks={trucks}
+              loading={loading}
+              onRefresh={refreshData}
+            />
+          </div>
+        );
       case 'tasks':
         return <MobileTaskDashboard />;
       default:
