@@ -54,7 +54,13 @@ export const TVDashboard: React.FC = () => {
       // Fetch all trucks except COMPLETED/DONE status
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
-        .select('*')
+        .select(`
+          *,
+          created_by_profile:profiles!trucks_created_by_user_id_fkey(
+            display_name,
+            email
+          )
+        `)
         .not('status', 'eq', 'COMPLETED')
         .not('status', 'eq', 'DONE');
 
@@ -93,7 +99,13 @@ export const TVDashboard: React.FC = () => {
       // Fetch urgent tasks - show all except COMPLETED
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          created_by_profile:profiles!tasks_created_by_user_id_fkey(
+            display_name,
+            email
+          )
+        `)
         .in('priority', ['URGENT', 'HIGH'])
         .not('status', 'eq', 'COMPLETED')
         .order('due_date', { ascending: true })
