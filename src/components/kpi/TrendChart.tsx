@@ -84,35 +84,42 @@ export function TrendChart({
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                  <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor={color} stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--border))" 
+                strokeOpacity={0.5}
+              />
               <XAxis 
                 dataKey="date" 
                 tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
-                tickLine={false}
-                axisLine={false}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                height={40}
               />
               <YAxis 
                 tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
-                tickLine={false}
-                axisLine={false}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+                width={40}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area
                 type="monotone"
                 dataKey="value"
                 stroke={color}
-                strokeWidth={2}
-                fillOpacity={1}
+                strokeWidth={3}
                 fill="url(#colorMetric)"
+                dot={{ fill: color, strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
