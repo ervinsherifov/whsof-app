@@ -221,15 +221,27 @@ export const UserManagement: React.FC = () => {
         if (approvedError) throw approvedError;
       }
 
-      // Create user using admin API to avoid session interference
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // Store current session to restore after user creation
+      const { data: currentSession } = await supabase.auth.getSession();
+      
+      // Create user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        user_metadata: { name: formData.name },
-        email_confirm: true
+        options: {
+          data: { name: formData.name }
+        }
       });
 
       if (authError) throw authError;
+
+      // Sign out the newly created user immediately to prevent session switch
+      await supabase.auth.signOut();
+      
+      // Restore the original session if it existed
+      if (currentSession?.session) {
+        await supabase.auth.setSession(currentSession.session);
+      }
 
       if (authData.user) {
         // Update role and profile
