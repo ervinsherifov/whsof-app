@@ -257,151 +257,158 @@ export const TVDashboard: React.FC = () => {
                   <div 
                     key={truck.id}
                     className={`
-                      relative border-2 rounded-xl p-6 lg:p-8 4xl:p-10 
-                      transform transition-all duration-500 ease-out
+                      relative rounded-2xl p-6 lg:p-8 4xl:p-10 
+                      transform transition-all duration-700 ease-out
                       animate-fade-in truck-card backdrop-blur-sm
-                      hover:scale-[1.01]
+                      hover:scale-[1.01] shadow-lg
                       ${truck.status === 'IN_PROGRESS' 
-                        ? 'border-orange-500/60 animate-pulse' 
+                        ? 'bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-2 border-orange-400/50 shadow-orange-500/20' 
                         : truck.status === 'ARRIVED'
-                        ? 'border-green-500/60'
-                        : 'border-border/50'
+                        ? 'bg-gradient-to-br from-green-500/20 to-green-600/10 border-2 border-green-400/50 shadow-green-500/20'
+                        : truck.status === 'SCHEDULED'
+                        ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-2 border-blue-400/30 shadow-blue-500/10'
+                        : 'bg-card/90 border-2 border-border/50'
                       }
                     `}
                   style={{ 
-                    animationDelay: `${index * 100}ms`,
+                    animationDelay: `${index * 150}ms`,
                     animationFillMode: 'both'
                   }}
                 >
-                  {/* Status Indicator Bar */}
-                  <div className={`
-                    absolute top-0 left-0 right-0 h-2 rounded-t-xl status-indicator
-                    ${truck.status === 'IN_PROGRESS' 
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-400' 
-                      : truck.status === 'ARRIVED'
-                      ? 'bg-gradient-to-r from-green-500 to-green-400'
-                      : 'bg-gradient-to-r from-secondary to-secondary/80'
-                    }
-                  `} />
+                   {/* Status Indicator - Top Left Corner Badge */}
+                   <div className={`
+                     absolute top-4 left-4 px-4 py-2 rounded-full text-xs lg:text-sm font-bold uppercase tracking-wider
+                     backdrop-blur-sm border shadow-sm
+                     ${truck.status === 'IN_PROGRESS' 
+                       ? 'bg-orange-500/90 text-white border-orange-400 shadow-orange-500/50 animate-pulse' 
+                       : truck.status === 'ARRIVED'
+                       ? 'bg-green-500/90 text-white border-green-400 shadow-green-500/50'
+                       : truck.status === 'SCHEDULED'
+                       ? 'bg-blue-500/90 text-white border-blue-400 shadow-blue-500/50'
+                       : 'bg-muted/90 text-muted-foreground border-muted'
+                     }
+                   `} 
+                   style={{
+                     animationDuration: truck.status === 'IN_PROGRESS' ? '3s' : undefined
+                   }}>
+                     {truck.status.replace('_', ' ')}
+                   </div>
 
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl lg:text-4xl 4xl:text-5xl font-black tracking-tight text-foreground">
-                        {truck.license_plate}
-                      </div>
-                      {truck.priority === 'URGENT' && (
-                        <div className="w-4 h-4 bg-destructive rounded-full animate-pulse" />
-                      )}
-                    </div>
-                    <Badge className={`
-                      text-sm lg:text-lg 4xl:text-xl px-4 py-2 font-semibold border-2
-                      ${truck.status === 'SCHEDULED' 
-                        ? 'bg-secondary/20 text-secondary-foreground border-secondary/40'
-                        : truck.status === 'ARRIVED'
-                        ? 'bg-green-500/25 text-green-100 border-green-500/50'
-                        : truck.status === 'IN_PROGRESS'
-                        ? 'bg-orange-500/25 text-orange-100 border-orange-500/50'
-                        : 'bg-muted/20 text-muted-foreground border-muted/30'
-                      }
-                    `}>
-                      {truck.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
+                   {/* Priority Indicator */}
+                   {truck.priority === 'URGENT' && (
+                     <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/90 text-destructive-foreground text-xs font-bold border border-destructive shadow-destructive/50">
+                       <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                       URGENT
+                     </div>
+                   )}
 
-                  {/* Main Info Grid - Compact layout with proper spacing */}
-                  <div className="flex flex-wrap justify-between items-start gap-4 lg:gap-6 mb-4">
-                    <div className="flex-1 min-w-[120px] space-y-1">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                        Date
-                      </div>
-                      <div className="text-lg lg:text-xl font-black text-foreground">
-                        {formatDate(truck.arrival_date)}
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-[120px] space-y-1">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                        Time
-                      </div>
-                      <div className="text-lg lg:text-xl font-black text-foreground font-mono tracking-wider">
-                        <span className="font-black">{truck.arrival_time.substring(0, 5)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-[100px] space-y-1">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                        Ramp
-                      </div>
-                      <div className="text-lg lg:text-xl font-black text-foreground">
-                        {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-[100px] space-y-1">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                        Pallets
-                      </div>
-                      <div className="text-lg lg:text-xl font-black text-foreground">
-                        {truck.pallet_count}
-                      </div>
-                    </div>
-                  </div>
+                   {/* Header - License Plate */}
+                   <div className="mt-12 mb-8 text-center">
+                     <div className="text-4xl lg:text-5xl 4xl:text-6xl font-black tracking-tight text-foreground drop-shadow-sm">
+                       {truck.license_plate}
+                     </div>
+                   </div>
 
-                  {/* Staff Assignment */}
-                  {(truck.status === 'IN_PROGRESS' || truck.status === 'ARRIVED') && truck.handled_by_name && (
-                    <div className="mb-4 p-3 lg:p-4 rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                        <span className="text-sm lg:text-base 4xl:text-lg text-blue-700 font-medium">
-                          Handled by:
-                        </span>
-                        <span className="text-sm lg:text-base 4xl:text-lg text-blue-900 font-bold">
-                          {truck.handled_by_name}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                   {/* Main Info Grid - Enhanced Visual Hierarchy */}
+                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                     <div className="text-center p-4 rounded-xl bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
+                         Date
+                       </div>
+                       <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                         {formatDate(truck.arrival_date)}
+                       </div>
+                     </div>
+                     
+                     <div className="text-center p-4 rounded-xl bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
+                         Time
+                       </div>
+                       <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground font-mono">
+                         {truck.arrival_time.substring(0, 5)}
+                       </div>
+                     </div>
+                     
+                     <div className="text-center p-4 rounded-xl bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
+                         Ramp
+                       </div>
+                       <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                         {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
+                       </div>
+                     </div>
+                     
+                     <div className="text-center p-4 rounded-xl bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
+                         Pallets
+                       </div>
+                       <div className="text-lg lg:text-xl 4xl:text-2xl font-bold text-foreground">
+                         {truck.pallet_count}
+                       </div>
+                     </div>
+                   </div>
 
-                  {/* Scheduled By Information */}
-                  {truck.created_by_profile && (
-                    <div className="mb-4 p-3 lg:p-4 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <span className="text-sm lg:text-base 4xl:text-lg text-green-700 font-medium">
-                          Scheduled by:
-                        </span>
-                        <span className="text-sm lg:text-base 4xl:text-lg text-green-900 font-bold">
-                          {truck.created_by_profile.display_name || truck.created_by_profile.email}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                   {/* Staff Assignment - Enhanced */}
+                   {(truck.status === 'IN_PROGRESS' || truck.status === 'ARRIVED') && truck.handled_by_name && (
+                     <div className="mb-6 p-4 lg:p-5 rounded-xl bg-gradient-to-r from-blue-500/15 to-blue-600/10 border-l-4 border-blue-500 backdrop-blur-sm">
+                       <div className="flex items-center gap-3">
+                         <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+                         <span className="text-sm lg:text-base 4xl:text-lg text-blue-700 font-semibold">
+                           Handled by:
+                         </span>
+                         <span className="text-sm lg:text-base 4xl:text-lg text-blue-900 font-bold">
+                           {truck.handled_by_name}
+                         </span>
+                       </div>
+                     </div>
+                   )}
 
-                  {/* Cargo Description */}
-                  <div className="space-y-2">
-                    <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wide font-medium">
-                      Cargo
-                    </div>
-                    <div className="text-sm lg:text-base 4xl:text-lg text-foreground leading-relaxed">
-                      {truck.cargo_description}
-                    </div>
-                  </div>
+                   {/* Scheduled By Information - Enhanced */}
+                   {truck.created_by_profile && (
+                     <div className="mb-6 p-4 lg:p-5 rounded-xl bg-gradient-to-r from-green-500/15 to-green-600/10 border-l-4 border-green-500 backdrop-blur-sm">
+                       <div className="flex items-center gap-3">
+                         <div className="w-3 h-3 bg-green-500 rounded-full" />
+                         <span className="text-sm lg:text-base 4xl:text-lg text-green-700 font-semibold">
+                           Scheduled by:
+                         </span>
+                         <span className="text-sm lg:text-base 4xl:text-lg text-green-900 font-bold">
+                           {truck.created_by_profile.display_name || truck.created_by_profile.email}
+                         </span>
+                       </div>
+                     </div>
+                   )}
 
-                  {/* Progress Indicator for In-Progress Trucks */}
-                  {truck.status === 'IN_PROGRESS' && (
-                    <div className="mt-4 space-y-2">
-                      <div className="flex justify-between text-xs lg:text-sm text-muted-foreground">
-                        <span>Processing...</span>
-                        <span>Est. 50 min</span>
-                      </div>
-                      <div className="w-full bg-secondary/30 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full animate-pulse" 
-                             style={{ width: '65%' }} />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                   {/* Cargo Description - Enhanced */}
+                   <div className="p-4 lg:p-5 rounded-xl bg-background/30 backdrop-blur-sm border border-border/30">
+                     <div className="text-xs lg:text-sm 4xl:text-base text-muted-foreground uppercase tracking-wider font-semibold mb-3">
+                       Cargo Description
+                     </div>
+                     <div className="text-sm lg:text-base 4xl:text-lg text-foreground leading-relaxed">
+                       {truck.cargo_description}
+                     </div>
+                   </div>
+
+                   {/* Progress Indicator for In-Progress Trucks - Enhanced */}
+                   {truck.status === 'IN_PROGRESS' && (
+                     <div className="mt-6 p-4 rounded-xl bg-orange-500/10 border border-orange-400/30">
+                       <div className="flex justify-between text-sm lg:text-base text-orange-700 font-semibold mb-3">
+                         <span>🚛 Processing in progress...</span>
+                         <span>⏱️ Est. 50 min</span>
+                       </div>
+                       <div className="relative w-full bg-orange-200/50 rounded-full h-3 overflow-hidden">
+                         <div 
+                           className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full"
+                           style={{ 
+                             width: '65%',
+                             animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                           }} 
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-slide-in-right" 
+                              style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} />
+                       </div>
+                     </div>
+                   )}
+                 </div>
               ))}
               {trucks.length === 0 && (
                 <div className="text-center text-muted-foreground text-lg lg:text-xl 4xl:text-2xl py-8">
