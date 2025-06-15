@@ -281,12 +281,12 @@ export const TVDashboard: React.FC = () => {
         {/* Trucks Status - Primary Focus */}
         <Card className="xl:col-span-1 flex flex-col min-h-0 bg-card/90 backdrop-blur-sm border-border/50">
           <CardContent className="flex-1 overflow-y-auto pt-4">
-            <div className="space-y-2 lg:space-y-3 4xl:space-y-4">
+            <div className="space-y-1 lg:space-y-2 4xl:space-y-3">
               {trucks.map((truck, index) => (
                   <div 
                     key={truck.id}
                     className={`
-                      relative rounded-xl p-4 lg:p-5 4xl:p-6 
+                      relative rounded-lg p-3 lg:p-4 4xl:p-5 
                       transform transition-all duration-700 ease-out
                       animate-fade-in truck-card backdrop-blur-sm
                       hover:scale-[1.01] shadow-md
@@ -306,7 +306,7 @@ export const TVDashboard: React.FC = () => {
                 >
                    {/* Status Indicator - Top Left Corner Badge */}
                    <div className={`
-                     absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                     absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider
                      backdrop-blur-sm border shadow-sm
                      ${truck.status === 'IN_PROGRESS' 
                        ? 'bg-orange-500/90 text-white border-orange-400 shadow-orange-500/50 animate-pulse' 
@@ -325,26 +325,26 @@ export const TVDashboard: React.FC = () => {
 
                    {/* Priority Indicator */}
                    {truck.priority === 'URGENT' && (
-                     <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/90 text-destructive-foreground text-xs font-bold border border-destructive shadow-destructive/50">
+                     <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/90 text-destructive-foreground text-xs font-bold border border-destructive shadow-destructive/50">
                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                        URGENT
                      </div>
                    )}
 
-                   {/* Header - License Plate - Compact */}
-                   <div className="mt-8 mb-4 text-center">
-                     <div className="text-2xl lg:text-3xl 4xl:text-4xl font-black tracking-tight text-foreground drop-shadow-sm">
+                   {/* Header - License Plate - More Compact */}
+                   <div className="mt-6 mb-3 text-center">
+                     <div className="text-xl lg:text-2xl 4xl:text-3xl font-black tracking-tight text-foreground drop-shadow-sm">
                        {truck.license_plate}
                      </div>
                    </div>
 
-                   {/* Main Info Grid - Compact Layout */}
-                   <div className="grid grid-cols-4 gap-3 mb-4">
-                     <div className="text-center p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+                   {/* Main Info Grid - Ultra Compact */}
+                   <div className="grid grid-cols-4 gap-2 mb-3">
+                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
                          Date
                        </div>
-                       <div className="text-sm lg:text-base 4xl:text-lg font-bold text-foreground leading-tight">
+                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground leading-tight">
                          {new Date(truck.arrival_date).toLocaleDateString('en-GB', { 
                            day: '2-digit', 
                            month: '2-digit'
@@ -352,77 +352,68 @@ export const TVDashboard: React.FC = () => {
                        </div>
                      </div>
                      
-                     <div className="text-center p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
                          Time
                        </div>
-                       <div className="text-sm lg:text-base 4xl:text-lg font-bold text-foreground font-mono leading-tight">
+                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground font-mono leading-tight">
                          {truck.arrival_time.substring(0, 5)}
                        </div>
                      </div>
                      
-                     <div className="text-center p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
                          Ramp
                        </div>
-                       <div className="text-sm lg:text-base 4xl:text-lg font-bold text-foreground leading-tight">
+                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground leading-tight">
                          {truck.ramp_number ? `#${truck.ramp_number}` : 'TBD'}
                        </div>
                      </div>
                      
-                     <div className="text-center p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
                          Pallets
                        </div>
-                       <div className="text-sm lg:text-base 4xl:text-lg font-bold text-foreground leading-tight">
+                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground leading-tight">
                          {truck.pallet_count}
                        </div>
                      </div>
                    </div>
 
-                   {/* Staff Assignment & Scheduled By - Compact Row */}
-                   <div className="flex flex-wrap gap-2 mb-3">
+                   {/* Staff Info - Single Row Compact */}
+                   <div className="flex gap-1 text-xs mb-2">
                      {(truck.status === 'IN_PROGRESS' || truck.status === 'ARRIVED') && truck.handled_by_name && (
-                       <div className="flex-1 min-w-0 p-2 rounded-lg bg-gradient-to-r from-blue-500/15 to-blue-600/10 border-l-2 border-blue-500 backdrop-blur-sm">
-                         <div className="flex items-center gap-2">
-                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0" />
-                           <span className="text-xs text-blue-700 font-medium">Handled:</span>
-                           <span className="text-xs text-blue-900 font-bold truncate">{truck.handled_by_name}</span>
-                         </div>
+                       <div className="flex-1 px-2 py-1 rounded bg-blue-500/15 border-l-2 border-blue-500">
+                         <span className="text-blue-700 font-medium">Handled: </span>
+                         <span className="text-blue-900 font-bold truncate">{truck.handled_by_name}</span>
                        </div>
                      )}
-
                      {truck.created_by_profile && (
-                       <div className="flex-1 min-w-0 p-2 rounded-lg bg-gradient-to-r from-green-500/15 to-green-600/10 border-l-2 border-green-500 backdrop-blur-sm">
-                         <div className="flex items-center gap-2">
-                           <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
-                           <span className="text-xs text-green-700 font-medium">Scheduled:</span>
-                           <span className="text-xs text-green-900 font-bold truncate">
-                             {truck.created_by_profile.display_name || truck.created_by_profile.email}
-                           </span>
-                         </div>
+                       <div className="flex-1 px-2 py-1 rounded bg-green-500/15 border-l-2 border-green-500">
+                         <span className="text-green-700 font-medium">By: </span>
+                         <span className="text-green-900 font-bold truncate">
+                           {truck.created_by_profile.display_name || truck.created_by_profile.email}
+                         </span>
                        </div>
                      )}
                    </div>
 
-                   {/* Cargo Description - Compact */}
-                   <div className="p-2 rounded-lg bg-background/30 backdrop-blur-sm border border-border/30 mb-3">
-                     <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
-                       Cargo
-                     </div>
-                     <div className="text-xs lg:text-sm 4xl:text-base text-foreground leading-relaxed line-clamp-2">
+                   {/* Cargo Description - Super Compact */}
+                   <div className="px-2 py-1 rounded bg-background/30 backdrop-blur-sm border border-border/30 mb-2">
+                     <div className="text-xs text-foreground leading-tight line-clamp-1">
+                       <span className="text-muted-foreground font-medium">Cargo: </span>
                        {truck.cargo_description}
                      </div>
                    </div>
 
-                   {/* Progress Indicator for In-Progress Trucks - Dynamic */}
+                   {/* Progress Indicator - Compact */}
                    {truck.status === 'IN_PROGRESS' && (
-                     <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-400/30">
-                       <div className="flex justify-between text-xs text-orange-700 font-semibold mb-2">
-                         <span>🚛 Processing...</span>
-                         <span>⏱️ {formatElapsedTime(truck)}</span>
+                     <div className="px-2 py-1.5 rounded bg-orange-500/10 border border-orange-400/30">
+                       <div className="flex justify-between text-xs text-orange-700 font-semibold mb-1">
+                         <span>🚛 Processing</span>
+                         <span>{formatElapsedTime(truck)}</span>
                        </div>
-                       <div className="relative w-full bg-orange-200/50 rounded-full h-2 overflow-hidden">
+                       <div className="relative w-full bg-orange-200/50 rounded-full h-1.5 overflow-hidden">
                          <div 
                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out"
                            style={{ 
@@ -433,8 +424,8 @@ export const TVDashboard: React.FC = () => {
                               style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} />
                        </div>
                        <div className="flex justify-between text-xs text-orange-600 mt-1">
-                         <span>{Math.round(calculateProgress(truck))}% complete</span>
-                         <span>Est. {Math.max(0, 50 - Math.floor((new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60)))}min left</span>
+                         <span>{Math.round(calculateProgress(truck))}% done</span>
+                         <span>{Math.max(0, 50 - Math.floor((new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60)))}min left</span>
                        </div>
                      </div>
                    )}
