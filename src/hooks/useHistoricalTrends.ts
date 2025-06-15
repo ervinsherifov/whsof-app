@@ -23,6 +23,8 @@ export const useHistoricalTrends = (days: number = 30, refreshTrigger?: number) 
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
+      console.log('📈 Fetching trends from:', startDate.toISOString().split('T')[0], 'to:', new Date().toISOString().split('T')[0]);
+
       const { data, error } = await supabase
         .from('performance_trends')
         .select('*')
@@ -31,9 +33,13 @@ export const useHistoricalTrends = (days: number = 30, refreshTrigger?: number) 
 
       if (error) throw error;
 
+      console.log('📈 Trends data received:', data?.length || 0, 'records');
+      console.log('📈 Sample trend data:', data?.[0]);
+
       // Use actual data or empty array if no data exists
       setTrends(data || []);
     } catch (error: any) {
+      console.error('📈 Error fetching trends:', error);
       toast({
         title: 'Error fetching trends',
         description: error.message,

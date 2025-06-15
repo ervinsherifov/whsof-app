@@ -42,6 +42,10 @@ export function TrendChart({
     value: Number(item[metricKey]) || 0
   }));
 
+  console.log('📊 Chart data for', metricKey, ':', chartData.length, 'points');
+  console.log('📊 Raw data sample:', data?.[0]);
+  console.log('📊 Chart data sample:', chartData?.[0]);
+
   // Calculate trend
   const getTrend = () => {
     if (chartData.length < 2) return null;
