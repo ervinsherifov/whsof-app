@@ -51,11 +51,12 @@ export const TVDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch all trucks with SCHEDULED, ARRIVED, IN_PROGRESS statuses
+      // Fetch all trucks except COMPLETED/DONE status
       const { data: trucksData, error: trucksError } = await supabase
         .from('trucks')
         .select('*')
-        .in('status', ['SCHEDULED', 'ARRIVED', 'IN_PROGRESS']);
+        .not('status', 'eq', 'COMPLETED')
+        .not('status', 'eq', 'DONE');
 
       if (trucksError) throw trucksError;
 
@@ -89,12 +90,12 @@ export const TVDashboard: React.FC = () => {
         return 0;
       });
 
-      // Fetch urgent tasks - only show PENDING, IN_PROGRESS statuses
+      // Fetch urgent tasks - show all except COMPLETED
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .in('priority', ['URGENT', 'HIGH'])
-        .in('status', ['PENDING', 'IN_PROGRESS'])
+        .not('status', 'eq', 'COMPLETED')
         .order('due_date', { ascending: true })
         .limit(5);
 
