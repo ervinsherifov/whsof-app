@@ -220,18 +220,21 @@ export const TaskManagement: React.FC = () => {
           return;
         }
         
-        const taskDateTime = new Date(`${parsedDate.toISOString().split('T')[0]}T${formData.dueTime}`);
-        const now = new Date();
+        // Only validate date part, not time (align with database validation)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        parsedDate.setHours(0, 0, 0, 0);
         
-        if (taskDateTime < now) {
+        if (parsedDate < today) {
           toast({
             title: 'Invalid due date',
-            description: 'Cannot schedule tasks in the past',
+            description: 'Due date cannot be in the past. Please select today or a future date.',
             variant: 'destructive',
           });
           return;
         }
         
+        const taskDateTime = new Date(`${parsedDate.toISOString().split('T')[0]}T${formData.dueTime}`);
         dueDateTime = taskDateTime.toISOString();
       } else if (formData.dueDate) {
         // Parse DD/MM/YYYY date format
@@ -252,7 +255,7 @@ export const TaskManagement: React.FC = () => {
         if (parsedDate < today) {
           toast({
             title: 'Invalid due date',
-            description: 'Cannot schedule tasks in the past',
+            description: 'Due date cannot be in the past. Please select today or a future date.',
             variant: 'destructive',
           });
           return;
