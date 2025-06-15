@@ -20,8 +20,7 @@ import {
   BarChart3, 
   Tv, 
   Users,
-  Smartphone,
-  Book
+  Smartphone
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -92,12 +91,6 @@ const sidebarItems: SidebarItem[] = [
     path: '/overtime-approval',
     roles: ['SUPER_ADMIN'],
     icon: <Clock className="h-4 w-4" />,
-  },
-  {
-    label: 'System Manual',
-    path: '/manual',
-    roles: ['WAREHOUSE_STAFF', 'OFFICE_ADMIN', 'SUPER_ADMIN'],
-    icon: <Book className="h-4 w-4" />,
   },
 ];
 

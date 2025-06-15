@@ -21,7 +21,6 @@ import { OvertimeApproval } from "@/pages/OvertimeApproval";
 
 import { MobileWarehouseApp } from "@/pages/MobileWarehouseApp";
 import { Unauthorized } from "@/pages/Unauthorized";
-import { SystemManual } from "@/pages/SystemManual";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -109,14 +108,6 @@ const App = () => (
               <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <Layout>
                   <OvertimeApproval />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/manual" element={
-              <ProtectedRoute>
-                <Layout>
-                  <SystemManual />
                 </Layout>
               </ProtectedRoute>
             } />
