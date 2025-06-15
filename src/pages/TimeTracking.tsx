@@ -413,12 +413,6 @@ export const TimeTracking: React.FC = () => {
             </Button>
           </div>
           
-          <div className="text-sm text-muted-foreground">
-            <p>• Standard hours: Monday-Friday 08:00 - 17:00 (9 hours)</p>
-            <p>• Weekend work is automatically overtime</p>
-            <p>• Holiday work requires approval</p>
-            <p>• All times are recorded in 24-hour format</p>
-          </div>
         </CardContent>
       </Card>
 
