@@ -1018,7 +1018,9 @@ export type Database = {
       }
       user_kpi_with_profiles: {
         Row: {
+          avg_pallets_per_truck: number | null
           avg_processing_hours: number | null
+          avg_unloading_speed_pallets_per_hour: number | null
           completed_trucks: number | null
           created_at: string | null
           display_name: string | null
@@ -1028,6 +1030,7 @@ export type Database = {
           id: string | null
           metric_date: string | null
           tasks_completed: number | null
+          total_pallets_handled: number | null
           total_trucks_handled: number | null
           updated_at: string | null
           user_id: string | null
