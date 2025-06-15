@@ -418,7 +418,12 @@ export const TVDashboard: React.FC = () => {
                       </Badge>
                     </div>
                     <div className="text-xs lg:text-sm 4xl:text-base">
-                      <div className="font-semibold">{task.assigned_to_name || 'Unassigned'}</div>
+                      <div className="font-semibold">
+                        {task.status === 'IN_PROGRESS' && task.assigned_to_name 
+                          ? `Started by: ${task.assigned_to_name}` 
+                          : task.assigned_to_name || 'Unassigned'
+                        }
+                      </div>
                       {task.created_by_profile && (
                         <div className="text-muted-foreground">
                           Scheduled by: {task.created_by_profile.display_name || task.created_by_profile.email}
