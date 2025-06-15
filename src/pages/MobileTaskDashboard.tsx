@@ -61,7 +61,7 @@ export const MobileTaskDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { tasks, loading, refreshTasks, updateTaskStatus } = useTaskData();
-  const [filter, setFilter] = useState('pending');
+  const [filter, setFilter] = useState('all');
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -105,10 +105,27 @@ export const MobileTaskDashboard: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true;
-    return task.status.toLowerCase() === filter.toLowerCase();
-  });
+  const filteredTasks = tasks
+    .filter(task => {
+      if (filter === 'all') return true;
+      return task.status.toLowerCase() === filter.toLowerCase();
+    })
+    .sort((a, b) => {
+      // Priority order: IN_PROGRESS (active), PENDING (scheduled), COMPLETED (done)
+      const statusOrder = { 'IN_PROGRESS': 1, 'PENDING': 2, 'COMPLETED': 3 };
+      const aOrder = statusOrder[a.status as keyof typeof statusOrder] || 999;
+      const bOrder = statusOrder[b.status as keyof typeof statusOrder] || 999;
+      
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      
+      // Within same status, sort by due date, with null dates at the end
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    });
 
   const getTaskCounts = () => {
     return {
