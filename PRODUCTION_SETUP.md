@@ -6,7 +6,10 @@
 - ✅ Performance monitoring added
 - ✅ User context tracking
 
-**ACTION NEEDED**: Replace Sentry DSN in `src/lib/sentry.ts` with your actual Sentry project DSN
+**ACTION NEEDED**: 
+1. Replace Sentry DSN in `src/lib/sentry.ts` with your actual Sentry project DSN
+2. Enable HTTPS on your domain (critical for production)
+3. Update Supabase auth URLs to use HTTPS
 
 ## 🔒 Security Configuration (CRITICAL)
 

@@ -1,8 +1,16 @@
 import * as Sentry from "@sentry/react";
 
 export const initSentry = () => {
+  // Only initialize Sentry in production with valid DSN
+  const sentryDsn = "https://your-dsn@sentry.io/project-id"; // User will need to replace this
+  
+  if (!import.meta.env.PROD || sentryDsn.includes('your-dsn')) {
+    console.log('Sentry not initialized: either in development or DSN not configured');
+    return;
+  }
+  
   Sentry.init({
-    dsn: "https://your-dsn@sentry.io/project-id", // User will need to replace this
+    dsn: sentryDsn,
     environment: import.meta.env.MODE,
     integrations: [
       Sentry.browserTracingIntegration(),

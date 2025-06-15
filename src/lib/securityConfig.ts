@@ -3,11 +3,15 @@ export const SECURITY_CONFIG = {
   // HTTPS Requirements
   forceHTTPS: import.meta.env.PROD,
   
-  // Content Security Policy
+  // Content Security Policy - Strict in production
   csp: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+    scriptSrc: import.meta.env.PROD 
+      ? ["'self'", "https://unpkg.com", "https://cdn.jsdelivr.net"]
+      : ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.jsdelivr.net"],
+    styleSrc: import.meta.env.PROD
+      ? ["'self'", "https://fonts.googleapis.com"]
+      : ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "blob:", "https:"],
     connectSrc: [
