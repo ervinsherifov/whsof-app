@@ -11,7 +11,7 @@ interface TrendData {
   avg_efficiency: number;
 }
 
-export const useHistoricalTrends = (days: number = 30) => {
+export const useHistoricalTrends = (days: number = 30, refreshTrigger?: number) => {
   const [trends, setTrends] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -46,7 +46,7 @@ export const useHistoricalTrends = (days: number = 30) => {
 
   useEffect(() => {
     fetchTrends();
-  }, [fetchTrends]);
+  }, [fetchTrends, refreshTrigger]);
 
   return {
     trends,

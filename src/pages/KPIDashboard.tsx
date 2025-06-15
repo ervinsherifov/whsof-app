@@ -16,10 +16,10 @@ export default function KPIDashboard() {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30');
   
-  const { kpiMetrics, loading: kpiLoading } = useKPIMetrics(selectedUserId, selectedPeriod);
-  const { userKPIs, warehouseUsers, loading: userLoading } = useUserKPIData(selectedUserId, selectedPeriod);
-  const { trends, loading: trendsLoading } = useHistoricalTrends(parseInt(selectedPeriod));
-  const { lastUpdate } = useRealtimeKPI();
+  const { lastUpdate, refreshTrigger } = useRealtimeKPI();
+  const { kpiMetrics, loading: kpiLoading } = useKPIMetrics(selectedUserId, selectedPeriod, refreshTrigger);
+  const { userKPIs, warehouseUsers, loading: userLoading } = useUserKPIData(selectedUserId, selectedPeriod, refreshTrigger);
+  const { trends, loading: trendsLoading } = useHistoricalTrends(parseInt(selectedPeriod), refreshTrigger);
   const { user } = useAuth();
 
   const loading = kpiLoading || userLoading || trendsLoading;

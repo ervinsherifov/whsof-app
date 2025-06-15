@@ -4,7 +4,13 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useRealtimeKPI = () => {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const { toast } = useToast();
+
+  const triggerRefresh = () => {
+    setLastUpdate(new Date());
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   useEffect(() => {
     // Subscribe to real-time changes in trucks table
@@ -19,7 +25,7 @@ export const useRealtimeKPI = () => {
         },
         (payload) => {
           console.log('🚛 Truck data changed:', payload);
-          setLastUpdate(new Date());
+          triggerRefresh();
           
           if (payload.eventType === 'INSERT') {
             toast({
@@ -50,7 +56,7 @@ export const useRealtimeKPI = () => {
         },
         (payload) => {
           console.log('⚠️ Exception data changed:', payload);
-          setLastUpdate(new Date());
+          triggerRefresh();
           
           if (payload.eventType === 'INSERT') {
             toast({
@@ -76,7 +82,7 @@ export const useRealtimeKPI = () => {
         },
         (payload) => {
           console.log('📊 KPI metrics changed:', payload);
-          setLastUpdate(new Date());
+          triggerRefresh();
         }
       )
       .subscribe();
@@ -88,5 +94,5 @@ export const useRealtimeKPI = () => {
     };
   }, [toast]);
 
-  return { lastUpdate };
+  return { lastUpdate, refreshTrigger };
 };

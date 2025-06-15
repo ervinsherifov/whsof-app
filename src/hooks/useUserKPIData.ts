@@ -28,7 +28,7 @@ export interface WarehouseUser {
   email: string;
 }
 
-export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string = '30') => {
+export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string = '30', refreshTrigger?: number) => {
   const [userKPIs, setUserKPIs] = useState<UserKPIMetrics[]>([]);
   const [warehouseUsers, setWarehouseUsers] = useState<WarehouseUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +100,7 @@ export const useUserKPIData = (selectedUserId?: string, selectedPeriod: string =
 
   useEffect(() => {
     fetchUserKPIData();
-  }, [fetchUserKPIData]);
+  }, [fetchUserKPIData, refreshTrigger]);
 
   return {
     userKPIs,

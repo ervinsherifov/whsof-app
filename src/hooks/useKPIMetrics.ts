@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { KPIMetrics } from '@/types';
 
-export const useKPIMetrics = (selectedUserId?: string, selectedPeriod: string = '30') => {
+export const useKPIMetrics = (selectedUserId?: string, selectedPeriod: string = '30', refreshTrigger?: number) => {
   const [kpiMetrics, setKpiMetrics] = useState<KPIMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -99,7 +99,7 @@ export const useKPIMetrics = (selectedUserId?: string, selectedPeriod: string = 
 
   useEffect(() => {
     fetchKPIMetrics();
-  }, [fetchKPIMetrics]);
+  }, [fetchKPIMetrics, refreshTrigger]);
 
   return {
     kpiMetrics,
