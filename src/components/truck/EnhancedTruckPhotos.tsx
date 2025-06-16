@@ -319,30 +319,31 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                 <DialogTrigger asChild>
                   <Button size="sm" className="w-full sm:w-auto">
                     <Camera className="h-4 w-4 mr-2" />
-                    Upload
+                    Take Photo
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="mx-4 max-w-sm rounded-lg">
                   <DialogHeader className="text-left">
-                    <DialogTitle className="text-lg">Upload Photos</DialogTitle>
+                    <DialogTitle className="text-lg">Take Photos</DialogTitle>
                     <DialogDescription className="text-sm">
-                      Upload photos for documentation
+                      Capture photos using your camera for documentation
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="photos" className="text-sm font-medium">Select Photos</Label>
+                      <Label htmlFor="photos" className="text-sm font-medium">Capture or Select Photos</Label>
                       <Input
                         id="photos"
                         type="file"
                         accept="image/*"
+                        capture="environment"
                         multiple
                         onChange={handleFileSelect}
                         disabled={uploading}
                         className="mt-1"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Select up to 10 photos (JPEG, PNG, WebP)
+                        Take photos with camera or select from gallery (up to 10)
                       </p>
                     </div>
                     
