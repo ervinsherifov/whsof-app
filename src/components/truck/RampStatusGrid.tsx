@@ -12,6 +12,7 @@ const availableRamps = [
   { number: 4, type: 'Unloading' },
   { number: 5, type: 'Unloading' },
   { number: 6, type: 'Unloading' },
+  { number: 7, type: 'Unloading' },
   { number: 8, type: 'Loading' },
   { number: 9, type: 'Loading' },
   { number: 10, type: 'Loading' },
