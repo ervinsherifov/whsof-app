@@ -4,6 +4,7 @@ import { KPIMetrics } from '@/types';
 import { UserKPIMetrics } from '@/hooks/useUserKPIData';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { formatTotalHours } from '@/lib/timeUtils';
 
 interface EssentialKPICardsProps {
   kpiMetrics: KPIMetrics;
@@ -65,16 +66,16 @@ export function EssentialKPICards({ kpiMetrics, userKPIs, selectedPeriod }: Esse
   const essentialMetrics = [
     {
       title: 'Total Working Hours',
-      value: timeMetrics.totalWorkingHours.toFixed(1),
-      unit: 'hrs',
+      value: formatTotalHours(timeMetrics.totalWorkingHours),
+      unit: '',
       icon: Clock,
       description: `Total hours worked in last ${selectedPeriod} days`,
       color: 'text-blue-600'
     },
     {
       title: 'Total Overtime Hours',
-      value: timeMetrics.totalOvertimeHours.toFixed(1),
-      unit: 'hrs',
+      value: formatTotalHours(timeMetrics.totalOvertimeHours),
+      unit: '',
       icon: Timer,
       description: `Overtime hours requiring approval`,
       color: 'text-orange-600'
