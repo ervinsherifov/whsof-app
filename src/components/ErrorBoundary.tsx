@@ -107,7 +107,7 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
                     Error Details (Development)
                   </summary>
                   <pre className="mt-2 p-2 bg-muted rounded overflow-auto max-h-40">
-                    {this.state.error.stack}
+                    {this.state.error.stack?.replace(/https?:\/\/[^\/]*lovable[^\/]*\/[^\/]*/g, 'http://localhost:8080') || 'No stack trace available'}
                   </pre>
                 </details>
               )}
