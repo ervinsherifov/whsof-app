@@ -94,7 +94,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
                 aria-label="Select start date"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateFrom ? format(dateFrom, "PPP") : "Start Date"}
+                {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Start Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -119,7 +119,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
                 aria-label="Select end date"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateTo ? format(dateTo, "PPP") : "End Date"}
+                {dateTo ? format(dateTo, "dd/MM/yyyy") : "End Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
