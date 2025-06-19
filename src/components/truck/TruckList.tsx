@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
+import { SearchHighlight } from '@/components/ui/search-highlight';
 
 interface TruckListProps {
   trucks: any[];
@@ -15,6 +16,7 @@ interface TruckListProps {
   onUpdateStatus: (truckId: string, status: string) => void;
   onDeleteTruck: (truckId: string, licensePlate: string) => void;
   onReschedule?: (truck: any) => void;
+  searchTerm?: string;
 }
 
 export const TruckList: React.FC<TruckListProps> = ({
@@ -23,7 +25,8 @@ export const TruckList: React.FC<TruckListProps> = ({
   onAssignRamp,
   onUpdateStatus,
   onDeleteTruck,
-  onReschedule
+  onReschedule,
+  searchTerm = ''
 }) => {
   const { user } = useAuth();
 
@@ -72,7 +75,9 @@ export const TruckList: React.FC<TruckListProps> = ({
                 <Card key={truck.id} className="p-4">
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
-                      <div className="font-medium text-lg">{truck.license_plate}</div>
+                      <div className="font-medium text-lg">
+                        <SearchHighlight text={truck.license_plate} searchTerm={searchTerm} />
+                      </div>
                       <Badge variant={getStatusColor(truck.status)}>
                         {truck.status}
                       </Badge>
@@ -126,7 +131,9 @@ export const TruckList: React.FC<TruckListProps> = ({
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-xs">Cargo:</span>
-                        <div className="text-sm break-words">{truck.cargo_description}</div>
+                        <div className="text-sm break-words">
+                          <SearchHighlight text={truck.cargo_description} searchTerm={searchTerm} />
+                        </div>
                       </div>
                       {truck.handled_by_name && (
                         <div>
@@ -226,7 +233,7 @@ export const TruckList: React.FC<TruckListProps> = ({
                   {trucks.map((truck) => (
                     <TableRow key={truck.id}>
                       <TableCell className="font-medium">
-                        {truck.license_plate}
+                        <SearchHighlight text={truck.license_plate} searchTerm={searchTerm} />
                       </TableCell>
                       <TableCell>
                         {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
@@ -244,8 +251,8 @@ export const TruckList: React.FC<TruckListProps> = ({
                        <TableCell>
                         {formatProcessingTime(truck.started_at, truck.completed_at)}
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {truck.cargo_description}
+                       <TableCell className="max-w-xs truncate">
+                        <SearchHighlight text={truck.cargo_description} searchTerm={searchTerm} />
                       </TableCell>
                       <TableCell>{truck.handled_by_name || '-'}</TableCell>
                       <TableCell>

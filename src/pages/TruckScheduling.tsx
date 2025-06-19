@@ -9,9 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TruckCompletionPhotos } from '@/components/TruckCompletionPhotos';
-import { useTruckData } from '@/hooks/useTruckData';
+import { useOptimizedTruckData } from '@/hooks/useOptimizedTruckData';
 import { TruckSchedulingForm } from '@/components/truck/TruckSchedulingForm';
 import { TruckList } from '@/components/truck/TruckList';
+import { TruckFilters } from '@/components/truck/TruckFilters';
 import { RampStatusGrid } from '@/components/truck/RampStatusGrid';
 import { TruckRescheduleDialog } from '@/components/truck/TruckRescheduleDialog';
 
@@ -44,7 +45,15 @@ export const TruckScheduling: React.FC = () => {
 
   const { toast } = useToast();
   const { user } = useAuth();
-  const { trucks, profiles, warehouseStaff, loading, refreshData } = useTruckData();
+  const { 
+    trucks, 
+    profiles, 
+    warehouseStaff, 
+    loading, 
+    searchFilters, 
+    setSearchFilters, 
+    refreshData 
+  } = useOptimizedTruckData();
 
   const updateTruckStatus = async (truckId: string, newStatus: string) => {
     if (!user?.id) return;
@@ -317,6 +326,19 @@ export const TruckScheduling: React.FC = () => {
         <TruckSchedulingForm onSuccess={refreshData} />
       </div>
 
+      {/* Search and Filters */}
+      <TruckFilters
+        searchTerm={searchFilters.searchTerm}
+        status={searchFilters.status}
+        dateFrom={searchFilters.dateFrom ? new Date(searchFilters.dateFrom) : undefined}
+        dateTo={searchFilters.dateTo ? new Date(searchFilters.dateTo) : undefined}
+        onSearchChange={(value) => setSearchFilters(prev => ({ ...prev, searchTerm: value }))}
+        onStatusChange={(value) => setSearchFilters(prev => ({ ...prev, status: value || undefined }))}
+        onDateFromChange={(date) => setSearchFilters(prev => ({ ...prev, dateFrom: date?.toISOString().split('T')[0] }))}
+        onDateToChange={(date) => setSearchFilters(prev => ({ ...prev, dateTo: date?.toISOString().split('T')[0] }))}
+        onClearFilters={() => setSearchFilters({})}
+      />
+
       {/* Ramp Status Grid - Hidden for warehouse staff */}
       {user?.role !== 'WAREHOUSE_STAFF' && <RampStatusGrid trucks={trucks} />}
 
@@ -327,6 +349,7 @@ export const TruckScheduling: React.FC = () => {
         onUpdateStatus={updateTruckStatus}
         onDeleteTruck={deleteTruck}
         onReschedule={handleReschedule}
+        searchTerm={searchFilters.searchTerm || ''}
       />
 
       {/* Ramp Assignment Dialog */}
