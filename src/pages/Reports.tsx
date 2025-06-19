@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { Search, Download } from 'lucide-react';
 import { formatDate, formatTime, getTodayISO } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 
 export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('');
@@ -288,8 +289,8 @@ export const Reports: React.FC = () => {
     const totalTasks = tasks.filter(task => task.status === 'COMPLETED').length;
 
     return {
-      totalHours: totalHours.toFixed(1),
-      totalOvertime: totalOvertime.toFixed(1),
+      totalHours: formatHoursDisplay(totalHours),
+      totalOvertime: formatHoursDisplay(totalOvertime),
       totalTrucks,
       totalTasks
     };
@@ -450,9 +451,9 @@ export const Reports: React.FC = () => {
                            if (hours < 1) {
                              const minutes = Math.floor(diffMs / (1000 * 60));
                              return `${minutes}min`;
-                           } else {
-                             return `${hours.toFixed(1)}h`;
-                           }
+                            } else {
+                              return formatHoursDisplay(hours);
+                            }
                          };
                          
                          return {
@@ -564,19 +565,19 @@ export const Reports: React.FC = () => {
                            {entry.check_out_time ? formatTime(entry.check_out_time) : 
                             (!entry.check_out_time && formatDate(entry.check_in_time) === formatDate(new Date().toISOString()) ? 'Working' : 'Not completed')}
                          </TableCell>
-                        <TableCell>{(entry.regular_hours || 0).toFixed(1)}h</TableCell>
+                        <TableCell>{formatHoursDisplay(entry.regular_hours || 0)}</TableCell>
                         <TableCell>
                           {(entry.overtime_hours || 0) > 0 ? (
-                            <span className="text-orange-600 font-medium">
-                              {(entry.overtime_hours || 0).toFixed(1)}h
-                            </span>
+                             <span className="text-orange-600 font-medium">
+                               {formatHoursDisplay(entry.overtime_hours || 0)}
+                             </span>
                           ) : (
                             '0h'
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">
-                          {((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h
-                        </TableCell>
+                         <TableCell className="font-medium">
+                           {formatHoursDisplay((entry.regular_hours || 0) + (entry.overtime_hours || 0))}
+                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -593,9 +594,9 @@ export const Reports: React.FC = () => {
                           <h3 className="font-medium text-lg">{entry.profiles?.display_name || entry.profiles?.email || 'Unknown'}</h3>
                           <p className="text-sm text-muted-foreground">{formatDate(entry.check_in_time)}</p>
                         </div>
-                        <div className="text-right">
-                          <div className="font-medium">{((entry.regular_hours || 0) + (entry.overtime_hours || 0)).toFixed(1)}h</div>
-                          <div className="text-sm text-muted-foreground">Total</div>
+                         <div className="text-right">
+                           <div className="font-medium">{formatHoursDisplay((entry.regular_hours || 0) + (entry.overtime_hours || 0))}</div>
+                           <div className="text-sm text-muted-foreground">Total</div>
                         </div>
                       </div>
                       
@@ -610,16 +611,16 @@ export const Reports: React.FC = () => {
                             (!entry.check_out_time && formatDate(entry.check_in_time) === formatDate(new Date().toISOString()) ? 'Working' : 'Not completed')}</div>
                          </div>
                         <div>
-                          <div className="text-muted-foreground">Regular Hours</div>
-                          <div>{(entry.regular_hours || 0).toFixed(1)}h</div>
-                        </div>
+                           <div className="text-muted-foreground">Regular Hours</div>
+                           <div>{formatHoursDisplay(entry.regular_hours || 0)}</div>
+                         </div>
                         <div>
                           <div className="text-muted-foreground">Overtime</div>
                           <div>
                             {(entry.overtime_hours || 0) > 0 ? (
-                              <span className="text-orange-600 font-medium">
-                                {(entry.overtime_hours || 0).toFixed(1)}h
-                              </span>
+                               <span className="text-orange-600 font-medium">
+                                 {formatHoursDisplay(entry.overtime_hours || 0)}
+                               </span>
                             ) : (
                               '0h'
                             )}
@@ -786,9 +787,9 @@ export const Reports: React.FC = () => {
                         if (hours < 1) {
                           const minutes = Math.floor(diffMs / (1000 * 60));
                           return `${minutes}min`;
-                        } else {
-                          return `${hours.toFixed(1)}h`;
-                        }
+                         } else {
+                           return formatHoursDisplay(hours);
+                         }
                       };
 
                       return (
@@ -852,9 +853,9 @@ export const Reports: React.FC = () => {
                     if (hours < 1) {
                       const minutes = Math.floor(diffMs / (1000 * 60));
                       return `${minutes}min`;
-                    } else {
-                      return `${hours.toFixed(1)}h`;
-                    }
+                     } else {
+                       return formatHoursDisplay(hours);
+                     }
                   };
 
                   return (

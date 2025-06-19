@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, FileText, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 import * as XLSX from 'xlsx';
 
 interface ExportData {
@@ -72,7 +73,7 @@ export function ExportReports({ data }: ExportReportsProps) {
         'Total Trucks': kpiMetrics?.total_trucks || 0,
         'Completed Trucks': kpiMetrics?.completed_trucks || 0,
         'In Progress Trucks': kpiMetrics?.in_progress_trucks || 0,
-        'Avg Processing Hours': kpiMetrics?.avg_processing_hours?.toFixed(2) || '0.00',
+        'Avg Processing Hours': formatHoursDisplay(kpiMetrics?.avg_processing_hours || 0),
         'Active Users': userKPIs.length,
       }
     ];
@@ -88,7 +89,7 @@ export function ExportReports({ data }: ExportReportsProps) {
       'Email': user.email,
       'Total Trucks Handled': user.total_trucks_handled || 0,
       'Completed Trucks': user.completed_trucks || 0,
-      'Avg Processing Hours': user.avg_processing_hours?.toFixed(2) || '0.00',
+      'Avg Processing Hours': formatHoursDisplay(user.avg_processing_hours || 0),
       'Tasks Completed': user.tasks_completed || 0,
       'Total Pallets Handled': user.total_pallets_handled || 0,
       'Avg Pallets per Truck': user.avg_pallets_per_truck?.toFixed(2) || '0.00',
@@ -104,7 +105,7 @@ export function ExportReports({ data }: ExportReportsProps) {
       'Date': trend.date,
       'Total Trucks': trend.total_trucks,
       'Completed Trucks': trend.completed_trucks,
-      'Avg Processing Hours': trend.avg_processing_hours?.toFixed(2) || '0.00',
+      'Avg Processing Hours': formatHoursDisplay(trend.avg_processing_hours || 0),
       'Total Pallets': trend.total_pallets,
       'Avg Efficiency': trend.avg_efficiency?.toFixed(2) || '0.00',
     }));

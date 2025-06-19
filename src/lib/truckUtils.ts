@@ -1,3 +1,4 @@
+import { formatHoursDisplay } from './timeUtils';
 import { ProcessingTime } from '@/types';
 
 /**
@@ -21,7 +22,7 @@ export const calculateProcessingHours = (startedAt?: string, completedAt?: strin
   return {
     hours: Math.floor(hours),
     minutes: totalMinutes, // Total minutes for use when hours < 1
-    totalHours: hours.toFixed(1)
+    totalHours: formatHoursDisplay(hours)
   };
 };
 
@@ -44,8 +45,8 @@ export const formatProcessingTime = (startedAt?: string, completedAt?: string): 
       : `${minutes}min (ongoing)`;
   } else {
     return completedAt 
-      ? `${processingTime.totalHours}h` 
-      : `${processingTime.totalHours}h (ongoing)`;
+      ? formatHoursDisplay(hours)
+      : `${formatHoursDisplay(hours)} (ongoing)`;
   }
 };
 

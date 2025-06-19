@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Trophy } from 'lucide-react';
 import { UserKPIMetrics } from '@/hooks/useUserKPIData';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 
 interface EnhancedUserPerformanceProps {
   userKPIs: UserKPIMetrics[];
@@ -63,7 +64,7 @@ export function EnhancedUserPerformance({ userKPIs, selectedUserId, selectedPeri
                     <p className="text-xs text-muted-foreground">Avg Pallets/Truck</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-display text-lg">{userKPI.avg_processing_hours?.toFixed(1) || '0.0'}h</p>
+                    <p className="font-semibold text-display text-lg">{formatHoursDisplay(userKPI.avg_processing_hours || 0)}</p>
                     <p className="text-xs text-muted-foreground">Avg Time</p>
                   </div>
                   <div>

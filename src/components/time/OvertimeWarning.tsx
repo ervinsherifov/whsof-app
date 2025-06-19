@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Clock, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 
 interface OvertimeWarningProps {
   isWeekend: boolean;
@@ -30,7 +31,7 @@ export const OvertimeWarning: React.FC<OvertimeWarningProps> = ({
       return 'You\'re working on a weekend. All hours will be counted as overtime and require approval.';
     }
     if (overtimeHours > 0) {
-      return `You've worked ${currentHours.toFixed(1)} hours today. ${overtimeHours.toFixed(1)} hours are overtime.`;
+      return `You've worked ${formatHoursDisplay(currentHours)} today. ${formatHoursDisplay(overtimeHours)} are overtime.`;
     }
     return '';
   };
@@ -61,7 +62,7 @@ export const OvertimeWarning: React.FC<OvertimeWarningProps> = ({
           {overtimeHours > 0 && (
             <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
               <Clock className="h-3 w-3 mr-1" />
-              {overtimeHours.toFixed(1)}h OT
+              {formatHoursDisplay(overtimeHours)} OT
             </Badge>
           )}
         </div>

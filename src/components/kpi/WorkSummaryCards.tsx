@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Clock, Truck, CheckCircle, Timer } from 'lucide-react';
 import { KPIMetrics } from '@/types';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 
 interface WorkSummaryCardsProps {
   kpiMetrics: KPIMetrics;
@@ -22,8 +23,8 @@ export function WorkSummaryCards({ kpiMetrics, selectedPeriod }: WorkSummaryCard
   const summaryData = [
     {
       title: 'Total Working Hours',
-      value: totalWorkingHours.toFixed(1),
-      unit: 'hrs',
+      value: formatHoursDisplay(totalWorkingHours),
+      unit: '',
       icon: Clock,
       description: `Loading/unloading time for ${kpiMetrics.completed_trucks} completed trucks`,
       trend: '+12%',

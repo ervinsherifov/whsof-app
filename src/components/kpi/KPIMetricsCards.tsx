@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { KPIMetrics } from '@/types';
+import { formatHoursDisplay } from '@/lib/timeUtils';
 
 interface KPIMetricsCardsProps {
   kpiMetrics: KPIMetrics;
@@ -34,7 +35,7 @@ export function KPIMetricsCards({ kpiMetrics, selectedPeriod }: KPIMetricsCardsP
         </CardHeader>
         <CardContent>
           <div className="text-2xl md:text-3xl font-bold text-display">
-            {kpiMetrics.avg_processing_hours?.toFixed(1) || '0.0'}h
+            {formatHoursDisplay(kpiMetrics.avg_processing_hours || 0)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Per truck completion
