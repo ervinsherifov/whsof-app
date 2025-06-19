@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { Search, Download } from 'lucide-react';
 import { formatDate, formatTime, getTodayISO } from '@/lib/dateUtils';
+import { formatProcessingTime } from '@/lib/truckUtils';
 
 export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('');
@@ -417,27 +418,52 @@ export const Reports: React.FC = () => {
                         licensePlate: truck.license_plate,
                         arrivalDate: truck.arrival_date,
                         arrivalTime: truck.arrival_time,
+                        actualArrivalDate: truck.actual_arrival_date || '',
+                        actualArrivalTime: truck.actual_arrival_time || '',
                         rampNumber: truck.ramp_number,
                         palletCount: truck.pallet_count,
                         status: truck.status,
                         assignedStaff: truck.assigned_staff_name,
                         handledBy: truck.handled_by_user_id ? 'User ID: ' + truck.handled_by_user_id : '',
-                        cargoDescription: truck.cargo_description
+                        cargoDescription: truck.cargo_description,
+                        processingTimeHours: formatProcessingTime(truck.started_at, truck.completed_at),
+                        startedAt: truck.started_at ? formatDate(truck.started_at) + ' ' + formatTime(truck.started_at) : '',
+                        completedAt: truck.completed_at ? formatDate(truck.completed_at) + ' ' + formatTime(truck.completed_at) : ''
                       })), 'truck_activity');
                     } else if (reportType === 'task_management') {
-                       exportToXLSX(tasks.map(task => ({
-                         title: task.title,
-                         description: task.description,
-                         priority: task.priority,
-                         status: task.status,
-                          completedBy: task.status === 'COMPLETED' 
-                            ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
-                            : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
-                         dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
-                         createdAt: formatDate(task.created_at),
-                         completedAt: task.completed_at ? formatDate(task.completed_at) : '',
-                         completionComment: task.completion_comment || ''
-                       })), 'task_management');
+                       exportToXLSX(tasks.map(task => {
+                         // Calculate task processing time
+                         const getTaskProcessingTime = (task: any) => {
+                           if (!task.completed_at) return 'Not completed';
+                           
+                           const startTime = new Date(task.created_at);
+                           const endTime = new Date(task.completed_at);
+                           const diffMs = endTime.getTime() - startTime.getTime();
+                           const hours = diffMs / (1000 * 60 * 60);
+                           
+                           if (hours < 1) {
+                             const minutes = Math.floor(diffMs / (1000 * 60));
+                             return `${minutes}min`;
+                           } else {
+                             return `${hours.toFixed(1)}h`;
+                           }
+                         };
+                         
+                         return {
+                           title: task.title,
+                           description: task.description,
+                           priority: task.priority,
+                           status: task.status,
+                           completedBy: task.status === 'COMPLETED' 
+                             ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
+                             : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started'),
+                           dueDate: task.due_date ? formatDate(task.due_date) : 'No deadline',
+                           createdAt: formatDate(task.created_at),
+                           completedAt: task.completed_at ? formatDate(task.completed_at) : '',
+                           processingTime: getTaskProcessingTime(task),
+                           completionComment: task.completion_comment || ''
+                         };
+                       }), 'task_management');
                     }
                   }}
                   disabled={!reportType}
