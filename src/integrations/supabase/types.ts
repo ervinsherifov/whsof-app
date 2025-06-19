@@ -1104,6 +1104,10 @@ export type Database = {
         Args: { input_text: string; max_length?: number }
         Returns: string
       }
+      generate_historical_performance_trends: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_truck_photo_summary: {
         Args: { truck_id_param: string }
         Returns: Json

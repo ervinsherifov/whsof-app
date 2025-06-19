@@ -36,6 +36,15 @@ export const formatHoursToTime = (hours: number): string => {
 /**
  * Get a human-readable overtime description with context
  */
+/**
+ * Format total hours for display in KPI cards
+ * Same as formatHoursDisplay but with alias for clarity
+ */
+export const formatTotalHours = formatHoursDisplay;
+
+/**
+ * Get a human-readable overtime description with context
+ */
 export const getOvertimeDescription = (
   overtimeHours: number, 
   isWeekend: boolean, 
