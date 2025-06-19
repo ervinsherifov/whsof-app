@@ -96,7 +96,7 @@ export const TVDashboard: React.FC = () => {
         return 0;
       });
 
-      // Fetch urgent tasks - show all except COMPLETED
+      // Fetch all tasks - show all except COMPLETED
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select(`
@@ -106,8 +106,8 @@ export const TVDashboard: React.FC = () => {
             email
           )
         `)
-        .in('priority', ['URGENT', 'HIGH'])
         .not('status', 'eq', 'COMPLETED')
+        .order('priority', { ascending: false })
         .order('due_date', { ascending: true })
         .limit(5);
 
@@ -457,7 +457,7 @@ export const TVDashboard: React.FC = () => {
           {/* Urgent Tasks - Smaller */}
           <Card className="flex flex-col min-h-0 flex-1 bg-card/90 backdrop-blur-sm border-border/50">
             <CardHeader className="pb-1 lg:pb-2 flex-shrink-0">
-              <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Urgent Tasks</CardTitle>
+              <CardTitle className="text-lg lg:text-xl 4xl:text-2xl">Tasks</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
                 <div className="space-y-1 lg:space-y-2 4xl:space-y-3">
