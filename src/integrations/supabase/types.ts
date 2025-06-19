@@ -1173,6 +1173,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      safe_calculate_processing_hours: {
+        Args: { p_started_at: string; p_completed_at: string }
+        Returns: number
+      }
       sanitize_text: {
         Args: { input_text: string }
         Returns: string
