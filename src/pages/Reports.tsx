@@ -432,13 +432,19 @@ export const Reports: React.FC = () => {
                       })), 'truck_activity');
                     } else if (reportType === 'task_management') {
                        exportToXLSX(tasks.map(task => {
-                         // Calculate task processing time
+                         // Calculate task processing time with proper validation
                          const getTaskProcessingTime = (task: any) => {
                            if (!task.completed_at) return 'Not completed';
                            
                            const startTime = new Date(task.created_at);
                            const endTime = new Date(task.completed_at);
-                           const diffMs = endTime.getTime() - startTime.getTime();
+                           
+                           // Validate dates
+                           if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+                             return 'Invalid dates';
+                           }
+                           
+                           const diffMs = Math.max(0, endTime.getTime() - startTime.getTime()); // Ensure non-negative
                            const hours = diffMs / (1000 * 60 * 60);
                            
                            if (hours < 1) {
@@ -673,14 +679,7 @@ export const Reports: React.FC = () => {
                         <TableCell>{truck.arrival_time?.substring(0, 5)}</TableCell>
                         <TableCell>{truck.ramp_number ? `#${truck.ramp_number}` : 'N/A'}</TableCell>
                          <TableCell>
-                           {(() => {
-                             if (!truck.started_at) return 'Not started';
-                             const start = new Date(truck.started_at);
-                             const end = truck.completed_at ? new Date(truck.completed_at) : new Date();
-                             const diffMs = end.getTime() - start.getTime();
-                             const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
-                             return truck.completed_at ? `${hours}h` : `${hours}h (ongoing)`;
-                           })()}
+                           {formatProcessingTime(truck.started_at, truck.completed_at)}
                          </TableCell>
                          <TableCell>{truck.pallet_count}</TableCell>
                          <TableCell title={truck.cargo_description}>{truck.cargo_description}</TableCell>
@@ -717,15 +716,8 @@ export const Reports: React.FC = () => {
                         </div>
                          <div>
                            <div className="text-muted-foreground">Processing</div>
-                           <div>
-                             {(() => {
-                               if (!truck.started_at) return 'Not started';
-                               const start = new Date(truck.started_at);
-                               const end = truck.completed_at ? new Date(truck.completed_at) : new Date();
-                               const diffMs = end.getTime() - start.getTime();
-                               const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
-                               return truck.completed_at ? `${hours}h` : `${hours}h (ongoing)`;
-                             })()}
+                           <div className="font-medium">
+                             {formatProcessingTime(truck.started_at, truck.completed_at)}
                            </div>
                          </div>
                          <div>
@@ -774,109 +766,155 @@ export const Reports: React.FC = () => {
                       <TableHead>Priority</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Completed By</TableHead>
+                      <TableHead>Processing Time</TableHead>
                       <TableHead>Due</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead>Done</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {tasks.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell className="font-medium" title={task.title}>
-                          {task.title}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`text-xs font-medium ${
-                            task.priority === 'URGENT' ? 'text-red-600' :
-                            task.priority === 'HIGH' ? 'text-orange-600' :
-                            task.priority === 'MEDIUM' ? 'text-yellow-600' :
-                            'text-green-600'
-                          }`}>
-                            {task.priority}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className={`text-xs ${
-                            task.status === 'COMPLETED' ? 'text-green-600' :
-                            task.status === 'IN_PROGRESS' ? 'text-blue-600' :
-                            'text-gray-600'
-                          }`}>
-                            {task.status.replace('_', ' ')}
-                          </span>
-                        </TableCell>
+                    {tasks.map((task) => {
+                      // Calculate task processing time
+                      const getTaskProcessingTime = (task: any) => {
+                        if (!task.completed_at) return 'Not completed';
+                        
+                        const startTime = new Date(task.created_at);
+                        const endTime = new Date(task.completed_at);
+                        const diffMs = Math.max(0, endTime.getTime() - startTime.getTime()); // Ensure non-negative
+                        const hours = diffMs / (1000 * 60 * 60);
+                        
+                        if (hours < 1) {
+                          const minutes = Math.floor(diffMs / (1000 * 60));
+                          return `${minutes}min`;
+                        } else {
+                          return `${hours.toFixed(1)}h`;
+                        }
+                      };
+
+                      return (
+                        <TableRow key={task.id}>
+                          <TableCell className="font-medium" title={task.title}>
+                            {task.title}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`text-xs font-medium ${
+                              task.priority === 'URGENT' ? 'text-red-600' :
+                              task.priority === 'HIGH' ? 'text-orange-600' :
+                              task.priority === 'MEDIUM' ? 'text-yellow-600' :
+                              'text-green-600'
+                            }`}>
+                              {task.priority}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className={`text-xs ${
+                              task.status === 'COMPLETED' ? 'text-green-600' :
+                              task.status === 'IN_PROGRESS' ? 'text-blue-600' :
+                              'text-gray-600'
+                            }`}>
+                              {task.status.replace('_', ' ')}
+                            </span>
+                          </TableCell>
                           <TableCell>
                             {task.status === 'COMPLETED' 
                               ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
                               : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
                           </TableCell>
-                        <TableCell>
-                          {task.due_date ? formatDate(task.due_date) : 'No deadline'}
-                        </TableCell>
-                        <TableCell>{formatDate(task.created_at)}</TableCell>
-                        <TableCell>
-                          {task.completed_at ? formatDate(task.completed_at) : '—'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          <TableCell className="font-medium">
+                            {getTaskProcessingTime(task)}
+                          </TableCell>
+                          <TableCell>
+                            {task.due_date ? formatDate(task.due_date) : 'No deadline'}
+                          </TableCell>
+                          <TableCell>{formatDate(task.created_at)}</TableCell>
+                          <TableCell>
+                            {task.completed_at ? formatDate(task.completed_at) : '—'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Mobile Card View */}
               <div className="sm:hidden space-y-3">
-                {tasks.map((task) => (
-                  <Card key={task.id} className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-lg" title={task.title}>{task.title}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              task.priority === 'URGENT' ? 'bg-red-100 text-red-600' :
-                              task.priority === 'HIGH' ? 'bg-orange-100 text-orange-600' :
-                              task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-green-100 text-green-600'
-                            }`}>
-                              {task.priority}
-                            </span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              task.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
-                              task.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-600' :
-                              'bg-gray-100 text-gray-600'
-                            }`}>
-                              {task.status.replace('_', ' ')}
-                            </span>
+                {tasks.map((task) => {
+                  // Calculate task processing time
+                  const getTaskProcessingTime = (task: any) => {
+                    if (!task.completed_at) return 'Not completed';
+                    
+                    const startTime = new Date(task.created_at);
+                    const endTime = new Date(task.completed_at);
+                    const diffMs = Math.max(0, endTime.getTime() - startTime.getTime()); // Ensure non-negative
+                    const hours = diffMs / (1000 * 60 * 60);
+                    
+                    if (hours < 1) {
+                      const minutes = Math.floor(diffMs / (1000 * 60));
+                      return `${minutes}min`;
+                    } else {
+                      return `${hours.toFixed(1)}h`;
+                    }
+                  };
+
+                  return (
+                    <Card key={task.id} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-medium text-lg" title={task.title}>{task.title}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                task.priority === 'URGENT' ? 'bg-red-100 text-red-600' :
+                                task.priority === 'HIGH' ? 'bg-orange-100 text-orange-600' :
+                                task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
+                                'bg-green-100 text-green-600'
+                              }`}>
+                                {task.priority}
+                              </span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                task.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
+                                task.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-600' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>
+                                {task.status.replace('_', ' ')}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                         <div>
-                           <div className="text-muted-foreground">
-                             {task.status === 'COMPLETED' ? 'Completed By' : 'Processing By'}
-                           </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <div className="text-muted-foreground">
+                              {task.status === 'COMPLETED' ? 'Completed By' : 'Processing By'}
+                            </div>
                             <div>
                               {task.status === 'COMPLETED' 
                                 ? (task.completed_by_profile?.display_name || task.completed_by_profile?.email || 'Unknown user') 
                                 : (task.status === 'IN_PROGRESS' ? (task.assigned_to_name || 'Processing by unknown') : 'Not started')}
                             </div>
-                         </div>
-                        <div>
-                          <div className="text-muted-foreground">Due Date</div>
-                          <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Created</div>
-                          <div>{formatDate(task.created_at)}</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Completed</div>
-                          <div>{task.completed_at ? formatDate(task.completed_at) : '—'}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Processing Time</div>
+                            <div className="font-medium">{getTaskProcessingTime(task)}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Due Date</div>
+                            <div>{task.due_date ? formatDate(task.due_date) : 'No deadline'}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Created</div>
+                            <div>{formatDate(task.created_at)}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Completed</div>
+                            <div>{task.completed_at ? formatDate(task.completed_at) : '—'}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
               </>
             )}
