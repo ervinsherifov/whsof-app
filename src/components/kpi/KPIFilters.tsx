@@ -1,6 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
 import { WarehouseUser } from '@/hooks/useUserKPIData';
 
 interface KPIFiltersProps {
@@ -21,13 +20,7 @@ export function KPIFilters({
   return (
     <Card className="card-professional">
       <CardContent className="pt-6">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="flex items-center gap-2 sm:mb-0 mb-2">
-            <Filter className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Filters:</span>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 flex-1 sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1 sm:items-center">
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">Warehouse Staff</label>
               <Select value={selectedUserId} onValueChange={onUserChange}>
@@ -59,7 +52,6 @@ export function KPIFilters({
               </Select>
             </div>
           </div>
-        </div>
       </CardContent>
     </Card>
   );
