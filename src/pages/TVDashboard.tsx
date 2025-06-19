@@ -360,14 +360,17 @@ export const TVDashboard: React.FC = () => {
                           Time
                         </div>
                          <div className="text-xs lg:text-sm 4xl:text-base font-black text-foreground font-mono leading-tight">
-                           {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
-                             ? (truck.actual_arrival_time 
-                                 ? truck.actual_arrival_time.substring(0, 5)
-                                 : truck.arrival_time.substring(0, 5)
-                               )
-                             : truck.arrival_time.substring(0, 5)
-                           }
-                         </div>
+                            {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                              ? (truck.actual_arrival_time 
+                                  ? (typeof truck.actual_arrival_time === 'string' && truck.actual_arrival_time.includes(':')
+                                      ? truck.actual_arrival_time.substring(0, 5)
+                                      : truck.arrival_time.substring(0, 5)
+                                    )
+                                  : truck.arrival_time.substring(0, 5)
+                                )
+                              : truck.arrival_time.substring(0, 5)
+                            }
+                          </div>
                       </div>
                      
                      <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">

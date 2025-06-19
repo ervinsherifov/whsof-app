@@ -88,6 +88,11 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
         
         if (rpcError) throw rpcError;
         
+        // Refresh KPI metrics after truck arrival
+        await supabase.rpc('refresh_user_kpi_metrics', {
+          target_date: new Date().toISOString().split('T')[0]
+        });
+        
         toast({
           title: 'Status Updated! ✅',
           description: 'Truck marked as arrived',
@@ -110,6 +115,11 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
         .eq('id', truckId);
 
       if (error) throw error;
+
+      // Refresh KPI metrics after status change
+      await supabase.rpc('refresh_user_kpi_metrics', {
+        target_date: new Date().toISOString().split('T')[0]
+      });
 
       toast({
         title: 'Status Updated! ✅',
