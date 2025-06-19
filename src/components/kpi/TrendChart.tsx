@@ -51,6 +51,16 @@ export function TrendChart({
     if (chartData.length < 2) return null;
     const first = chartData[0].value;
     const last = chartData[chartData.length - 1].value;
+    
+    // Handle division by zero
+    if (first === 0) {
+      if (last === 0) {
+        return { direction: 'up', percentage: '0.0' }; // No change
+      } else {
+        return { direction: 'up', percentage: '100.0' }; // Started from 0, any increase is 100%
+      }
+    }
+    
     const change = ((last - first) / first) * 100;
     return {
       direction: change >= 0 ? 'up' : 'down',
