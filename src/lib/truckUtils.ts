@@ -8,7 +8,13 @@ export const calculateProcessingHours = (startedAt?: string, completedAt?: strin
   
   const start = new Date(startedAt);
   const end = completedAt ? new Date(completedAt) : new Date();
-  const diffMs = end.getTime() - start.getTime();
+  
+  // Validate dates
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return null;
+  }
+  
+  const diffMs = Math.max(0, end.getTime() - start.getTime()); // Ensure non-negative
   const hours = diffMs / (1000 * 60 * 60);
   
   return {
@@ -24,6 +30,10 @@ export const calculateProcessingHours = (startedAt?: string, completedAt?: strin
 export const formatProcessingTime = (startedAt?: string, completedAt?: string): string => {
   const processingTime = calculateProcessingHours(startedAt, completedAt);
   if (!processingTime) return 'Not started';
+  
+  // Additional safety check for negative or invalid values
+  const hours = parseFloat(processingTime.totalHours);
+  if (hours < 0 || isNaN(hours)) return 'Invalid time';
   
   return completedAt 
     ? `${processingTime.totalHours}h` 

@@ -6,21 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
-
-const calculateProcessingHours = (startedAt?: string, completedAt?: string) => {
-  if (!startedAt) return null;
-  
-  const start = new Date(startedAt);
-  const end = completedAt ? new Date(completedAt) : new Date();
-  const diffMs = end.getTime() - start.getTime();
-  const hours = diffMs / (1000 * 60 * 60);
-  
-  return {
-    hours: Math.floor(hours),
-    minutes: Math.floor((hours - Math.floor(hours)) * 60),
-    totalHours: hours.toFixed(1)
-  };
-};
+import { formatProcessingTime } from '@/lib/truckUtils';
 
 interface TruckListProps {
   trucks: any[];
@@ -131,13 +117,7 @@ export const TruckList: React.FC<TruckListProps> = ({
                         <div>
                           <span className="text-muted-foreground">Processing:</span>
                           <div className="font-medium">
-                            {(() => {
-                              const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
-                              if (!processingTime) return 'Not started';
-                              return truck.completed_at 
-                                ? `${processingTime.totalHours}h` 
-                                : `${processingTime.totalHours}h (ongoing)`;
-                            })()}
+                            {formatProcessingTime(truck.started_at, truck.completed_at)}
                           </div>
                         </div>
                        )}
@@ -261,14 +241,8 @@ export const TruckList: React.FC<TruckListProps> = ({
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
                       </TableCell>
                       <TableCell>{truck.pallet_count}</TableCell>
-                      <TableCell>
-                        {(() => {
-                          const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
-                          if (!processingTime) return 'Not started';
-                          return truck.completed_at 
-                            ? `${processingTime.totalHours}h` 
-                            : `${processingTime.totalHours}h (ongoing)`;
-                        })()}
+                       <TableCell>
+                        {formatProcessingTime(truck.started_at, truck.completed_at)}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {truck.cargo_description}
