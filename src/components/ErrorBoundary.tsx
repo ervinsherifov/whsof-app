@@ -77,7 +77,7 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                We're sorry! An unexpected error occurred. Our team has been notified.
+                We're sorry! An unexpected error occurred. Please try refreshing the page or contact support if the issue persists.
               </p>
               
               {this.state.errorId && (
