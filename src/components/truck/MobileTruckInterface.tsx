@@ -341,12 +341,31 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
 
                    {/* Key Info Grid */}
                    <div className="grid grid-cols-3 gap-4">
-                     <div className="text-center">
-                       <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                       <p className="text-xs text-muted-foreground">Arrival</p>
-                       <p className="font-semibold text-sm">{truck.arrival_time.substring(0, 5)}</p>
-                       <p className="text-xs text-muted-foreground">{formatDateMobile(truck.arrival_date)}</p>
-                     </div>
+                      <div className="text-center">
+                        <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                        <p className="text-xs text-muted-foreground">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE' 
+                            ? 'Actual Arrival' : 'Arrival'}
+                        </p>
+                        <p className="font-semibold text-sm">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                            ? (truck.actual_arrival_time 
+                                ? truck.actual_arrival_time.substring(0, 5)
+                                : truck.arrival_time.substring(0, 5)
+                              )
+                            : truck.arrival_time.substring(0, 5)
+                          }
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                            ? (truck.actual_arrival_date 
+                                ? formatDateMobile(truck.actual_arrival_date)
+                                : formatDateMobile(truck.arrival_date)
+                              )
+                            : formatDateMobile(truck.arrival_date)
+                          }
+                        </p>
+                      </div>
                      
                      <div className="text-center">
                        <MapPin className="h-4 w-4 text-muted-foreground mx-auto mb-1" />

@@ -63,9 +63,28 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
         
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-muted-foreground">Arrival:</span>
-            <div className="font-medium">{formatDate(truck.arrival_date)}</div>
-            <div className="font-medium">{truck.arrival_time}</div>
+            <span className="text-muted-foreground">
+              {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE' 
+                ? 'Actual Arrival:' : 'Arrival:'}
+            </span>
+            <div className="font-medium">
+              {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                ? (truck.actual_arrival_date 
+                    ? formatDate(truck.actual_arrival_date)
+                    : formatDate(truck.arrival_date)
+                  )
+                : formatDate(truck.arrival_date)
+              }
+            </div>
+            <div className="font-medium">
+              {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                ? (truck.actual_arrival_time 
+                    ? truck.actual_arrival_time.substring(0, 5)
+                    : truck.arrival_time
+                  )
+                : truck.arrival_time
+              }
+            </div>
           </div>
           <div>
             <span className="text-muted-foreground">Ramp:</span>

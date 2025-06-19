@@ -49,6 +49,7 @@ export interface Truck {
   is_overdue?: boolean;
   original_arrival_date?: string;
   actual_arrival_date?: string;
+  actual_arrival_time?: string;
   overdue_marked_at?: string;
   reschedule_count?: number;
   late_arrival_reason?: string;

@@ -94,9 +94,28 @@ export const TruckList: React.FC<TruckListProps> = ({
                     
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Arrival:</span>
-                        <div className="font-medium">{formatDate(truck.arrival_date)}</div>
-                        <div className="font-medium">{truck.arrival_time}</div>
+                        <span className="text-muted-foreground">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE' 
+                            ? 'Actual Arrival:' : 'Arrival:'}
+                        </span>
+                        <div className="font-medium">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                            ? (truck.actual_arrival_date 
+                                ? formatDate(truck.actual_arrival_date)
+                                : formatDate(truck.arrival_date)
+                              )
+                            : formatDate(truck.arrival_date)
+                          }
+                        </div>
+                        <div className="font-medium">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                            ? (truck.actual_arrival_time 
+                                ? truck.actual_arrival_time.substring(0, 5)
+                                : truck.arrival_time
+                              )
+                            : truck.arrival_time
+                          }
+                        </div>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Ramp:</span>
@@ -230,7 +249,13 @@ export const TruckList: React.FC<TruckListProps> = ({
                         {truck.license_plate}
                       </TableCell>
                       <TableCell>
-                        {formatDate(truck.arrival_date)} {truck.arrival_time}
+                        {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                          ? (truck.actual_arrival_date && truck.actual_arrival_time
+                              ? `${formatDate(truck.actual_arrival_date)} ${truck.actual_arrival_time.substring(0, 5)}`
+                              : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
+                            )
+                          : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
+                        }
                       </TableCell>
                       <TableCell>
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
