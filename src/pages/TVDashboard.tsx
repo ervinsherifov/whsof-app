@@ -340,26 +340,35 @@ export const TVDashboard: React.FC = () => {
 
                    {/* Main Info Grid - Ultra Compact */}
                    <div className="grid grid-cols-4 gap-2 mb-3">
-                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
-                         Date
-                       </div>
-                       <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground leading-tight">
-                         {new Date(truck.arrival_date).toLocaleDateString('en-GB', { 
-                           day: '2-digit', 
-                           month: '2-digit'
-                         })}
-                       </div>
-                     </div>
-                     
-                     <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
-                       <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
-                         Time
-                       </div>
-                        <div className="text-xs lg:text-sm 4xl:text-base font-black text-foreground font-mono leading-tight">
-                          {truck.arrival_time.substring(0, 5)}
+                      <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
+                          Date
                         </div>
-                     </div>
+                        <div className="text-xs lg:text-sm 4xl:text-base font-bold text-foreground leading-tight">
+                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE' 
+                            ? (truck.actual_arrival_date 
+                                ? new Date(truck.actual_arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })
+                                : new Date(truck.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })
+                              )
+                            : new Date(truck.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })
+                          }
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">
+                          Time
+                        </div>
+                         <div className="text-xs lg:text-sm 4xl:text-base font-black text-foreground font-mono leading-tight">
+                           {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
+                             ? (truck.actual_arrival_time 
+                                 ? truck.actual_arrival_time.substring(0, 5)
+                                 : truck.arrival_time.substring(0, 5)
+                               )
+                             : truck.arrival_time.substring(0, 5)
+                           }
+                         </div>
+                      </div>
                      
                      <div className="text-center p-1.5 rounded-md bg-background/50 backdrop-blur-sm border border-border/30">
                        <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">

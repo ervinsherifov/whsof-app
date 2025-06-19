@@ -382,7 +382,7 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
                      )}
                    </div>
 
-                  {/* Ramp Assignment for Scheduled Trucks */}
+                  {/* Ramp Assignment for Scheduled Trucks - Allow for any date including past */}
                   {truck.status === 'SCHEDULED' && !truck.ramp_number && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">Assign Ramp:</p>

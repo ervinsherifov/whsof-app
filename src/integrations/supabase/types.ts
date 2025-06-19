@@ -807,6 +807,7 @@ export type Database = {
       trucks: {
         Row: {
           actual_arrival_date: string | null
+          actual_arrival_time: string | null
           arrival_date: string
           arrival_time: string
           assigned_staff_id: string | null
@@ -833,6 +834,7 @@ export type Database = {
         }
         Insert: {
           actual_arrival_date?: string | null
+          actual_arrival_time?: string | null
           arrival_date: string
           arrival_time: string
           assigned_staff_id?: string | null
@@ -859,6 +861,7 @@ export type Database = {
         }
         Update: {
           actual_arrival_date?: string | null
+          actual_arrival_time?: string | null
           arrival_date?: string
           arrival_time?: string
           assigned_staff_id?: string | null
@@ -1114,12 +1117,14 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       handle_truck_arrival: {
-        Args: {
-          p_truck_id: string
-          p_actual_arrival_date?: string
-          p_late_reason?: string
-          p_user_id?: string
-        }
+        Args:
+          | {
+              p_truck_id: string
+              p_actual_arrival_date?: string
+              p_late_reason?: string
+              p_user_id?: string
+            }
+          | { p_truck_id: string; p_user_id?: string }
         Returns: boolean
       }
       has_role: {
