@@ -81,11 +81,18 @@ export const MobileTruckInterface: React.FC<MobileTruckInterfaceProps> = ({
       
       if (newStatus === 'ARRIVED') {
         // Call the backend function to handle actual arrival
-        await supabase.rpc('handle_truck_arrival', {
+        const { error: rpcError } = await supabase.rpc('handle_truck_arrival', {
           p_truck_id: truckId,
           p_user_id: user.id
         });
-        // Don't update here, the RPC function handles it
+        
+        if (rpcError) throw rpcError;
+        
+        toast({
+          title: 'Status Updated! ✅',
+          description: 'Truck marked as arrived',
+        });
+        
         onRefresh();
         return;
       } else if (newStatus === 'IN_PROGRESS') {
