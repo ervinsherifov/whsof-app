@@ -1100,6 +1100,10 @@ export type Database = {
         Args: { truck_id_param: string }
         Returns: Json
       }
+      enhanced_sanitize_text: {
+        Args: { input_text: string; max_length?: number }
+        Returns: string
+      }
       generate_truck_photo_summary: {
         Args: { truck_id_param: string }
         Returns: Json
@@ -1131,6 +1135,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      index_usage_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1138,6 +1146,10 @@ export type Database = {
       mark_overdue_trucks: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      performance_health_check: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       refresh_all_kpi_views: {
         Args: Record<PropertyKey, never>
@@ -1164,6 +1176,10 @@ export type Database = {
       sanitize_text: {
         Args: { input_text: string }
         Returns: string
+      }
+      security_health_check: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       validate_truck_data: {
         Args: {
