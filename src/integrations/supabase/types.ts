@@ -1105,7 +1105,7 @@ export type Database = {
         Returns: string
       }
       generate_historical_performance_trends: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { days_back?: number }
         Returns: undefined
       }
       generate_truck_photo_summary: {
