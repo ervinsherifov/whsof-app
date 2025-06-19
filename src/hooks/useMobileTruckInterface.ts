@@ -43,57 +43,35 @@ export const useMobileTruckInterface = () => {
     setProcessingTruckId(truckId);
 
     try {
-      const updateData: any = { status: newStatus };
+      // Use the database function for all status changes to ensure proper Bulgaria timezone
+      const { error: rpcError } = await supabase.rpc('handle_truck_status_change', {
+        p_truck_id: truckId,
+        p_new_status: newStatus,
+        p_user_id: user.id
+      });
       
-      if (newStatus === 'ARRIVED') {
-        // Call the backend function to handle actual arrival
-        const { error: rpcError } = await supabase.rpc('handle_truck_arrival', {
-          p_truck_id: truckId,
-          p_user_id: user.id
-        });
-        
-        if (rpcError) throw rpcError;
-        
-        // Refresh KPI metrics after truck arrival
-        await supabase.rpc('refresh_user_kpi_metrics', {
-          target_date: new Date().toISOString().split('T')[0]
-        });
-        
-        toast({
-          title: 'Status Updated! ✅',
-          description: 'Truck marked as arrived',
-        });
-        
-        onRefresh();
-        return;
-      } else if (newStatus === 'IN_PROGRESS') {
-        updateData.handled_by_user_id = user.id;
-        updateData.handled_by_name = user.email;
-        updateData.started_at = new Date().toISOString();
-      } else if (newStatus === 'DONE') {
-        updateData.completed_at = new Date().toISOString();
-      }
-
-      // Only update if not ARRIVED (ARRIVED is handled by RPC)
-      const { error } = await supabase
-        .from('trucks')
-        .update(updateData)
-        .eq('id', truckId);
-
-      if (error) throw error;
-
+      if (rpcError) throw rpcError;
+      
       // Refresh KPI metrics after status change
       await supabase.rpc('refresh_user_kpi_metrics', {
         target_date: new Date().toISOString().split('T')[0]
       });
 
+      const statusDescriptions = {
+        'ARRIVED': 'arrived',
+        'IN_PROGRESS': 'in progress',
+        'DONE': 'completed',
+        'SCHEDULED': 'scheduled'
+      };
+
       toast({
         title: 'Status Updated! ✅',
-        description: `Truck marked as ${newStatus.replace('_', ' ').toLowerCase()}`,
+        description: `Truck marked as ${statusDescriptions[newStatus as keyof typeof statusDescriptions] || newStatus.replace('_', ' ').toLowerCase()}`,
       });
       
       onRefresh();
     } catch (error: any) {
+      console.error('Error updating truck status:', error);
       toast({
         title: 'Error',
         description: error.message,

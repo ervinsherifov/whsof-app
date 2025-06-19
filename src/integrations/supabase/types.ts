@@ -1120,6 +1120,10 @@ export type Database = {
         Args: { p_truck_id: string; p_user_id?: string }
         Returns: boolean
       }
+      handle_truck_status_change: {
+        Args: { p_truck_id: string; p_new_status: string; p_user_id?: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _user_id: string
