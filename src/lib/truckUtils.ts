@@ -16,10 +16,11 @@ export const calculateProcessingHours = (startedAt?: string, completedAt?: strin
   
   const diffMs = Math.max(0, end.getTime() - start.getTime()); // Ensure non-negative
   const hours = diffMs / (1000 * 60 * 60);
+  const totalMinutes = Math.floor(diffMs / (1000 * 60));
   
   return {
     hours: Math.floor(hours),
-    minutes: Math.floor((hours - Math.floor(hours)) * 60),
+    minutes: totalMinutes, // Total minutes for use when hours < 1
     totalHours: hours.toFixed(1)
   };
 };
@@ -35,9 +36,17 @@ export const formatProcessingTime = (startedAt?: string, completedAt?: string): 
   const hours = parseFloat(processingTime.totalHours);
   if (hours < 0 || isNaN(hours)) return 'Invalid time';
   
-  return completedAt 
-    ? `${processingTime.totalHours}h` 
-    : `${processingTime.totalHours}h (ongoing)`;
+  // Show minutes if less than 1 hour, otherwise show hours
+  if (hours < 1) {
+    const minutes = processingTime.minutes;
+    return completedAt 
+      ? `${minutes}min` 
+      : `${minutes}min (ongoing)`;
+  } else {
+    return completedAt 
+      ? `${processingTime.totalHours}h` 
+      : `${processingTime.totalHours}h (ongoing)`;
+  }
 };
 
 /**

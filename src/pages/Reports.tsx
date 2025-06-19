@@ -1029,7 +1029,7 @@ export const Reports: React.FC = () => {
                            <div className="flex-1 space-y-1">
                              <h3 className="font-semibold text-lg">{truck.license_plate}</h3>
                               <p className="text-sm text-muted-foreground">
-                                Completed: {formatDate(truck.updated_at)}
+                                Completed: {formatDate(truck.updated_at)} at {formatTime(truck.updated_at)}
                               </p>
                               {truck.truck_handlers && truck.truck_handlers.length > 0 ? (
                                 <div className="space-y-1">
@@ -1048,7 +1048,7 @@ export const Reports: React.FC = () => {
                                 </p>
                               )}
                               <p className="text-sm text-muted-foreground">
-                                Total: {truck.pallet_count} pallets • {truck.cargo_description}
+                                Total: {truck.pallet_count} pallets • {truck.cargo_description} • Processing: {formatProcessingTime(truck.started_at, truck.completed_at)}
                               </p>
                            </div>
                            <div className="flex flex-col items-end gap-2 sm:min-w-[120px]">
