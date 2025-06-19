@@ -61,12 +61,12 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
       hasActiveFilters: !!status,
       defaultOpen: true,
       content: (
-        <Select value={status || ''} onValueChange={onStatusChange}>
+        <Select value={status || 'all'} onValueChange={(value) => onStatusChange(value === 'all' ? '' : value)}>
           <SelectTrigger className="w-full" aria-label="Filter by status">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             {Object.entries(TRUCK_STATUSES).map(([key, label]) => (
               <SelectItem key={key} value={key}>
                 {label}
