@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Timer, CheckCircle, Truck } from 'lucide-react';
 import { KPIMetrics } from '@/types';
 import { UserKPIMetrics } from '@/hooks/useUserKPIData';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EssentialKPICardsProps {
   kpiMetrics: KPIMetrics;
@@ -9,16 +11,53 @@ interface EssentialKPICardsProps {
   selectedPeriod: string;
 }
 
-export function EssentialKPICards({ kpiMetrics, userKPIs, selectedPeriod }: EssentialKPICardsProps) {
-  // Calculate totals from user KPIs for accurate data
-  const totalWorkingHours = userKPIs.reduce((sum, user) => {
-    const regularHours = (user.total_trucks_handled || 0) * (user.avg_processing_hours || 0);
-    return sum + regularHours;
-  }, 0);
+interface TimeMetrics {
+  totalWorkingHours: number;
+  totalOvertimeHours: number;
+  totalRegularHours: number;
+}
 
-  // For now, we'll estimate overtime as 20% of total working hours
-  // This should be replaced with actual overtime data from time_entries
-  const totalOvertimeHours = totalWorkingHours * 0.2;
+export function EssentialKPICards({ kpiMetrics, userKPIs, selectedPeriod }: EssentialKPICardsProps) {
+  const [timeMetrics, setTimeMetrics] = useState<TimeMetrics>({
+    totalWorkingHours: 0,
+    totalOvertimeHours: 0,
+    totalRegularHours: 0
+  });
+
+  useEffect(() => {
+    const fetchTimeMetrics = async () => {
+      try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(selectedPeriod));
+        
+        const { data, error } = await supabase
+          .from('time_entries')
+          .select('total_hours, regular_hours, overtime_hours')
+          .gte('check_in_time', startDate.toISOString())
+          .not('check_out_time', 'is', null); // Only completed time entries
+
+        if (error) {
+          console.error('Error fetching time metrics:', error);
+          return;
+        }
+
+        const totals = (data || []).reduce(
+          (acc, entry) => ({
+            totalWorkingHours: acc.totalWorkingHours + (entry.total_hours || 0),
+            totalOvertimeHours: acc.totalOvertimeHours + (entry.overtime_hours || 0),
+            totalRegularHours: acc.totalRegularHours + (entry.regular_hours || 0)
+          }),
+          { totalWorkingHours: 0, totalOvertimeHours: 0, totalRegularHours: 0 }
+        );
+
+        setTimeMetrics(totals);
+      } catch (error) {
+        console.error('Error calculating time metrics:', error);
+      }
+    };
+
+    fetchTimeMetrics();
+  }, [selectedPeriod]);
 
   const totalTasksCompleted = userKPIs.reduce((sum, user) => sum + (user.tasks_completed || 0), 0);
   const totalTrucksCompleted = kpiMetrics.completed_trucks;
@@ -26,15 +65,15 @@ export function EssentialKPICards({ kpiMetrics, userKPIs, selectedPeriod }: Esse
   const essentialMetrics = [
     {
       title: 'Total Working Hours',
-      value: totalWorkingHours.toFixed(1),
+      value: timeMetrics.totalWorkingHours.toFixed(1),
       unit: 'hrs',
       icon: Clock,
-      description: `Regular working hours across all staff`,
+      description: `Total hours worked in last ${selectedPeriod} days`,
       color: 'text-blue-600'
     },
     {
       title: 'Total Overtime Hours',
-      value: totalOvertimeHours.toFixed(1),
+      value: timeMetrics.totalOvertimeHours.toFixed(1),
       unit: 'hrs',
       icon: Timer,
       description: `Overtime hours requiring approval`,
