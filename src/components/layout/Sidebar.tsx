@@ -111,17 +111,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
   );
 
   const handleNavigate = (path: string) => {
-    console.log('🔄 Sidebar Navigation clicked:', path, 'User Role:', user?.role);
-    console.log('🔄 User object:', user);
-    console.log('🔄 Is loading:', isLoading);
-    try {
-      navigate(path);
-      console.log('🔄 Navigation successful');
-      if (isMobile) {
-        onClose();
-      }
-    } catch (error) {
-      console.error('🔄 Navigation error:', error);
+    navigate(path);
+    if (isMobile) {
+      onClose();
     }
   };
 
@@ -202,13 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-foreground'
             )}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('🔥 Button clicked!', item.path);
-              handleNavigate(item.path);
-            }}
-            onMouseDown={() => console.log('🔥 Mouse down on', item.path)}
+            onClick={() => handleNavigate(item.path)}
           >
             {item.icon}
             <span>{item.label}</span>

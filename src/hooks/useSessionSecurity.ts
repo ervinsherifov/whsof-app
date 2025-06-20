@@ -79,7 +79,8 @@ export const useSessionSecurity = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    // Only run security checks if user is authenticated and we have user data
+    if (!isAuthenticated || !user?.id) return;
 
     // Run security checks
     detectMultipleTabs();
@@ -95,7 +96,7 @@ export const useSessionSecurity = () => {
       clearInterval(securityInterval);
       cleanup();
     };
-  }, [isAuthenticated, detectMultipleTabs, detectSuspiciousNavigation, detectConsoleManipulation]);
+  }, [isAuthenticated, user?.id, detectMultipleTabs, detectSuspiciousNavigation, detectConsoleManipulation]);
 
   return {
     detectMultipleTabs,
