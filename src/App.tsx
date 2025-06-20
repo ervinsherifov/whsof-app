@@ -34,9 +34,9 @@ const App = () => (
         <MobileNotificationProvider>
           <Toaster />
           <Sonner />
-          <AuthProvider>
-            <SessionSecurityProvider>
-              <BrowserRouter>
+          <BrowserRouter>
+            <AuthProvider>
+              <SessionSecurityProvider>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -123,9 +123,9 @@ const App = () => (
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-              </BrowserRouter>
-            </SessionSecurityProvider>
-          </AuthProvider>
+                </SessionSecurityProvider>
+              </AuthProvider>
+            </BrowserRouter>
       </MobileNotificationProvider>
       </ThemeProvider>
     </TooltipProvider>
