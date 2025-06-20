@@ -17,8 +17,6 @@ export const useMobileTruckInterface = () => {
   useEffect(() => {
     const fetchWarehouseStaff = async () => {
       try {
-        console.log('Fetching warehouse staff...');
-        
         // Direct query for all warehouse staff user IDs (bypassing join issues)
         const { data, error } = await supabase
           .from('profiles')
@@ -30,12 +28,7 @@ export const useMobileTruckInterface = () => {
             '687e6bd7-f296-46ef-ad70-b8f099dd4794'  // Ivan Krastev
           ]);
         
-        if (error) {
-          console.error('Warehouse staff query error:', error);
-          throw error;
-        }
-        
-        console.log('Warehouse staff found:', data);
+        if (error) throw error;
         setWarehouseStaff(data || []);
       } catch (error) {
         console.error('Error fetching warehouse staff:', error);

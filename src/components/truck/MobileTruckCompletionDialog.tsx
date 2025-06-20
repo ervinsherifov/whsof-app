@@ -47,16 +47,14 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
     setSubmitting(true);
 
     try {
-      // Update truck status to DONE
-      const { error: updateError } = await supabase
-        .from('trucks')
-        .update({
-          status: 'DONE',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', truckId);
+      // Use the database function to properly handle status change with Bulgaria timezone
+      const { error: statusError } = await supabase.rpc('handle_truck_status_change', {
+        p_truck_id: truckId,
+        p_new_status: 'DONE',
+        p_user_id: user.id
+      });
 
-      if (updateError) throw updateError;
+      if (statusError) throw statusError;
 
       // Save truck handlers - always include the person marking it as done
       const handlersToSave = [
@@ -114,11 +112,6 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
 
   // Filter out the current user from the helper selection
   const availableHelpers = warehouseStaff.filter(staff => staff.user_id !== user?.id);
-  
-  // Debug logging
-  console.log('Debug - Current user ID:', user?.id);
-  console.log('Debug - Warehouse staff:', warehouseStaff);
-  console.log('Debug - Available helpers:', availableHelpers);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
