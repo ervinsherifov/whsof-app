@@ -19,44 +19,27 @@ export const useMobileTruckInterface = () => {
       try {
         console.log('Fetching warehouse staff...');
         
-        // Use a simpler query that matches the working SQL
+        // Use a direct join query to get warehouse staff with profiles
         const { data, error } = await supabase
           .from('profiles')
           .select(`
             user_id, 
             display_name, 
-            email
-          `);
+            email,
+            user_roles!inner(role)
+          `)
+          .eq('user_roles.role', 'WAREHOUSE_STAFF');
         
         if (error) {
-          console.error('Profiles query error:', error);
+          console.error('Warehouse staff query error:', error);
           throw error;
         }
         
-        console.log('All profiles:', data);
-        
-        // Then filter by getting users with WAREHOUSE_STAFF role
-        const { data: staffWithRoles, error: roleError } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'WAREHOUSE_STAFF');
-        
-        if (roleError) {
-          console.error('User roles query error:', roleError);
-          throw roleError;
-        }
-        
-        console.log('Users with WAREHOUSE_STAFF role:', staffWithRoles);
-        
-        // Filter profiles to only include warehouse staff
-        const warehouseStaffUsers = data?.filter(profile => 
-          staffWithRoles?.some(roleEntry => roleEntry.user_id === profile.user_id)
-        ) || [];
-        
-        console.log('Final warehouse staff list:', warehouseStaffUsers);
-        setWarehouseStaff(warehouseStaffUsers);
+        console.log('Warehouse staff found:', data);
+        setWarehouseStaff(data || []);
       } catch (error) {
         console.error('Error fetching warehouse staff:', error);
+        setWarehouseStaff([]);
       }
     };
 
