@@ -1,0 +1,104 @@
+import { useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { logSecurityEvent } from '@/lib/security';
+
+/**
+ * Hook to monitor session security and detect suspicious activities
+ */
+export const useSessionSecurity = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+
+  // Detect multiple tabs/windows (potential session hijacking)
+  const detectMultipleTabs = useCallback(() => {
+    const sessionKey = 'app_session_active';
+    const currentTime = Date.now().toString();
+    
+    // Set session marker
+    localStorage.setItem(sessionKey, currentTime);
+    
+    // Check if another tab overwrote our marker
+    setTimeout(() => {
+      const storedTime = localStorage.getItem(sessionKey);
+      if (storedTime !== currentTime) {
+        logSecurityEvent('multiple_session_detected', { 
+          userId: user?.id,
+          detected_at: new Date().toISOString()
+        });
+        // Optionally force logout or warn user
+      }
+    }, 1000);
+  }, [user?.id]);
+
+  // Detect suspicious navigation patterns
+  const detectSuspiciousNavigation = useCallback(() => {
+    const referrer = document.referrer;
+    const currentOrigin = window.location.origin;
+    
+    // Check for external referrers that might indicate XSS/CSRF
+    if (referrer && !referrer.startsWith(currentOrigin)) {
+      logSecurityEvent('external_referrer_detected', {
+        userId: user?.id,
+        referrer,
+        current_url: window.location.href
+      });
+    }
+  }, [user?.id]);
+
+  // Monitor for console manipulation (potential XSS)
+  const detectConsoleManipulation = useCallback(() => {
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    console.log = (...args) => {
+      // Check for suspicious console activity
+      const message = args.join(' ');
+      if (message.includes('token') || message.includes('password') || message.includes('auth')) {
+        logSecurityEvent('suspicious_console_activity', {
+          userId: user?.id,
+          message: message.substring(0, 100) // Limit message length
+        });
+      }
+      originalLog.apply(console, args);
+    };
+
+    console.error = (...args) => {
+      const message = args.join(' ');
+      if (message.includes('script') || message.includes('inject')) {
+        logSecurityEvent('potential_xss_attempt', {
+          userId: user?.id,
+          error: message.substring(0, 100)
+        });
+      }
+      originalError.apply(console, args);
+    };
+
+    return () => {
+      console.log = originalLog;
+      console.error = originalError;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Run security checks
+    detectMultipleTabs();
+    detectSuspiciousNavigation();
+    const cleanup = detectConsoleManipulation();
+
+    // Set up periodic security checks
+    const securityInterval = setInterval(() => {
+      detectMultipleTabs();
+    }, 30000); // Check every 30 seconds
+
+    return () => {
+      clearInterval(securityInterval);
+      cleanup();
+    };
+  }, [isAuthenticated, detectMultipleTabs, detectSuspiciousNavigation, detectConsoleManipulation]);
+
+  return {
+    detectMultipleTabs,
+    detectSuspiciousNavigation
+  };
+};

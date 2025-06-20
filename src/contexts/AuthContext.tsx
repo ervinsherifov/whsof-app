@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { logSecurityEvent, getSecureErrorMessage, checkRateLimit } from '@/lib/security';
+
 import { setUserContext } from '@/lib/sentry';
 import { toast } from 'sonner';
 
@@ -31,11 +32,79 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Session timeout configuration (30 minutes)
+  const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+  const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
 
   // Update activity timestamp
   const updateActivity = useCallback(() => {
     setLastActivity(Date.now());
   }, []);
+
+  // Force logout due to security event
+  const forceLogout = useCallback(async (reason: string) => {
+    logSecurityEvent('forced_logout', { 
+      userId: user?.id, 
+      reason,
+      sessionDuration: Date.now() - lastActivity 
+    });
+    
+    await logout();
+    toast.error(`Session ended: ${reason}`);
+  }, [user?.id, lastActivity]);
+
+  // Check for session timeout
+  const checkSessionTimeout = useCallback(() => {
+    if (!isAuthenticated || !lastActivity) return;
+    
+    const timeSinceActivity = Date.now() - lastActivity;
+    if (timeSinceActivity > SESSION_TIMEOUT_MS) {
+      forceLogout('Session timeout due to inactivity');
+    }
+  }, [isAuthenticated, lastActivity, forceLogout]);
+
+  // Set up session timeout monitoring
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Set up activity listeners
+      const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+      const handleActivity = () => updateActivity();
+      
+      activityEvents.forEach(event => {
+        document.addEventListener(event, handleActivity, { passive: true });
+      });
+
+      // Set up timeout checker
+      const timeoutChecker = setInterval(checkSessionTimeout, ACTIVITY_CHECK_INTERVAL);
+      setSessionTimeout(timeoutChecker);
+
+      return () => {
+        activityEvents.forEach(event => {
+          document.removeEventListener(event, handleActivity);
+        });
+        if (timeoutChecker) clearInterval(timeoutChecker);
+      };
+    } else {
+      if (sessionTimeout) {
+        clearInterval(sessionTimeout);
+        setSessionTimeout(null);
+      }
+    }
+  }, [isAuthenticated, checkSessionTimeout, updateActivity]);
+
+  // Detect potential session fixation attacks
+  const detectSessionFixation = useCallback((newSession: Session) => {
+    if (!session || !newSession) return false;
+    
+    // Check for suspicious session changes
+    const timeSinceLastActivity = Date.now() - lastActivity;
+    const sessionChanged = session.access_token !== newSession.access_token;
+    const shortTimeSinceActivity = timeSinceLastActivity < 1000; // Less than 1 second
+    
+    return sessionChanged && shortTimeSinceActivity;
+  }, [session, lastActivity]);
 
   const getUserProfile = async (userId: string) => {
     try {
@@ -69,9 +138,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log('Auth state changed:', event, session?.user?.id);
         
+        // Security: Detect potential session fixation attacks
+        if (session && event === 'TOKEN_REFRESHED') {
+          setTimeout(() => {
+            if (detectSessionFixation(session)) {
+              forceLogout('Suspicious session activity detected');
+              return;
+            }
+          }, 0);
+        }
+        
         // Only synchronous state updates here
         setSession(session);
         setIsAuthenticated(!!session?.user);
+        updateActivity(); // Update activity on any auth state change
         
         if (session?.user && event === 'SIGNED_IN') {
           // Only fetch profile on initial sign in, not on token refresh

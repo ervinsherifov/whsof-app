@@ -74,28 +74,44 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+  // Security fix: Generate CSS safely without dangerouslySetInnerHTML
+  const cssText = React.useMemo(() => {
+    return Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const rules = colorConfig
+          .map(([key, itemConfig]) => {
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color
+            if (color && typeof color === 'string') {
+              // Sanitize color value to prevent injection
+              const sanitizedColor = color.replace(/[^a-zA-Z0-9#(),%.\s-]/g, '')
+              return `  --color-${key}: ${sanitizedColor};`
+            }
+            return null
+          })
+          .filter(Boolean)
+          .join('\n')
+        
+        return rules ? `${prefix} [data-chart="${id}"] {\n${rules}\n}` : ''
+      })
+      .filter(Boolean)
+      .join('\n')
+  }, [colorConfig, id])
+
+  // Use a style element with textContent instead of dangerouslySetInnerHTML
+  React.useEffect(() => {
+    if (cssText) {
+      const style = document.createElement('style')
+      style.textContent = cssText
+      style.setAttribute('data-chart-id', id)
+      document.head.appendChild(style)
+      
+      return () => {
+        document.head.removeChild(style)
+      }
+    }
+  }, [cssText, id])
+
+  return null
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
