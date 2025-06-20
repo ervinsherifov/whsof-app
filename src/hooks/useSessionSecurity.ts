@@ -34,8 +34,16 @@ export const useSessionSecurity = () => {
     const referrer = document.referrer;
     const currentOrigin = window.location.origin;
     
+    // Whitelist of legitimate referrers
+    const legitimateReferrers = [
+      'https://lovable.dev',
+      'https://www.lovable.dev',
+      'https://app.lovable.dev',
+      currentOrigin
+    ];
+    
     // Check for external referrers that might indicate XSS/CSRF
-    if (referrer && !referrer.startsWith(currentOrigin)) {
+    if (referrer && !legitimateReferrers.some(allowed => referrer.startsWith(allowed))) {
       logSecurityEvent('external_referrer_detected', {
         userId: user?.id,
         referrer,
