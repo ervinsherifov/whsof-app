@@ -106,9 +106,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  console.log('User object:', user);
+  console.log('User role:', user?.role);
+  
   const filteredItems = sidebarItems.filter(item => 
     user?.role && item.roles.includes(user.role)
   );
+  
+  console.log('Filtered items count:', filteredItems.length);
 
   const handleNavigate = (path: string) => {
     console.log('Sidebar navigation triggered:', path);
