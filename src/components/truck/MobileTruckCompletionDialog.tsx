@@ -131,26 +131,20 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
               <Users className="h-4 w-4" />
               Select helper (optional)
             </Label>
-            <Select value={selectedHelper} onValueChange={setSelectedHelper} disabled={submitting}>
+            <Select value={selectedHelper} onValueChange={setSelectedHelper} disabled={submitting || availableHelpers.length === 0}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="No helper selected" />
+                <SelectValue placeholder={availableHelpers.length === 0 ? "No other staff available" : "No helper selected"} />
               </SelectTrigger>
               <SelectContent className="z-[100] bg-background border shadow-lg max-h-[200px] overflow-y-auto">
-                {availableHelpers.length === 0 ? (
-                  <SelectItem value="" disabled>
-                    No other warehouse staff available
+                {availableHelpers.map((staff) => (
+                  <SelectItem 
+                    key={staff.user_id} 
+                    value={staff.user_id}
+                    className="cursor-pointer hover:bg-accent focus:bg-accent"
+                  >
+                    {staff.display_name || staff.email}
                   </SelectItem>
-                ) : (
-                  availableHelpers.map((staff) => (
-                    <SelectItem 
-                      key={staff.user_id} 
-                      value={staff.user_id}
-                      className="cursor-pointer hover:bg-accent focus:bg-accent"
-                    >
-                      {staff.display_name || staff.email}
-                    </SelectItem>
-                  ))
-                )}
+                ))}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
