@@ -196,14 +196,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
             key={item.path}
             type="button"
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer z-10 relative',
+              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer border-0 bg-transparent',
               location.pathname === item.path 
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-foreground'
             )}
-            onClick={(e) => {
+            style={{ pointerEvents: 'auto', zIndex: 1 }}
+            onMouseDown={(e) => {
               e.preventDefault();
-              e.stopPropagation();
               console.log('Button clicked:', item.path);
               handleNavigate(item.path);
             }}

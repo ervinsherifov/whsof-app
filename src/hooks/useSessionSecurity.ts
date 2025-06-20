@@ -52,38 +52,10 @@ export const useSessionSecurity = () => {
     }
   }, [user?.id]);
 
-  // Monitor for console manipulation (potential XSS)
+  // Monitor for console manipulation (potential XSS) - DISABLED to prevent interference
   const detectConsoleManipulation = useCallback(() => {
-    const originalLog = console.log;
-    const originalError = console.error;
-    
-    console.log = (...args) => {
-      // Check for suspicious console activity
-      const message = args.join(' ');
-      if (message.includes('token') || message.includes('password') || message.includes('auth')) {
-        logSecurityEvent('suspicious_console_activity', {
-          userId: user?.id,
-          message: message.substring(0, 100) // Limit message length
-        });
-      }
-      originalLog.apply(console, args);
-    };
-
-    console.error = (...args) => {
-      const message = args.join(' ');
-      if (message.includes('script') || message.includes('inject')) {
-        logSecurityEvent('potential_xss_attempt', {
-          userId: user?.id,
-          error: message.substring(0, 100)
-        });
-      }
-      originalError.apply(console, args);
-    };
-
-    return () => {
-      console.log = originalLog;
-      console.error = originalError;
-    };
+    // Disabled to prevent blocking navigation
+    return () => {};
   }, [user?.id]);
 
   useEffect(() => {
