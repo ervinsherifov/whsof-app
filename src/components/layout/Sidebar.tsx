@@ -111,10 +111,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
   );
 
   const handleNavigate = (path: string) => {
-    console.log('🔄 Sidebar Navigation:', path, 'User Role:', user?.role);
-    navigate(path);
-    if (isMobile) {
-      onClose();
+    console.log('🔄 Sidebar Navigation clicked:', path, 'User Role:', user?.role);
+    console.log('🔄 User object:', user);
+    console.log('🔄 Is loading:', isLoading);
+    try {
+      navigate(path);
+      console.log('🔄 Navigation successful');
+      if (isMobile) {
+        onClose();
+      }
+    } catch (error) {
+      console.error('🔄 Navigation error:', error);
     }
   };
 
@@ -190,12 +197,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           <button
             key={item.path}
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground',
+              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer',
               location.pathname === item.path 
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-foreground'
             )}
-            onClick={() => handleNavigate(item.path)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔥 Button clicked!', item.path);
+              handleNavigate(item.path);
+            }}
+            onMouseDown={() => console.log('🔥 Mouse down on', item.path)}
           >
             {item.icon}
             <span>{item.label}</span>
