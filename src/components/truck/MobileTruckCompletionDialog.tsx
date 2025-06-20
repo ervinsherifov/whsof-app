@@ -114,6 +114,11 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
 
   // Filter out the current user from the helper selection
   const availableHelpers = warehouseStaff.filter(staff => staff.user_id !== user?.id);
+  
+  // Debug logging
+  console.log('Debug - Current user ID:', user?.id);
+  console.log('Debug - Warehouse staff:', warehouseStaff);
+  console.log('Debug - Available helpers:', availableHelpers);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
