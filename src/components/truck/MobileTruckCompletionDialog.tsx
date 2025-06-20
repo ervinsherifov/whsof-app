@@ -83,6 +83,11 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
 
       if (handlersError) throw handlersError;
 
+      // CRITICAL: Refresh KPI metrics AFTER saving handlers to ensure proper credit allocation
+      await supabase.rpc('refresh_user_kpi_metrics', {
+        target_date: new Date().toISOString().split('T')[0]
+      });
+
       toast({
         title: 'Truck completed ✅',
         description: `Truck ${truckLicensePlate} has been marked as completed`,
