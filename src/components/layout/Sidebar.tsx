@@ -189,13 +189,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
         {filteredItems.map((item) => (
           <button
             key={item.path}
+            type="button"
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer',
+              'w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer z-10 relative',
               location.pathname === item.path 
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-foreground'
             )}
-            onClick={() => handleNavigate(item.path)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Button clicked:', item.path);
+              handleNavigate(item.path);
+            }}
           >
             {item.icon}
             <span>{item.label}</span>
