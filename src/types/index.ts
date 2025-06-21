@@ -87,6 +87,7 @@ export interface TimeEntry {
 export interface ProcessingTime {
   hours: number;
   minutes: number;
+  rawHours: number;
   totalHours: string;
 }
 

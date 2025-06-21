@@ -22,6 +22,7 @@ export const calculateProcessingHours = (startedAt?: string, completedAt?: strin
   return {
     hours: Math.floor(hours),
     minutes: totalMinutes, // Total minutes for use when hours < 1
+    rawHours: hours, // Raw hours as number for calculations
     totalHours: formatHoursDisplay(hours)
   };
 };
@@ -33,13 +34,13 @@ export const formatProcessingTime = (startedAt?: string, completedAt?: string): 
   const processingTime = calculateProcessingHours(startedAt, completedAt);
   if (!processingTime) return 'Not started';
   
-  // Additional safety check for negative or invalid values
-  const hours = parseFloat(processingTime.totalHours);
+  // Use the raw hours value instead of parsing the formatted string
+  const hours = processingTime.rawHours;
   if (hours < 0 || isNaN(hours)) return 'Invalid time';
   
   // Show minutes if less than 1 hour, otherwise show hours
   if (hours < 1) {
-    const minutes = processingTime.minutes;
+    const minutes = Math.floor(hours * 60);
     return completedAt 
       ? `${minutes}min` 
       : `${minutes}min (ongoing)`;
