@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
-import { calculateProcessingHours } from '@/lib/truckUtils';
+import { formatProcessingTime } from '@/lib/truckUtils';
 import { TruckTableRowProps, TruckStatus } from '@/types';
 
 const getStatusColor = (status: TruckStatus) => {
@@ -49,13 +49,7 @@ export const TruckTableRow: React.FC<TruckTableRowProps> = React.memo(({
       </TableCell>
       <TableCell>{truck.pallet_count}</TableCell>
       <TableCell>
-        {(() => {
-          const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
-          if (!processingTime) return 'Not started';
-          return truck.completed_at 
-            ? `${processingTime.totalHours}h` 
-            : `${processingTime.totalHours}h (ongoing)`;
-        })()}
+        {formatProcessingTime(truck.started_at, truck.completed_at)}
       </TableCell>
       <TableCell className="max-w-xs truncate">
         {truck.cargo_description}

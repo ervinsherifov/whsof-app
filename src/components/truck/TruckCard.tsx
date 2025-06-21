@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
-import { calculateProcessingHours } from '@/lib/truckUtils';
+import { formatProcessingTime } from '@/lib/truckUtils';
 import { TruckCardProps, TruckStatus, TruckPriority, TRUCK_PRIORITIES } from '@/types';
 
 const getStatusColor = (status: TruckStatus) => {
@@ -100,13 +100,7 @@ export const TruckCard: React.FC<TruckCardProps> = React.memo(({
             <div>
               <span className="text-muted-foreground">Processing:</span>
               <div className="font-medium">
-                {(() => {
-                  const processingTime = calculateProcessingHours(truck.started_at, truck.completed_at);
-                  if (!processingTime) return 'Not started';
-                  return truck.completed_at 
-                    ? `${processingTime.totalHours}h` 
-                    : `${processingTime.totalHours}h (ongoing)`;
-                })()}
+                {formatProcessingTime(truck.started_at, truck.completed_at)}
               </div>
             </div>
           )}
