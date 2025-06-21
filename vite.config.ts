@@ -27,13 +27,15 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Security and performance optimizations
     sourcemap: mode === 'development',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
+    minify: mode === 'production' ? 'terser' : 'esbuild',
+    ...(mode === 'production' && {
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
       },
-    },
+    }),
     rollupOptions: {
       output: {
         // Code splitting for better caching and security
