@@ -3,9 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- Content Security Policy (Basic - Cloudflare will add the full one) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;" />
+    
     <title>DHL-SOF WH</title>
-    <meta name="description" content="DHL Sofia Warehouse Management System" />
+    <meta name="description" content="DHL Sofia Warehouse Management System - Secure and Professional" />
     <meta name="author" content="DHL" />
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFCC00'><path d='M3 17.25V21h18v-3.75H3zM20.5 13H18v1.5H6V13H3.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h17a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5z'/><path d='M5 3v7h14V3H5zm12 5H7V5h10v3z'/></svg>" type="image/svg+xml" />
 
     <!-- Professional Fonts for Warehouse Management -->
@@ -13,14 +24,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <!-- Open Graph and Social Media (Restricted for Internal App) -->
     <meta property="og:title" content="DHL Sofia Warehouse Management" />
-    <meta property="og:description" content="Professional warehouse management system for DHL Sofia operations" />
+    <meta property="og:description" content="Internal warehouse management system - Authorized access only" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.jpg" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@dhl" />
-    <meta name="twitter:image" content="https://dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.jpg" />
+    <meta property="og:robots" content="noindex, nofollow" />
+    
+    <!-- Twitter Card (Disabled for Internal App) -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:robots" content="noindex, nofollow" />
+    
+    <!-- Additional Security -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#FFCC00" />
+    <meta name="theme-color" content="#FFCC00" />
   </head>
 
   <body>
