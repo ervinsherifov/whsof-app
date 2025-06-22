@@ -221,51 +221,37 @@ export const UserManagement: React.FC = () => {
         if (approvedError) throw approvedError;
       }
 
-      // Create a service role key request to create user without affecting current session
-      // Since we can't use service role in frontend, we'll use admin API through RPC
-      const { data: authData, error: authError } = await supabase.rpc('create_user_admin', {
-        user_email: formData.email,
-        user_password: formData.password,
-        user_metadata: { name: formData.name },
-        user_role: formData.role
+      // Store current session to restore after user creation
+      const { data: currentSession } = await supabase.auth.getSession();
+      
+      // Create user with signUp
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: { name: formData.name }
+        }
       });
 
-      if (authError) {
-        // Fallback to the original method if RPC doesn't exist
-        console.warn('Admin RPC not available, using fallback method');
-        
-        // Store current session to restore after user creation
-        const { data: currentSession } = await supabase.auth.getSession();
-        
-        // Create user with signUp
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: { name: formData.name }
-          }
-        });
+      if (signUpError) throw signUpError;
 
-        if (signUpError) throw signUpError;
+      // Immediately restore the current session without signing out
+      if (currentSession?.session) {
+        await supabase.auth.setSession(currentSession.session);
+      }
 
-        // Immediately restore the current session without signing out
-        if (currentSession?.session) {
-          await supabase.auth.setSession(currentSession.session);
-        }
-
-        if (signUpData.user) {
-          // Update role and profile using the stored session
-          await Promise.all([
-            formData.role !== 'WAREHOUSE_STAFF' ? supabase
-              .from('user_roles')
-              .update({ role: formData.role as any })
-              .eq('user_id', signUpData.user.id) : Promise.resolve(),
-            supabase
-              .from('profiles')
-              .update({ display_name: formData.name })
-              .eq('user_id', signUpData.user.id)
-          ]);
-        }
+      if (signUpData.user) {
+        // Update role and profile using the stored session
+        await Promise.all([
+          formData.role !== 'WAREHOUSE_STAFF' ? supabase
+            .from('user_roles')
+            .update({ role: formData.role as any })
+            .eq('user_id', signUpData.user.id) : Promise.resolve(),
+          supabase
+            .from('profiles')
+            .update({ display_name: formData.name })
+            .eq('user_id', signUpData.user.id)
+        ]);
       }
 
       toast({
