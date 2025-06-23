@@ -37,18 +37,47 @@ serve(async (req) => {
       )
     }
 
-    // Delete user from auth.users (this will cascade to profiles and user_roles due to foreign keys)
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
-
-    if (error) {
-      console.error('Error deleting user:', error)
+    // Get user email before deletion
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    
+    if (userError) {
+      console.error('Error getting user:', userError)
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: userError.message }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    const userEmail = userData.user?.email
+
+    // Delete user from auth.users (this will cascade to profiles and user_roles due to foreign keys)
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+
+    if (deleteError) {
+      console.error('Error deleting user from auth:', deleteError)
+      return new Response(
+        JSON.stringify({ error: deleteError.message }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Also remove from approved_users table if email exists
+    if (userEmail) {
+      const { error: approvedError } = await supabaseAdmin
+        .from('approved_users')
+        .delete()
+        .eq('email', userEmail)
+
+      if (approvedError) {
+        console.error('Error removing from approved_users:', approvedError)
+        // Don't fail the whole operation for this, just log it
+      }
     }
 
     return new Response(
