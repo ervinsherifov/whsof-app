@@ -37,6 +37,7 @@ export const UserManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -203,58 +204,24 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // First, check if user already exists in approved list, if not add them
-      const { data: existingApproved } = await supabase
-        .from('approved_users')
-        .select('id')
-        .eq('email', formData.email)
-        .maybeSingle();
+      setIsCreating(true);
 
-      if (!existingApproved) {
-        const { error: approvedError } = await supabase
-          .from('approved_users')
-          .insert({
-            email: formData.email,
-            role: formData.role
-          });
-
-        if (approvedError) throw approvedError;
-      }
-
-      // Create a completely separate supabase client instance for user creation
-      // This prevents interference with the current admin session
-      const { createClient } = await import('@supabase/supabase-js');
-      const tempClient = createClient(
-        'https://fqiwvhzdnozxgabguogq.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxaXd2aHpkbm96eGdhYmd1b2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyNzYwMjEsImV4cCI6MjA2NDg1MjAyMX0.C2t5NOsCsXMdlHVOnVi3WYiiEEuF615E_x6927ZwYB8'
-      );
-
-      // Create user with the temporary client
-      const { data: signUpData, error: signUpError } = await tempClient.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: { name: formData.name }
+      // Use the create-user Edge Function to avoid session interference
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (error) {
+        throw new Error(error.message);
+      }
 
-      if (signUpData.user) {
-        // Update role and profile using the temporary client while the new user is signed in
-        await Promise.all([
-          formData.role !== 'WAREHOUSE_STAFF' ? tempClient
-            .from('user_roles')
-            .update({ role: formData.role as any })
-            .eq('user_id', signUpData.user.id) : Promise.resolve(),
-          tempClient
-            .from('profiles')
-            .update({ display_name: formData.name })
-            .eq('user_id', signUpData.user.id)
-        ]);
-
-        // Sign out from the temporary client
-        await tempClient.auth.signOut();
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -265,6 +232,7 @@ export const UserManagement: React.FC = () => {
       setFormData({ name: '', email: '', role: '', password: '', confirmPassword: '' });
       setIsDialogOpen(false);
       fetchUsers();
+
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast({
@@ -272,6 +240,8 @@ export const UserManagement: React.FC = () => {
         description: error.message || 'An error occurred while creating the user',
         variant: 'destructive',
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -402,6 +372,7 @@ export const UserManagement: React.FC = () => {
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     placeholder="John Smith"
                     required
+                    disabled={isCreating}
                   />
                 </div>
 
@@ -414,12 +385,17 @@ export const UserManagement: React.FC = () => {
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     placeholder="john.smith@company.com"
                     required
+                    disabled={isCreating}
                   />
                 </div>
 
                 <div className="form-group">
                   <Label className="form-label">Role</Label>
-                  <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+                  <Select 
+                    value={formData.role} 
+                    onValueChange={(value) => setFormData({...formData, role: value})}
+                    disabled={isCreating}
+                  >
                     <SelectTrigger className="form-input">
                       <SelectValue placeholder="Select user role" />
                     </SelectTrigger>
@@ -455,6 +431,7 @@ export const UserManagement: React.FC = () => {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     placeholder="Minimum 8 characters"
                     required
+                    disabled={isCreating}
                   />
                 </div>
 
@@ -467,12 +444,15 @@ export const UserManagement: React.FC = () => {
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     placeholder="Confirm password"
                     required
+                    disabled={isCreating}
                   />
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1">Create User</Button>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="submit" className="flex-1" disabled={isCreating}>
+                    {isCreating ? 'Creating...' : 'Create User'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating}>
                     Cancel
                   </Button>
                 </div>
