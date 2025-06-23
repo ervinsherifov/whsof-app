@@ -221,10 +221,15 @@ export const UserManagement: React.FC = () => {
         if (approvedError) throw approvedError;
       }
 
-      // Store current session to restore after user creation
+      // Store current session details before creating user
       const { data: currentSession } = await supabase.auth.getSession();
+      const currentUser = currentSession?.session?.user;
       
-      // Create user with signUp
+      if (!currentUser) {
+        throw new Error('No current session found');
+      }
+
+      // Create user with signUp (this will automatically sign them in)
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -235,13 +240,8 @@ export const UserManagement: React.FC = () => {
 
       if (signUpError) throw signUpError;
 
-      // Immediately restore the current session without signing out
-      if (currentSession?.session) {
-        await supabase.auth.setSession(currentSession.session);
-      }
-
       if (signUpData.user) {
-        // Update role and profile using the stored session
+        // Update role and profile for the new user while they're signed in
         await Promise.all([
           formData.role !== 'WAREHOUSE_STAFF' ? supabase
             .from('user_roles')
@@ -252,6 +252,20 @@ export const UserManagement: React.FC = () => {
             .update({ display_name: formData.name })
             .eq('user_id', signUpData.user.id)
         ]);
+
+        // Now sign out the new user and restore the admin session
+        await supabase.auth.signOut();
+        
+        // Restore the original admin session
+        if (currentSession?.session) {
+          const { error: sessionError } = await supabase.auth.setSession(currentSession.session);
+          if (sessionError) {
+            console.error('Failed to restore admin session:', sessionError);
+            // Force page reload to restore proper session
+            window.location.reload();
+            return;
+          }
+        }
       }
 
       toast({
@@ -263,11 +277,23 @@ export const UserManagement: React.FC = () => {
       setIsDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
+      console.error('Error creating user:', error);
       toast({
         title: 'Error creating user',
         description: error.message || 'An error occurred while creating the user',
         variant: 'destructive',
       });
+      
+      // If something went wrong, try to restore the session
+      try {
+        const { data: currentSession } = await supabase.auth.getSession();
+        if (!currentSession?.session) {
+          window.location.reload();
+        }
+      } catch (restoreError) {
+        console.error('Failed to restore session:', restoreError);
+        window.location.reload();
+      }
     }
   };
 
