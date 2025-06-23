@@ -221,16 +221,16 @@ export const UserManagement: React.FC = () => {
         if (approvedError) throw approvedError;
       }
 
-      // Store current session details before creating user
-      const { data: currentSession } = await supabase.auth.getSession();
-      const currentUser = currentSession?.session?.user;
-      
-      if (!currentUser) {
-        throw new Error('No current session found');
-      }
+      // Create a completely separate supabase client instance for user creation
+      // This prevents interference with the current admin session
+      const { createClient } = await import('@supabase/supabase-js');
+      const tempClient = createClient(
+        'https://fqiwvhzdnozxgabguogq.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxaXd2aHpkbm96eGdhYmd1b2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyNzYwMjEsImV4cCI6MjA2NDg1MjAyMX0.C2t5NOsCsXMdlHVOnVi3WYiiEEuF615E_x6927ZwYB8'
+      );
 
-      // Create user with signUp (this will automatically sign them in)
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Create user with the temporary client
+      const { data: signUpData, error: signUpError } = await tempClient.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -241,31 +241,20 @@ export const UserManagement: React.FC = () => {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Update role and profile for the new user while they're signed in
+        // Update role and profile using the temporary client while the new user is signed in
         await Promise.all([
-          formData.role !== 'WAREHOUSE_STAFF' ? supabase
+          formData.role !== 'WAREHOUSE_STAFF' ? tempClient
             .from('user_roles')
             .update({ role: formData.role as any })
             .eq('user_id', signUpData.user.id) : Promise.resolve(),
-          supabase
+          tempClient
             .from('profiles')
             .update({ display_name: formData.name })
             .eq('user_id', signUpData.user.id)
         ]);
 
-        // Now sign out the new user and restore the admin session
-        await supabase.auth.signOut();
-        
-        // Restore the original admin session
-        if (currentSession?.session) {
-          const { error: sessionError } = await supabase.auth.setSession(currentSession.session);
-          if (sessionError) {
-            console.error('Failed to restore admin session:', sessionError);
-            // Force page reload to restore proper session
-            window.location.reload();
-            return;
-          }
-        }
+        // Sign out from the temporary client
+        await tempClient.auth.signOut();
       }
 
       toast({
@@ -283,17 +272,6 @@ export const UserManagement: React.FC = () => {
         description: error.message || 'An error occurred while creating the user',
         variant: 'destructive',
       });
-      
-      // If something went wrong, try to restore the session
-      try {
-        const { data: currentSession } = await supabase.auth.getSession();
-        if (!currentSession?.session) {
-          window.location.reload();
-        }
-      } catch (restoreError) {
-        console.error('Failed to restore session:', restoreError);
-        window.location.reload();
-      }
     }
   };
 
