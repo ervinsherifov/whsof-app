@@ -319,21 +319,30 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      await Promise.all([
-        supabase.from('profiles').delete().eq('user_id', userId),
-        supabase.from('user_roles').delete().eq('user_id', userId)
-      ]);
+      // Use the Edge Function to properly delete the user from auth.users
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: 'User deleted',
-        description: `${userName} has been removed from the system`,
+        description: `${userName} has been completely removed from the system`,
       });
 
       fetchUsers();
     } catch (error: any) {
+      console.error('Error deleting user:', error);
       toast({
         title: 'Error deleting user',
-        description: error.message || 'Failed to delete user',
+        description: error.message || 'Failed to delete user completely',
         variant: 'destructive',
       });
     }
