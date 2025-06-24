@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Truck } from '@/types';
+import type { Task } from '@/hooks/useTaskData';
 
 interface NotificationOptions {
   enableSound?: boolean;
@@ -63,7 +65,7 @@ export const useNotifications = (options: NotificationOptions = {}) => {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'trucks' }, 
         (payload) => {
-          const newTruck = payload.new as any;
+          const newTruck = payload.new as Truck;
           const isUrgent = newTruck.priority === 'URGENT';
           
           toast({
@@ -78,8 +80,8 @@ export const useNotifications = (options: NotificationOptions = {}) => {
       .on('postgres_changes', 
         { event: 'UPDATE', schema: 'public', table: 'trucks' }, 
         (payload) => {
-          const updatedTruck = payload.new as any;
-          const oldTruck = payload.old as any;
+          const updatedTruck = payload.new as Truck;
+          const oldTruck = payload.old as Truck;
           
           // Only notify on status changes
           if (updatedTruck.status !== oldTruck.status) {
@@ -100,7 +102,7 @@ export const useNotifications = (options: NotificationOptions = {}) => {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'tasks' }, 
         (payload) => {
-          const newTask = payload.new as any;
+          const newTask = payload.new as Task;
           const isUrgent = newTask.priority === 'URGENT';
           
           // Only show notifications for tasks assigned to current user or if user is admin

@@ -12,6 +12,12 @@ interface TruckStatusChange {
   newStatus: string;
 }
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 export const useSoundNotifications = (options: SoundNotificationOptions = {}) => {
   const { enabled = true, volume = 0.7 } = options;
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -21,7 +27,7 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
   useEffect(() => {
     if (enabled && !audioContextRef.current) {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
         console.log(`🔊 Audio context initialized, state: ${audioContextRef.current.state}`);
       } catch (error) {
         console.error('🔇 Failed to initialize audio context:', error);
@@ -219,7 +225,7 @@ export const useSoundNotifications = (options: SoundNotificationOptions = {}) =>
     console.log('🔊 Manual audio initialization requested');
     if (!audioContextRef.current) {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
         console.log(`🔊 Audio context created manually, state: ${audioContextRef.current.state}`);
       } catch (error) {
         console.error('🔇 Failed to create audio context manually:', error);

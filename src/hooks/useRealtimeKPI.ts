@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Truck } from '@/types';
 
 export const useRealtimeKPI = () => {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -25,7 +26,7 @@ export const useRealtimeKPI = () => {
           table: 'trucks'
         },
         (payload) => {
-          console.log('🚛 Truck data changed:', payload.eventType, (payload.new as any)?.license_plate || (payload.old as any)?.license_plate);
+          console.log('🚛 Truck data changed:', payload.eventType, (payload.new as Truck)?.license_plate || (payload.old as Truck)?.license_plate);
           triggerRefresh();
         }
       )

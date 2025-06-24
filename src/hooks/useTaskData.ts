@@ -45,7 +45,7 @@ export const useTaskData = () => {
         .limit(50);
 
       if (error) throw error;
-      setTasks((data as any) || []);
+      setTasks((data as Task[]) || []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({

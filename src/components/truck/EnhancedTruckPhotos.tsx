@@ -36,6 +36,8 @@ interface TruckPhoto {
   annotations?: any[];
 }
 
+type AnnotationType = 'DAMAGE' | 'MISSING' | 'OTHER';
+
 interface EnhancedTruckPhotosProps {
   truckId: string;
   onPhotosUpdated?: () => void;
@@ -266,7 +268,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
           x_coordinate: x,
           y_coordinate: y,
           annotation_text: newAnnotation.text,
-          annotation_type: newAnnotation.type as any,
+          annotation_type: newAnnotation.type as AnnotationType,
           created_by_user_id: user.id,
         });
 
@@ -448,18 +450,13 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     
                     {/* Primary badge */}
                     {photo.is_primary && (
-                      <Badge className="absolute top-2 left-2 text-xs">
-                        Primary
-                      </Badge>
+                      <span className="absolute top-2 left-2 text-xs bg-primary text-white"><Badge>Primary</Badge></span>
                     )}
                     
                     {/* Annotations indicator */}
                     {photo.annotations && photo.annotations.length > 0 && (
                       <div className="absolute bottom-2 left-2">
-                        <Badge variant="outline" className="text-xs">
-                          <MessageSquare className="h-3 w-3 mr-1" />
-                          {photo.annotations.length}
-                        </Badge>
+                        <span className="text-xs border border-gray-300 bg-white/80"><Badge><MessageSquare className="h-3 w-3 mr-1" />{photo.annotations.length}</Badge></span>
                       </div>
                     )}
                   </div>
@@ -495,7 +492,7 @@ export const EnhancedTruckPhotos: React.FC<EnhancedTruckPhotosProps> = ({
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium truncate">{photo.file_name || 'Untitled'}</h4>
                       {photo.is_primary && (
-                        <Badge variant="default" className="text-xs">Primary</Badge>
+                        <span className="text-xs bg-primary text-white"><Badge>Primary</Badge></span>
                       )}
                     </div>
                     

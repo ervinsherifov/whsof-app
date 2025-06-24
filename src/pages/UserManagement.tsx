@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '@/lib/dateUtils';
 import { Users, UserPlus, Shield, Trash2, RefreshCw, Search, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/utils/roles';
 
 interface UserProfile {
   id: string;
@@ -41,7 +42,6 @@ export const UserManagement: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
-  const isAdmin = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'OFFICE_ADMIN';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -248,7 +248,7 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string, userName: string, userEmail?: string) => {
+  const updateUserRole = async (userId: string, newRole: 'WAREHOUSE_STAFF' | 'OFFICE_ADMIN' | 'SUPER_ADMIN', userName: string, userEmail?: string) => {
     if (userEmail?.toLowerCase() === 'ervin.sherifov@dhl.com') {
       toast({
         title: 'Cannot modify app creator',
@@ -261,7 +261,7 @@ export const UserManagement: React.FC = () => {
     try {
       const { error } = await supabase
         .from('user_roles')
-        .update({ role: newRole as any })
+        .update({ role: newRole })
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -556,9 +556,11 @@ export const UserManagement: React.FC = () => {
                           disabled={user.is_creator}
                         >
                            <SelectTrigger className="w-44 h-9">
-                             <Badge variant={getRoleBadgeVariant(user.role, user.is_creator)} className="text-xs font-medium w-full justify-center">
-                               {getRoleLabel(user.role, user.is_creator)}
-                             </Badge>
+                             <span className={`text-xs font-medium w-full justify-center ${getRoleBadgeVariant(user.role, user.is_creator)}`}>
+                               <Badge>
+                                 {getRoleLabel(user.role, user.is_creator)}
+                               </Badge>
+                             </span>
                            </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="WAREHOUSE_STAFF">Warehouse Staff</SelectItem>
@@ -584,7 +586,7 @@ export const UserManagement: React.FC = () => {
                           <RefreshCw className="h-3 w-3" />
                           Reset
                         </Button>
-                        {isAdmin && !user.is_creator && (
+                        {isAdmin(currentUser) && !user.is_creator && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button 

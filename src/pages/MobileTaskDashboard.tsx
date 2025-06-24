@@ -20,6 +20,13 @@ import { useTaskData, Task } from '@/hooks/useTaskData';
 import { MobileTaskCompletionDialog } from '@/components/MobileTaskCompletionDialog';
 import { formatDateMobile } from '@/lib/mobileDateUtils';
 
+interface Task {
+  created_by_profile?: {
+    display_name: string | null;
+    email: string | null;
+  };
+}
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'completed':
@@ -231,9 +238,11 @@ export const MobileTaskDashboard: React.FC = () => {
                       </p>
                     </div>
                     <div className="flex flex-col items-end space-y-2">
-                      <Badge variant={getPriorityColor(task.priority)} className="text-xs">
-                        {task.priority.toUpperCase()}
-                      </Badge>
+                      <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                        <Badge>
+                          {task.priority.toUpperCase()}
+                        </Badge>
+                      </span>
                       <div className={`w-3 h-3 rounded-full ${getStatusColor(task.status)}`} />
                     </div>
                   </div>
@@ -252,10 +261,10 @@ export const MobileTaskDashboard: React.FC = () => {
                           <span>Due: {formatDateMobile(task.due_date)}</span>
                         </div>
                       )}
-                      {(task as any).created_by_profile && (
+                      {task.created_by_profile && (
                         <div className="flex items-center space-x-1 text-muted-foreground">
                           <UserPlus className="h-3 w-3" />
-                          <span>By: {(task as any).created_by_profile?.display_name || (task as any).created_by_profile?.email || 'Unknown'}</span>
+                          <span>By: {task.created_by_profile.display_name || task.created_by_profile.email || 'Unknown'}</span>
                         </div>
                       )}
                       {task.truck_id && (

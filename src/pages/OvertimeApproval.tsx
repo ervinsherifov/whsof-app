@@ -92,7 +92,7 @@ export const OvertimeApproval: React.FC = () => {
         profiles: profileMap.get(entry.user_id) || null
       }));
 
-      setPendingEntries(entriesWithProfiles as any);
+      setPendingEntries(entriesWithProfiles);
     } catch (error) {
       console.error('Error fetching pending entries:', error);
       toast({
@@ -165,13 +165,11 @@ export const OvertimeApproval: React.FC = () => {
 
   const getOvertimeReasonBadge = (reasons: string[] | null | undefined) => {
     if (!reasons || reasons.length === 0) {
-      return <Badge variant="outline" className="mr-1">No reason specified</Badge>;
+      return <span className="mr-1"><Badge>No reason specified</Badge></span>;
     }
     
     return reasons.map((reason, index) => {
-      let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
       let colorClass = "";
-      
       switch (reason) {
         case 'weekend':
           colorClass = "bg-orange-100 text-orange-800 border-orange-200";
@@ -183,11 +181,8 @@ export const OvertimeApproval: React.FC = () => {
           colorClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
           break;
       }
-      
       return (
-        <Badge key={index} variant={variant} className={`mr-1 ${colorClass}`}>
-          {reason.replace('_', ' ')}
-        </Badge>
+        <span className={`mr-1 ${colorClass}`} key={index}><Badge>{reason.replace('_', ' ')}</Badge></span>
       );
     });
   };
@@ -279,9 +274,7 @@ export const OvertimeApproval: React.FC = () => {
                           <h4 className="font-medium">{entry.profiles?.display_name || 'Unknown User'}</h4>
                           <p className="text-sm text-muted-foreground">{entry.profiles?.email}</p>
                         </div>
-                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                          Pending
-                        </Badge>
+                        <span className="bg-yellow-100 text-yellow-800"><Badge>Pending</Badge></span>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-2 text-sm">

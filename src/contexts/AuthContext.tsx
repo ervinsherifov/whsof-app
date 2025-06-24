@@ -6,7 +6,7 @@ import { logSecurityEvent, getSecureErrorMessage, checkRateLimit } from '@/lib/s
 import { setUserContext } from '@/lib/sentry';
 import { toast } from 'sonner';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;

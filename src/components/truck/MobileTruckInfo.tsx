@@ -61,11 +61,11 @@ export const MobileTruckInfo: React.FC<MobileTruckInfoProps> = ({ truck }) => {
 
       {/* Additional Info */}
       <div className="space-y-2 text-sm">
-        {(truck as any).created_by_profile && (
+        {truck.created_by_profile && (
           <div className="flex items-center space-x-2">
             <UserPlus className="h-3 w-3 text-muted-foreground" />
             <span className="text-muted-foreground">Scheduled by:</span>
-            <span className="font-medium">{(truck as any).created_by_profile?.display_name || (truck as any).created_by_profile?.email || 'Unknown'}</span>
+            <span className="font-medium">{truck.created_by_profile?.display_name || truck.created_by_profile?.email || 'Unknown'}</span>
           </div>
         )}
         
