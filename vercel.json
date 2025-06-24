@@ -13,5 +13,8 @@
         { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ]
 } 
