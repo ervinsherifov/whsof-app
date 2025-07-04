@@ -495,7 +495,7 @@ export const TVDashboard: React.FC = () => {
                               </div>
                               <div className="flex justify-between text-xs text-orange-600 mt-1">
                                 <span>{Math.round(calculateProgress(truck))}% done</span>
-                                <span>{getMinLeft(truck)}min left (pallets: {truck.pallet_count}, est: {getEstimatedDuration(truck)}min)</span>
+                                <span>{getMinLeft(truck)}min left</span>
                                 {/* Estimated done time */}
                                 <span className="ml-2 text-green-700 font-bold">Est. done: {getEstimatedDoneTime(truck)}</span>
                               </div>
