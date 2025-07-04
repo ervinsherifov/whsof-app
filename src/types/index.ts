@@ -41,6 +41,10 @@ export interface Truck {
   handled_by_user_id?: string;
   handled_by_name?: string;
   created_by_user_id: string;
+  created_by_profile: {
+    display_name?: string;
+    email?: string;
+  };
   started_at?: string;
   completed_at?: string;
   created_at: string;

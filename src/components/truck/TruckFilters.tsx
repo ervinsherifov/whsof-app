@@ -83,55 +83,28 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
       defaultOpen: false,
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !dateFrom && "text-muted-foreground"
-                )}
-                aria-label="Select start date"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Start Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateFrom}
-                onSelect={onDateFromChange}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !dateTo && "text-muted-foreground"
-                )}
-                aria-label="Select end date"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateTo ? format(dateTo, "dd/MM/yyyy") : "End Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateTo}
-                onSelect={onDateToChange}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <input
+            type="date"
+            className="w-full border rounded px-2 py-1 text-sm"
+            value={dateFrom ? format(dateFrom, 'yyyy-MM-dd') : ''}
+            onChange={e => {
+              const val = e.target.value ? new Date(e.target.value) : undefined;
+              onDateFromChange(val);
+            }}
+            placeholder="Start Date"
+            aria-label="Start Date"
+          />
+          <input
+            type="date"
+            className="w-full border rounded px-2 py-1 text-sm"
+            value={dateTo ? format(dateTo, 'yyyy-MM-dd') : ''}
+            onChange={e => {
+              const val = e.target.value ? new Date(e.target.value) : undefined;
+              onDateToChange(val);
+            }}
+            placeholder="End Date"
+            aria-label="End Date"
+          />
         </div>
       )
     }
@@ -152,7 +125,6 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
           value={searchTerm || ''}
           onChange={handleSearchChange}
           placeholder="Search by license plate or cargo..."
-          suggestions={searchSuggestions}
           recentSearches={recentSearches}
           onRecentSearchesChange={setRecentSearches}
           className="w-full"

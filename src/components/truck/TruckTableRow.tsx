@@ -39,10 +39,8 @@ export const TruckTableRow: React.FC<TruckTableRowProps> = React.memo(({
         {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
           ? (truck.actual_arrival_date && truck.actual_arrival_time
               ? `${formatDate(truck.actual_arrival_date)} ${truck.actual_arrival_time.substring(0, 5)}`
-              : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
-            )
-          : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
-        }
+              : (truck.arrival_date && truck.arrival_time ? formatDate(`${truck.arrival_date}T${truck.arrival_time}`) : '--'))
+          : (truck.arrival_date && truck.arrival_time ? formatDate(`${truck.arrival_date}T${truck.arrival_time}`) : '--')}
       </TableCell>
       <TableCell>
         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}

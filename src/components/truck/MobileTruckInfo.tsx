@@ -65,7 +65,7 @@ export const MobileTruckInfo: React.FC<MobileTruckInfoProps> = ({ truck }) => {
           <div className="flex items-center space-x-2">
             <UserPlus className="h-3 w-3 text-muted-foreground" />
             <span className="text-muted-foreground">Scheduled by:</span>
-            <span className="font-medium">{truck.created_by_profile?.display_name || truck.created_by_profile?.email || 'Unknown'}</span>
+            <span className="font-medium">{truck.created_by_profile?.display_name || 'Unknown'}</span>
           </div>
         )}
         

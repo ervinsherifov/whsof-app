@@ -72,7 +72,7 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
           handlersToSave.push({
             truck_id: truckId,
             handler_user_id: selectedHelper,
-            handler_name: helperStaff.display_name || helperStaff.email
+            handler_name: helperStaff.display_name || 'Unknown'
           });
         }
       }
@@ -145,7 +145,7 @@ export const MobileTruckCompletionDialog: React.FC<MobileTruckCompletionDialogPr
                     value={staff.user_id}
                     className="cursor-pointer hover:bg-accent focus:bg-accent"
                   >
-                    {staff.display_name || staff.email}
+                    {staff.display_name || 'Unknown'}
                   </SelectItem>
                 ))}
               </SelectContent>

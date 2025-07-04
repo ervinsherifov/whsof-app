@@ -152,7 +152,7 @@ export const TruckScheduling: React.FC = () => {
         .update({
           ramp_number: parseInt(rampFormData.rampNumber),
           assigned_staff_id: rampFormData.assignedStaffId || null,
-          assigned_staff_name: selectedStaff?.display_name || selectedStaff?.email,
+          assigned_staff_name: selectedStaff?.display_name || 'Unknown',
         })
         .eq('id', selectedTruck.id);
 
@@ -225,7 +225,7 @@ export const TruckScheduling: React.FC = () => {
         return {
           truck_id: selectedTruck.id,
           handler_user_id: userId,
-          handler_name: staff?.display_name || staff?.email || 'Unknown'
+          handler_name: staff?.display_name || 'Unknown'
         };
       });
 
@@ -401,7 +401,7 @@ export const TruckScheduling: React.FC = () => {
                 <SelectContent>
                   {profiles.map((staff) => (
                     <SelectItem key={staff.user_id} value={staff.user_id}>
-                      {staff.display_name || staff.email}
+                      {staff.display_name || 'Unknown'}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -473,7 +473,7 @@ export const TruckScheduling: React.FC = () => {
                         htmlFor={staff.user_id}
                         className="text-sm font-normal cursor-pointer"
                       >
-                        {staff.display_name || staff.email}
+                        {staff.display_name || 'Unknown'}
                       </Label>
                     </div>
                     ))}
