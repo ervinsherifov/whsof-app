@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DynamicBackground } from '@/components/ui/dynamic-background';
 import { SoundControls } from '@/components/ui/sound-controls';
-import { Fullscreen, Tv, Volume2, VolumeX, AlertTriangle, UserCircle } from 'lucide-react';
+import { Fullscreen, Tv, Volume2, VolumeX, AlertTriangle, UserCircle, Calendar as CalendarIcon, Clock as ClockIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getTodayISO, formatDate, formatTime } from '@/lib/dateUtils';
 import { useSoundNotifications } from '@/hooks/useSoundNotifications';
@@ -170,19 +170,35 @@ export const TVDashboard: React.FC = () => {
     };
   }, []);
 
-  // Calculate progress percentage based on work time
+  // Helper to get full name (no email)
+  const getFullName = (profile: any) => profile?.display_name || '';
+
+  // Helper to get estimated duration based on pallet count
+  const getEstimatedDuration = (truck: any) => (truck.pallet_count > 20 ? 60 : 30);
+
+  // Update progress calculation
   const calculateProgress = (truck: any) => {
     if (truck.status !== 'IN_PROGRESS' || !truck.started_at) return 0;
-    
     const startTime = new Date(truck.started_at);
     const currentTime = new Date();
     const elapsedMinutes = (currentTime.getTime() - startTime.getTime()) / (1000 * 60);
-    
-    // Assume 50 minutes is 100% completion
-    const estimatedDurationMinutes = 50;
-    const progress = Math.min((elapsedMinutes / estimatedDurationMinutes) * 100, 99); // Cap at 99% until marked done
-    
-    return Math.max(progress, 5); // Minimum 5% to show some progress
+    const estimatedDurationMinutes = getEstimatedDuration(truck);
+    const progress = Math.min((elapsedMinutes / estimatedDurationMinutes) * 100, 99);
+    return Math.max(progress, 5);
+  };
+
+  // Update min left and est. done logic
+  const getMinLeft = (truck: any) => {
+    if (!truck.started_at) return null;
+    const estimatedDuration = getEstimatedDuration(truck);
+    const elapsedMinutes = (new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60);
+    return Math.max(0, estimatedDuration - Math.floor(elapsedMinutes));
+  };
+  const getEstimatedDoneTime = (truck: any) => {
+    if (!truck.started_at) return null;
+    const start = new Date(truck.started_at);
+    start.setMinutes(start.getMinutes() + getEstimatedDuration(truck));
+    return start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
   // Format elapsed time
@@ -272,14 +288,6 @@ export const TVDashboard: React.FC = () => {
     );
   };
 
-  // Helper to get estimated done time
-  const getEstimatedDoneTime = (truck: any) => {
-    if (!truck.started_at) return null;
-    const start = new Date(truck.started_at);
-    start.setMinutes(start.getMinutes() + 50);
-    return start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  };
-
   // Helper to get staff initials
   const getInitials = (name: string) => {
     if (!name) return '';
@@ -299,8 +307,15 @@ export const TVDashboard: React.FC = () => {
       className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
       onClick={handleUserInteraction}
     >
-      {/* LIVE Indicator */}
-      <div className="absolute top-2 left-2 z-30 flex items-center gap-2">
+      {/* Date/Time Top Left */}
+      <div className="absolute top-2 left-2 z-30 flex items-center gap-2 bg-background/80 px-3 py-1 rounded shadow">
+        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+        <span className="font-semibold text-sm">{currentTime.toLocaleDateString('en-GB')}</span>
+        <ClockIcon className="w-4 h-4 text-muted-foreground ml-2" />
+        <span className="font-semibold text-sm">{currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+      </div>
+      {/* LIVE Indicator Top Right */}
+      <div className="absolute top-2 right-2 z-30 flex items-center gap-2">
         <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-white text-xs font-bold animate-pulse shadow-lg" aria-label="Live updates enabled">
           <span className="w-2 h-2 rounded-full bg-white animate-ping mr-1" />LIVE
         </span>
@@ -344,7 +359,7 @@ export const TVDashboard: React.FC = () => {
             <div className="space-y-6 lg:space-y-8 4xl:space-y-10">
               {groupedTrucks.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-96 text-center text-muted-foreground">
-                  <img src="/assets/empty-warehouse.svg" alt="No trucks" className="w-32 h-32 mb-4 opacity-80" />
+                  <img src="/assets/empty-warehouse.svg" alt="No trucks" className="w-32 h-32 mb-4 opacity-80" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   <div className="text-2xl font-bold mb-2">No trucks scheduled</div>
                   <div className="text-md">All ramps are free and ready for action!</div>
                 </div>
@@ -470,18 +485,18 @@ export const TVDashboard: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Staff Avatars/Initials */}
-                          <div className="flex gap-2 items-center mb-2">
+                          {/* Staff Avatars/Initials and Full Names */}
+                          <div className="flex gap-4 items-center mb-2">
                             {truck.handled_by_name && (
-                              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-900 font-bold text-xs" aria-label={`Handled by ${truck.handled_by_name}`}>
-                                <UserCircle className="w-4 h-4 mr-1" />
-                                {getInitials(truck.handled_by_name)}
+                              <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-blue-100 text-blue-900 font-bold text-xs" aria-label={`Handled by ${truck.handled_by_name}`}>
+                                <UserCircle className="w-4 h-4" />
+                                <span>{getFullName({ display_name: truck.handled_by_name })}</span>
                               </div>
                             )}
-                            {truck.created_by_profile && (
-                              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-900 font-bold text-xs" aria-label={`Created by ${truck.created_by_profile.display_name || truck.created_by_profile.email}`}> 
-                                <UserCircle className="w-4 h-4 mr-1" />
-                                {getInitials(truck.created_by_profile.display_name || truck.created_by_profile.email)}
+                            {truck.created_by_profile && getFullName(truck.created_by_profile) && (
+                              <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-green-100 text-green-900 font-bold text-xs" aria-label={`Created by ${getFullName(truck.created_by_profile)}`}> 
+                                <UserCircle className="w-4 h-4" />
+                                <span>{getFullName(truck.created_by_profile)}</span>
                               </div>
                             )}
                           </div>
@@ -505,7 +520,7 @@ export const TVDashboard: React.FC = () => {
                               </div>
                               <div className="flex justify-between text-xs text-orange-600 mt-1">
                                 <span>{Math.round(calculateProgress(truck))}% done</span>
-                                <span>{Math.max(0, 50 - Math.floor((new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60)))}min left</span>
+                                <span>{getMinLeft(truck)}min left</span>
                                 {/* Estimated done time */}
                                 <span className="ml-2 text-green-700 font-bold">Est. done: {getEstimatedDoneTime(truck)}</span>
                               </div>
@@ -513,7 +528,7 @@ export const TVDashboard: React.FC = () => {
                           )}
                           {/* Expandable Details */}
                           {isExpanded && (
-                            <div className="mt-3 p-3 rounded bg-background/80 border border-border/30 shadow-inner transition-all duration-300" aria-label="Truck details">
+                            <div className="mt-3 p-3 rounded bg-background/80 border border-border/30 shadow-inner transition-all duration-300 divide-y divide-border">
                               <div className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Cargo:</span> {truck.cargo_description}</div>
                               {truck.late_arrival_reason && (
                                 <div className="mb-2 text-sm text-red-700"><span className="font-semibold">Late Reason:</span> {truck.late_arrival_reason}</div>
