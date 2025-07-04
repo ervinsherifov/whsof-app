@@ -23,8 +23,8 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
   onOpenChange,
   onSuccess
 }) => {
-  const [newDate, setNewDate] = useState(truck?.arrival_date ? formatDate(truck.arrival_date) : '');
-  const [newTime, setNewTime] = useState(truck?.arrival_time ? formatTime(truck.arrival_time) : '');
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
   const [reason, setReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -111,8 +111,8 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
   };
 
   const resetForm = () => {
-    setNewDate(truck?.arrival_date ? formatDate(truck.arrival_date) : '');
-    setNewTime(truck?.arrival_time ? formatTime(truck.arrival_time) : '');
+    setNewDate('');
+    setNewTime('');
     setReason('');
   };
 
