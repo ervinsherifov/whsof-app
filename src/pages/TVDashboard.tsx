@@ -337,12 +337,6 @@ export const TVDashboard: React.FC = () => {
               )}
               {groupedTrucks.map(group => (
                 <div key={group.status} className="relative">
-                  {/* Sticky group header */}
-                  <div className="sticky top-0 z-10 bg-white/95 rounded-t-xl shadow border-b border-border/30 py-1 px-2 mb-2">
-                    <span className="text-lg font-bold tracking-wide text-foreground drop-shadow-sm uppercase">
-                      {STATUS_LABELS[group.status]}
-                    </span>
-                  </div>
                   {/* Truck cards for this group */}
                   <div className="space-y-3">
                     {group.trucks.map((truck, index) => {
@@ -500,7 +494,7 @@ export const TVDashboard: React.FC = () => {
                               </div>
                               <div className="flex justify-between text-xs text-orange-600 mt-1">
                                 <span>{Math.round(calculateProgress(truck))}% done</span>
-                                <span>{getMinLeft(truck)}min left</span>
+                                <span>{getMinLeft(truck)}min left (pallets: {truck.pallet_count}, est: {getEstimatedDuration(truck)}min)</span>
                                 {/* Estimated done time */}
                                 <span className="ml-2 text-green-700 font-bold">Est. done: {getEstimatedDoneTime(truck)}</span>
                               </div>
