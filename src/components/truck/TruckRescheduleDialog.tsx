@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/dateUtils';
 
 interface TruckRescheduleDialogProps {
   truck: any;
@@ -81,7 +82,7 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
 
       toast({
         title: 'Truck rescheduled successfully',
-        description: `Truck ${truck.license_plate} has been rescheduled to ${newDate} at ${newTime}`,
+        description: `Truck ${truck.license_plate} has been rescheduled to ${formatDate(newDate)} at ${newTime}`,
       });
 
       onOpenChange(false);
@@ -145,11 +146,11 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
             <div className="text-sm space-y-1">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span>Originally: {originalDate}</span>
+                <span>Originally: {formatDate(originalDate)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>Time: {truck.arrival_time}</span>
+                <span>Time: {formatTime(truck.arrival_time)}</span>
               </div>
               {truck.reschedule_count > 0 && (
                 <div className="text-xs text-muted-foreground">
