@@ -42,8 +42,18 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
       return;
     }
 
-    // Validate that new date is not in the past
+    // Defensive: check for valid date/time
     const newDateTime = new Date(`${newDate}T${newTime}`);
+    if (isNaN(newDateTime.getTime())) {
+      toast({
+        title: 'Invalid date/time',
+        description: `Please enter a valid date and time.\nDate: ${newDate} Time: ${newTime}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate that new date is not in the past
     const now = new Date();
     
     if (newDateTime < now) {
@@ -97,6 +107,9 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
   // Reset form when truck changes or dialog opens
   React.useEffect(() => {
     if (isOpen && truck) {
+      // Debug: log the initial date/time values
+      console.log('TruckRescheduleDialog: truck.arrival_date', truck.arrival_date);
+      console.log('TruckRescheduleDialog: truck.arrival_time', truck.arrival_time);
       resetForm();
     }
   }, [isOpen, truck]);
