@@ -307,18 +307,18 @@ export const TVDashboard: React.FC = () => {
       className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
       onClick={handleUserInteraction}
     >
-      {/* Unified Sticky Top Bar with animated gradient and seconds */}
-      <div className="sticky top-0 z-40 w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b border-blue-700 flex items-center justify-between px-4 py-2 shadow-lg">
+      {/* Unified Sticky Top Bar with neutral dark background and seconds */}
+      <div className="sticky top-0 z-40 w-full bg-neutral-900 border-b border-border flex items-center justify-between px-4 py-2 shadow">
         <div className="flex items-center gap-2 text-white">
-          <CalendarIcon className="w-4 h-4 text-blue-300" />
+          <CalendarIcon className="w-4 h-4 text-neutral-300" />
           <span className="font-semibold text-base">{currentTime.toLocaleDateString('en-GB')}</span>
-          <ClockIcon className="w-4 h-4 text-blue-300 ml-2" />
+          <ClockIcon className="w-4 h-4 text-neutral-300 ml-2" />
           <span className="font-mono font-bold text-lg tracking-widest animate-pulse">
             {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-600 text-white text-sm font-bold animate-pulse shadow-lg ring-2 ring-red-400" aria-label="Live updates enabled">
+          <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-600 text-white text-sm font-bold animate-pulse shadow ring-2 ring-red-400/60" aria-label="Live updates enabled">
             <span className="w-2 h-2 rounded-full bg-white animate-ping mr-1" />LIVE
           </span>
         </div>
@@ -330,11 +330,11 @@ export const TVDashboard: React.FC = () => {
       {/* Main Content Grid */}
       <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
-        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-blue-800/90 backdrop-blur-sm border-blue-700/70 text-white">
+        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-neutral-800 rounded-xl shadow-lg border border-border/50 text-white">
           <CardContent className="flex-1 overflow-y-auto pt-4">
             <div className="space-y-6 lg:space-y-8 4xl:space-y-10">
               {groupedTrucks.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-96 text-center text-blue-200">
+                <div className="flex flex-col items-center justify-center h-96 text-center text-neutral-300">
                   <img src="/assets/empty-warehouse.svg" alt="No trucks" className="w-32 h-32 mb-4 opacity-80" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   <div className="text-2xl font-bold mb-2">No trucks scheduled</div>
                   <div className="text-md">All ramps are free and ready for action!</div>
@@ -343,8 +343,8 @@ export const TVDashboard: React.FC = () => {
               {groupedTrucks.map(group => (
                 <div key={group.status} className="relative">
                   {/* Sticky group header */}
-                  <div className="sticky top-0 z-10 bg-blue-900/95 backdrop-blur border-b border-blue-700/70 py-1 px-2 mb-2">
-                    <span className="text-lg font-bold tracking-wide text-blue-100 drop-shadow-sm uppercase">
+                  <div className="sticky top-0 z-10 bg-neutral-800/95 rounded-t-xl shadow border-b border-border/30 py-1 px-2 mb-2">
+                    <span className="text-lg font-bold tracking-wide text-neutral-100 drop-shadow-sm uppercase">
                       {STATUS_LABELS[group.status]}
                     </span>
                   </div>
@@ -353,18 +353,20 @@ export const TVDashboard: React.FC = () => {
                     {group.trucks.map((truck, index) => {
                       const hasException = !!truck.exception_type || !!truck.late_arrival_reason;
                       const isExpanded = expandedTruckId === truck.id;
-                      // Card color by status
-                      const cardBg = truck.status === 'IN_PROGRESS'
-                        ? 'bg-gradient-to-br from-orange-500/30 to-orange-900/20 border-orange-400/70'
+                      // Card border color by status
+                      const borderColor = hasException
+                        ? 'border-red-500'
+                        : truck.status === 'IN_PROGRESS'
+                        ? 'border-orange-400'
                         : truck.status === 'ARRIVED'
-                        ? 'bg-gradient-to-br from-green-500/30 to-green-900/20 border-green-400/70'
+                        ? 'border-green-400'
                         : truck.status === 'SCHEDULED'
-                        ? 'bg-gradient-to-br from-blue-500/20 to-blue-900/10 border-blue-400/70'
-                        : 'bg-blue-800/90 border-blue-700/70';
+                        ? 'border-blue-400'
+                        : 'border-border/50';
                       return (
                         <div
                           key={truck.id}
-                          className={`relative rounded-lg p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-md cursor-pointer text-white ${cardBg} ${hasException ? 'border-2 border-red-500 shadow-red-400/30' : 'border-2'}`}
+                          className={`relative rounded-xl p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-lg cursor-pointer text-white bg-neutral-800 border-2 ${borderColor}`}
                           tabIndex={0}
                           aria-expanded={isExpanded}
                           aria-label={`Truck ${truck.license_plate} card`}
