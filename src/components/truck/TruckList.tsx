@@ -8,6 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDate, formatTime, formatDateTime } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
 import { SearchHighlight } from '@/components/ui/search-highlight';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Pencil, Trash2 } from 'lucide-react';
+import { TRUCK_STATUSES } from '@/types';
 
 interface TruckListProps {
   trucks: any[];
@@ -17,6 +20,7 @@ interface TruckListProps {
   onDeleteTruck: (truckId: string, licensePlate: string) => void;
   onReschedule?: (truck: any) => void;
   searchTerm?: string;
+  onClearFilters?: () => void;
 }
 
 export const TruckList: React.FC<TruckListProps> = ({
@@ -26,7 +30,8 @@ export const TruckList: React.FC<TruckListProps> = ({
   onUpdateStatus,
   onDeleteTruck,
   onReschedule,
-  searchTerm = ''
+  searchTerm = '',
+  onClearFilters
 }) => {
   const { user } = useAuth();
 
@@ -61,10 +66,8 @@ export const TruckList: React.FC<TruckListProps> = ({
   return (
     <Card className="mx-2 sm:mx-0">
       <CardHeader>
-        <CardTitle>Scheduled Trucks</CardTitle>
-        <CardDescription>
-          Today's truck schedule and status
-        </CardDescription>
+        <CardTitle>Truck List</CardTitle>
+        <CardDescription>Overview of all trucks and their statuses</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="w-full overflow-hidden">
@@ -212,12 +215,12 @@ export const TruckList: React.FC<TruckListProps> = ({
                 <TableHeader>
                   <TableRow>
                     <TableHead>License Plate</TableHead>
-                    <TableHead>Arrival Date/Time</TableHead>
+                    <TableHead>Arrival</TableHead>
                     <TableHead>Ramp</TableHead>
                     <TableHead>Pallets</TableHead>
-                    <TableHead>Processing Time</TableHead>
+                    <TableHead>Duration</TableHead>
                     <TableHead>Cargo</TableHead>
-                    <TableHead>Handler</TableHead>
+                    <TableHead>Handled By</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -246,11 +249,18 @@ export const TruckList: React.FC<TruckListProps> = ({
                        <TableCell className="max-w-xs truncate">
                         <SearchHighlight text={truck.cargo_description} searchTerm={searchTerm} />
                       </TableCell>
-                      <TableCell>{truck.handled_by_name || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusColor(truck.status)}>
-                          {truck.status}
-                        </Badge>
+                        {Array.isArray(truck.handled_by_name) ? truck.handled_by_name.filter(Boolean).join(', ') : (truck.handled_by_name || '--')}
+                      </TableCell>
+                      <TableCell>
+                        <span className={
+                          truck.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold' :
+                          truck.status === 'ARRIVED' ? 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold' :
+                          truck.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold' :
+                          'bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold'
+                        }>
+                          {TRUCK_STATUSES[truck.status] || truck.status}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1">
@@ -303,18 +313,29 @@ export const TruckList: React.FC<TruckListProps> = ({
                           )}
                           
                           {user?.role === 'SUPER_ADMIN' && (
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              onClick={() => onDeleteTruck(truck.id, truck.license_plate)}
-                            >
-                              Delete
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => onDeleteTruck(truck.id, truck.license_plate)}>
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete</TooltipContent>
+                            </Tooltip>
                           )}
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
+                  {trucks.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
+                        No trucks found for the selected filters.
+                        {onClearFilters && (
+                          <Button variant="outline" size="sm" className="ml-2" onClick={onClearFilters}>Clear Filters</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

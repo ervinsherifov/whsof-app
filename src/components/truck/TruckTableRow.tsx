@@ -6,6 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
 import { TruckTableRowProps, TruckStatus } from '@/types';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Trash2 } from 'lucide-react';
+import { TRUCK_STATUSES } from '@/types';
 
 const getStatusColor = (status: TruckStatus) => {
   switch (status) {
@@ -52,11 +55,18 @@ export const TruckTableRow: React.FC<TruckTableRowProps> = React.memo(({
       <TableCell className="max-w-xs truncate">
         {truck.cargo_description}
       </TableCell>
-      <TableCell>{truck.handled_by_name || '-'}</TableCell>
       <TableCell>
-        <Badge variant={getStatusColor(truck.status)}>
-          {truck.status}
-        </Badge>
+        {Array.isArray(truck.handled_by_name) ? truck.handled_by_name.filter(Boolean).join(', ') : (truck.handled_by_name || '--')}
+      </TableCell>
+      <TableCell>
+        <span className={
+          truck.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold' :
+          truck.status === 'ARRIVED' ? 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold' :
+          truck.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold' :
+          'bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold'
+        }>
+          {TRUCK_STATUSES[truck.status] || truck.status}
+        </span>
       </TableCell>
       <TableCell>
         <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1">
@@ -116,6 +126,16 @@ export const TruckTableRow: React.FC<TruckTableRowProps> = React.memo(({
             </Button>
           )}
         </div>
+      </TableCell>
+      <TableCell>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => onDeleteTruck(truck.id, truck.license_plate)}>
+              <Trash2 className="w-4 h-4 text-destructive" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Delete</TooltipContent>
+        </Tooltip>
       </TableCell>
     </TableRow>
   );

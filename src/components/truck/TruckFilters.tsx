@@ -84,26 +84,32 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
-            type="date"
+            type="text"
             className="w-full border rounded px-2 py-1 text-sm"
-            value={dateFrom ? format(dateFrom, 'yyyy-MM-dd') : ''}
+            value={dateFrom ? format(dateFrom, 'dd/MM/yyyy') : ''}
             onChange={e => {
-              const val = e.target.value ? new Date(e.target.value) : undefined;
-              onDateFromChange(val);
+              const val = e.target.value;
+              const parts = val.split('/');
+              const date = parts.length === 3 ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`) : undefined;
+              onDateFromChange(val && date && !isNaN(date.getTime()) ? date : undefined);
             }}
-            placeholder="Start Date"
+            placeholder="Start Date (dd/mm/yyyy)"
             aria-label="Start Date"
+            maxLength={10}
           />
           <input
-            type="date"
+            type="text"
             className="w-full border rounded px-2 py-1 text-sm"
-            value={dateTo ? format(dateTo, 'yyyy-MM-dd') : ''}
+            value={dateTo ? format(dateTo, 'dd/MM/yyyy') : ''}
             onChange={e => {
-              const val = e.target.value ? new Date(e.target.value) : undefined;
-              onDateToChange(val);
+              const val = e.target.value;
+              const parts = val.split('/');
+              const date = parts.length === 3 ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`) : undefined;
+              onDateToChange(val && date && !isNaN(date.getTime()) ? date : undefined);
             }}
-            placeholder="End Date"
+            placeholder="End Date (dd/mm/yyyy)"
             aria-label="End Date"
+            maxLength={10}
           />
         </div>
       )
