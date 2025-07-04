@@ -307,50 +307,25 @@ export const TVDashboard: React.FC = () => {
       className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
       onClick={handleUserInteraction}
     >
-      {/* Date/Time Top Left */}
-      <div className="absolute top-2 left-2 z-30 flex items-center gap-2 bg-background/80 px-3 py-1 rounded shadow">
-        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-        <span className="font-semibold text-sm">{currentTime.toLocaleDateString('en-GB')}</span>
-        <ClockIcon className="w-4 h-4 text-muted-foreground ml-2" />
-        <span className="font-semibold text-sm">{currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-      </div>
-      {/* LIVE Indicator Top Right */}
-      <div className="absolute top-2 right-2 z-30 flex items-center gap-2">
-        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-white text-xs font-bold animate-pulse shadow-lg" aria-label="Live updates enabled">
-          <span className="w-2 h-2 rounded-full bg-white animate-ping mr-1" />LIVE
-        </span>
+      {/* Unified Sticky Top Bar */}
+      <div className="sticky top-0 z-40 w-full bg-background/95 border-b border-border flex items-center justify-between px-4 py-2 shadow-sm mb-2">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+          <span className="font-semibold text-sm">{currentTime.toLocaleDateString('en-GB')}</span>
+          <ClockIcon className="w-4 h-4 text-muted-foreground ml-2" />
+          <span className="font-semibold text-sm">{currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Sound/fullscreen controls can be added here if desired */}
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-white text-xs font-bold animate-pulse shadow-lg" aria-label="Live updates enabled">
+            <span className="w-2 h-2 rounded-full bg-white animate-ping mr-1" />LIVE
+          </span>
+        </div>
       </div>
       {/* Dynamic Background */}
       <DynamicBackground trucks={trucks} />
       {/* Subtle overlay for better readability */}
       <div className="absolute inset-0 bg-background/20 backdrop-blur-[0.5px]" />
-      {/* Top Right Controls */}
-      <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
-        {/* Sound Controls Icon */}
-        <Button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          variant="outline"
-          size="sm"
-          className="bg-background/80 backdrop-blur"
-        >
-          {soundEnabled ? (
-            <Volume2 className="w-4 h-4" />
-          ) : (
-            <VolumeX className="w-4 h-4" />
-          )}
-        </Button>
-        
-        {/* Fullscreen Toggle */}
-        <Button 
-          onClick={toggleFullscreen}
-          variant="outline"
-          size="sm"
-          className="bg-background/80 backdrop-blur"
-        >
-          {isFullscreen ? <Tv className="w-4 h-4" /> : <Fullscreen className="w-4 h-4" />}
-        </Button>
-      </div>
-
       {/* Main Content Grid */}
       <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
