@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
-import { formatDate, formatTime } from '@/lib/dateUtils';
+import { formatDate, formatTime, parseDate } from '@/lib/dateUtils';
 
 interface TruckRescheduleDialogProps {
   truck: any;
@@ -23,8 +23,8 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
   onOpenChange,
   onSuccess
 }) => {
-  const [newDate, setNewDate] = useState(truck?.arrival_date || '');
-  const [newTime, setNewTime] = useState(truck?.arrival_time || '');
+  const [newDate, setNewDate] = useState(truck?.arrival_date ? formatDate(truck.arrival_date) : '');
+  const [newTime, setNewTime] = useState(truck?.arrival_time ? formatTime(truck.arrival_time) : '');
   const [reason, setReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -33,7 +33,7 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
 
   const handleReschedule = async () => {
     if (!truck || !user?.id) return;
-    
+
     if (!newDate || !newTime) {
       toast({
         title: 'Missing information',
@@ -43,20 +43,33 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
       return;
     }
 
-    // Defensive: check for valid date/time
-    const newDateTime = new Date(`${newDate}T${newTime}`);
-    if (isNaN(newDateTime.getTime())) {
+    // Validate date format (DD/MM/YYYY)
+    const parsedDate = parseDate(newDate);
+    if (!parsedDate) {
       toast({
-        title: 'Invalid date/time',
-        description: `Please enter a valid date and time.\nDate: ${newDate} Time: ${newTime}`,
+        title: 'Invalid date format',
+        description: 'Please enter the date in DD/MM/YYYY format.',
         variant: 'destructive',
       });
       return;
     }
 
-    // Validate that new date is not in the past
+    // Validate time format (HH:mm 24h)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(newTime)) {
+      toast({
+        title: 'Invalid time format',
+        description: 'Please enter the time in HH:mm 24-hour format.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Combine date and time for past check
+    const newDateTime = new Date(parsedDate);
+    const [hours, minutes] = newTime.split(':').map(Number);
+    newDateTime.setHours(hours, minutes, 0, 0);
     const now = new Date();
-    
     if (newDateTime < now) {
       toast({
         title: 'Invalid date/time',
@@ -67,24 +80,22 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
     }
 
     setIsLoading(true);
-    
     try {
+      // Convert parsedDate to YYYY-MM-DD for DB
+      const isoDate = parsedDate.toISOString().split('T')[0];
       // Call the database function to handle rescheduling
       const { data, error } = await supabase.rpc('reschedule_overdue_truck', {
         p_truck_id: truck.id,
-        p_new_date: newDate,
+        p_new_date: isoDate,
         p_new_time: newTime,
         p_reason: reason || null,
         p_user_id: user.id
       });
-
       if (error) throw error;
-
       toast({
         title: 'Truck rescheduled successfully',
-        description: `Truck ${truck.license_plate} has been rescheduled to ${formatDate(newDate)} at ${newTime}`,
+        description: `Truck ${truck.license_plate} has been rescheduled to ${newDate} at ${newTime}`,
       });
-
       onOpenChange(false);
       onSuccess();
       setReason('');
@@ -100,8 +111,8 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
   };
 
   const resetForm = () => {
-    setNewDate(truck?.arrival_date || '');
-    setNewTime(truck?.arrival_time || '');
+    setNewDate(truck?.arrival_date ? formatDate(truck.arrival_date) : '');
+    setNewTime(truck?.arrival_time ? formatTime(truck.arrival_time) : '');
     setReason('');
   };
 
@@ -125,14 +136,12 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
             Reschedule Truck
           </DialogTitle>
           <DialogDescription>
             Reschedule truck {truck.license_plate}
             {isOverdue && (
               <div className="flex items-center gap-1 mt-2 text-orange-600">
-                <AlertTriangle className="w-4 h-4" />
                 <span className="text-sm font-medium">This truck is overdue</span>
               </div>
             )}
@@ -145,11 +154,9 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
             <h4 className="text-sm font-medium mb-2">Current Schedule</h4>
             <div className="text-sm space-y-1">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span>Originally: {formatDate(originalDate)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
                 <span>Time: {formatTime(truck.arrival_time)}</span>
               </div>
               {truck.reschedule_count > 0 && (
@@ -166,10 +173,11 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
               <Label htmlFor="newDate">New Arrival Date</Label>
               <Input
                 id="newDate"
-                type="date"
+                type="text"
                 value={newDate}
                 onChange={(e) => setNewDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                placeholder="DD/MM/YYYY"
+                autoComplete="off"
               />
             </div>
 
@@ -177,9 +185,11 @@ export const TruckRescheduleDialog: React.FC<TruckRescheduleDialogProps> = ({
               <Label htmlFor="newTime">New Arrival Time</Label>
               <Input
                 id="newTime"
-                type="time"
+                type="text"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
+                placeholder="HH:mm"
+                autoComplete="off"
               />
             </div>
 
