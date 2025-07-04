@@ -307,17 +307,12 @@ export const TVDashboard: React.FC = () => {
       className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
       onClick={handleUserInteraction}
     >
-      {/* Unified Sticky Top Bar with white background and seconds */}
-      <div className="sticky top-0 z-40 w-full bg-white border-b border-border flex items-center justify-between px-4 py-2 shadow">
-        <div className="flex items-center gap-2 text-foreground">
-          <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-          <span className="font-semibold text-base">{currentTime.toLocaleDateString('en-GB')}</span>
-          <ClockIcon className="w-4 h-4 text-muted-foreground ml-2" />
-          <span className="font-mono font-bold text-lg tracking-widest animate-pulse">
-            {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
+      {/* Unified Sticky Top Bar with only time, centered and large */}
+      <div className="sticky top-0 z-40 w-full bg-white border-b border-border flex items-center justify-center px-4 py-4 shadow">
+        <span className="font-mono font-extrabold text-4xl lg:text-5xl 4xl:text-6xl tracking-widest text-foreground animate-pulse text-center">
+          {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+        </span>
+        <div className="absolute right-4 flex items-center gap-4">
           <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-600 text-white text-sm font-bold animate-pulse shadow ring-2 ring-red-400/60" aria-label="Live updates enabled">
             <span className="w-2 h-2 rounded-full bg-white animate-ping mr-1" />LIVE
           </span>
