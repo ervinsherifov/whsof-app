@@ -181,7 +181,8 @@ export const TVDashboard: React.FC = () => {
     if (truck.status !== 'IN_PROGRESS' || !truck.started_at) return 0;
     const startTime = new Date(truck.started_at);
     const currentTime = new Date();
-    const elapsedMinutes = (currentTime.getTime() - startTime.getTime()) / (1000 * 60);
+    let elapsedMinutes = (currentTime.getTime() - startTime.getTime()) / (1000 * 60);
+    if (elapsedMinutes < 0) elapsedMinutes = 0;
     const estimatedDurationMinutes = getEstimatedDuration(truck);
     const progress = Math.min((elapsedMinutes / estimatedDurationMinutes) * 100, 99);
     return Math.max(progress, 5);
@@ -191,7 +192,8 @@ export const TVDashboard: React.FC = () => {
   const getMinLeft = (truck: any) => {
     if (!truck.started_at) return null;
     const estimatedDuration = getEstimatedDuration(truck);
-    const elapsedMinutes = (new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60);
+    let elapsedMinutes = (new Date().getTime() - new Date(truck.started_at).getTime()) / (1000 * 60);
+    if (elapsedMinutes < 0) elapsedMinutes = 0;
     return Math.max(0, estimatedDuration - Math.floor(elapsedMinutes));
   };
   const getEstimatedDoneTime = (truck: any) => {
@@ -204,11 +206,10 @@ export const TVDashboard: React.FC = () => {
   // Format elapsed time
   const formatElapsedTime = (truck: any) => {
     if (truck.status !== 'IN_PROGRESS' || !truck.started_at) return '0min';
-    
     const startTime = new Date(truck.started_at);
     const currentTime = new Date();
-    const elapsedMinutes = Math.floor((currentTime.getTime() - startTime.getTime()) / (1000 * 60));
-    
+    let elapsedMinutes = Math.floor((currentTime.getTime() - startTime.getTime()) / (1000 * 60));
+    if (elapsedMinutes < 0) elapsedMinutes = 0;
     if (elapsedMinutes < 60) {
       return `${elapsedMinutes}min`;
     } else {
