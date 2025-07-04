@@ -13,7 +13,6 @@ import { useOptimizedTruckData } from '@/hooks/useOptimizedTruckData';
 import { TruckSchedulingForm } from '@/components/truck/TruckSchedulingForm';
 import { TruckList } from '@/components/truck/TruckList';
 import { TruckFilters } from '@/components/truck/TruckFilters';
-import { RampStatusGrid } from '@/components/truck/RampStatusGrid';
 import { TruckRescheduleDialog } from '@/components/truck/TruckRescheduleDialog';
 
 const availableRamps = [
@@ -313,6 +312,21 @@ export const TruckScheduling: React.FC = () => {
     }
   }, [user?.role]);
 
+  // Filtering logic for trucks
+  const filteredTrucks = trucks.filter(truck => {
+    // Search term (license plate or cargo description)
+    if (searchFilters.searchTerm && !(
+      truck.license_plate?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
+      truck.cargo_description?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase())
+    )) return false;
+    // Status
+    if (searchFilters.status && truck.status !== searchFilters.status) return false;
+    // Date range (inclusive)
+    if (searchFilters.dateFrom && truck.arrival_date < searchFilters.dateFrom) return false;
+    if (searchFilters.dateTo && truck.arrival_date > searchFilters.dateTo) return false;
+    return true;
+  });
+
   return (
     <div className="w-full max-w-none overflow-hidden space-y-4 sm:space-y-6 p-2 sm:p-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -339,11 +353,8 @@ export const TruckScheduling: React.FC = () => {
         onClearFilters={() => setSearchFilters({})}
       />
 
-      {/* Ramp Status Grid - Hidden for warehouse staff */}
-      {user?.role !== 'WAREHOUSE_STAFF' && <RampStatusGrid trucks={trucks} />}
-
       <TruckList 
-        trucks={trucks}
+        trucks={filteredTrucks}
         loading={loading}
         onAssignRamp={handleAssignRamp}
         onUpdateStatus={updateTruckStatus}

@@ -364,7 +364,6 @@ export const TimeTracking: React.FC = () => {
             <div className="text-2xl font-bold text-orange-600">
               {workingTime.overtimeHours}
             </div>
-            <p className="text-xs text-muted-foreground">beyond 08:00-17:00</p>
           </CardContent>
         </Card>
       </div>
