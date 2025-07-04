@@ -173,8 +173,8 @@ export const TVDashboard: React.FC = () => {
   // Helper to get full name (no email)
   const getFullName = (profile: any) => profile?.display_name || '';
 
-  // Helper to get estimated duration based on pallet count
-  const getEstimatedDuration = (truck: any) => (truck.pallet_count > 20 ? 60 : 30);
+  // Helper to get estimated duration (now always 40 minutes)
+  const getEstimatedDuration = (_truck: any) => 40;
 
   // Update progress calculation
   const calculateProgress = (truck: any) => {
