@@ -307,12 +307,12 @@ export const TVDashboard: React.FC = () => {
       className="relative h-screen bg-background flex flex-col overflow-hidden p-2 lg:p-4 4xl:p-6 tv-dashboard"
       onClick={handleUserInteraction}
     >
-      {/* Unified Sticky Top Bar with neutral dark background and seconds */}
-      <div className="sticky top-0 z-40 w-full bg-neutral-900 border-b border-border flex items-center justify-between px-4 py-2 shadow">
-        <div className="flex items-center gap-2 text-white">
-          <CalendarIcon className="w-4 h-4 text-neutral-300" />
+      {/* Unified Sticky Top Bar with white background and seconds */}
+      <div className="sticky top-0 z-40 w-full bg-white border-b border-border flex items-center justify-between px-4 py-2 shadow">
+        <div className="flex items-center gap-2 text-foreground">
+          <CalendarIcon className="w-4 h-4 text-muted-foreground" />
           <span className="font-semibold text-base">{currentTime.toLocaleDateString('en-GB')}</span>
-          <ClockIcon className="w-4 h-4 text-neutral-300 ml-2" />
+          <ClockIcon className="w-4 h-4 text-muted-foreground ml-2" />
           <span className="font-mono font-bold text-lg tracking-widest animate-pulse">
             {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
           </span>
@@ -330,11 +330,11 @@ export const TVDashboard: React.FC = () => {
       {/* Main Content Grid */}
       <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
-        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-neutral-800 rounded-xl shadow-lg border border-border/50 text-white">
+        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-white rounded-xl shadow-lg border border-border/50 text-foreground">
           <CardContent className="flex-1 overflow-y-auto pt-4">
             <div className="space-y-6 lg:space-y-8 4xl:space-y-10">
               {groupedTrucks.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-96 text-center text-neutral-300">
+                <div className="flex flex-col items-center justify-center h-96 text-center text-muted-foreground">
                   <img src="/assets/empty-warehouse.svg" alt="No trucks" className="w-32 h-32 mb-4 opacity-80" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   <div className="text-2xl font-bold mb-2">No trucks scheduled</div>
                   <div className="text-md">All ramps are free and ready for action!</div>
@@ -343,8 +343,8 @@ export const TVDashboard: React.FC = () => {
               {groupedTrucks.map(group => (
                 <div key={group.status} className="relative">
                   {/* Sticky group header */}
-                  <div className="sticky top-0 z-10 bg-neutral-800/95 rounded-t-xl shadow border-b border-border/30 py-1 px-2 mb-2">
-                    <span className="text-lg font-bold tracking-wide text-neutral-100 drop-shadow-sm uppercase">
+                  <div className="sticky top-0 z-10 bg-white/95 rounded-t-xl shadow border-b border-border/30 py-1 px-2 mb-2">
+                    <span className="text-lg font-bold tracking-wide text-foreground drop-shadow-sm uppercase">
                       {STATUS_LABELS[group.status]}
                     </span>
                   </div>
@@ -366,7 +366,7 @@ export const TVDashboard: React.FC = () => {
                       return (
                         <div
                           key={truck.id}
-                          className={`relative rounded-xl p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-lg cursor-pointer text-white bg-neutral-800 border-2 ${borderColor}`}
+                          className={`relative rounded-xl p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-lg cursor-pointer bg-white text-foreground border-2 ${borderColor}`}
                           tabIndex={0}
                           aria-expanded={isExpanded}
                           aria-label={`Truck ${truck.license_plate} card`}
