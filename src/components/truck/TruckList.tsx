@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatDate } from '@/lib/dateUtils';
+import { formatDate, formatTime, formatDateTime } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
 import { SearchHighlight } from '@/components/ui/search-highlight';
 
@@ -95,17 +95,10 @@ export const TruckList: React.FC<TruckListProps> = ({
                                 ? formatDate(truck.actual_arrival_date)
                                 : formatDate(truck.arrival_date)
                               )
-                            : formatDate(truck.arrival_date)
-                          }
+                            : formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)}
                         </div>
                         <div className="font-medium">
-                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
-                            ? (truck.actual_arrival_time 
-                                ? truck.actual_arrival_time.substring(0, 5)
-                                : truck.arrival_time
-                              )
-                            : truck.arrival_time
-                          }
+                          {truck.actual_arrival_time ? formatTime(truck.actual_arrival_time) : formatTime(truck.arrival_time)}
                         </div>
                       </div>
                       <div>
@@ -238,11 +231,10 @@ export const TruckList: React.FC<TruckListProps> = ({
                       <TableCell>
                         {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
                           ? (truck.actual_arrival_date && truck.actual_arrival_time
-                              ? `${formatDate(truck.actual_arrival_date)} ${truck.actual_arrival_time.substring(0, 5)}`
-                              : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
+                              ? `${formatDate(truck.actual_arrival_date)} ${formatTime(truck.actual_arrival_time)}`
+                              : `${formatDate(truck.arrival_date)} ${formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)}`
                             )
-                          : `${formatDate(truck.arrival_date)} ${truck.arrival_time}`
-                        }
+                          : formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)}
                       </TableCell>
                       <TableCell>
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
