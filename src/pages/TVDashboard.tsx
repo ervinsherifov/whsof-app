@@ -309,7 +309,7 @@ export const TVDashboard: React.FC = () => {
       onClick={handleUserInteraction}
     >
       {/* Unified Sticky Top Bar with only time, centered and large */}
-      <div className="sticky top-0 z-40 w-full bg-white border-b border-border flex items-center justify-center px-4 py-4 shadow">
+      <div className="sticky top-0 z-40 w-full bg-background border-b border-border flex items-center justify-center px-4 py-4 shadow">
         <span className="font-mono font-extrabold text-4xl lg:text-5xl 4xl:text-6xl tracking-widest text-foreground animate-pulse text-center">
           {currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
         </span>
@@ -326,7 +326,7 @@ export const TVDashboard: React.FC = () => {
       {/* Main Content Grid */}
       <div className="relative flex-1 grid grid-cols-1 xl:grid-cols-2 gap-2 lg:gap-4 4xl:gap-6 min-h-0 z-10">
         {/* Trucks Status - Primary Focus */}
-        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-white rounded-xl shadow-lg border border-border/50 text-foreground">
+        <Card className="xl:col-span-1 flex flex-col min-h-0 bg-card border border-border/50 text-foreground">
           <CardContent className="flex-1 overflow-y-auto pt-4">
             <div className="space-y-6 lg:space-y-8 4xl:space-y-10">
               {groupedTrucks.length === 0 && (
@@ -356,7 +356,7 @@ export const TVDashboard: React.FC = () => {
                       return (
                         <div
                           key={truck.id}
-                          className={`relative rounded-xl p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-lg cursor-pointer bg-white text-foreground border-2 ${borderColor}`}
+                          className={`relative rounded-xl p-3 lg:p-4 4xl:p-5 transform transition-all duration-700 ease-out animate-fade-in truck-card backdrop-blur-sm hover:scale-[1.01] shadow-lg cursor-pointer bg-background text-foreground border-2 ${borderColor}`}
                           tabIndex={0}
                           aria-expanded={isExpanded}
                           aria-label={`Truck ${truck.license_plate} card`}
@@ -490,7 +490,7 @@ export const TVDashboard: React.FC = () => {
                                     width: `${calculateProgress(truck)}%`
                                   }} 
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-slide-in-right" 
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/20 to-transparent animate-slide-in-right" 
                                      style={{ animationDuration: '2s', animationIterationCount: 'infinite' }} />
                               </div>
                               <div className="flex justify-between text-xs text-orange-600 mt-1">

@@ -61,15 +61,18 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
       hasActiveFilters: !!status,
       defaultOpen: true,
       content: (
-        <input
-          type="text"
-          className="w-full px-2 py-1 text-sm"
-          value={status || ''}
-          onChange={e => onStatusChange(e.target.value)}
-          placeholder="Status (e.g. Scheduled, Arrived, In Progress, Done)"
-          aria-label="Status"
-          maxLength={20}
-        />
+        <Select value={status || ''} onValueChange={onStatusChange}>
+          <SelectTrigger className="w-full rounded-md bg-background text-foreground border border-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary" aria-label="Filter by status">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+            <SelectItem value="ARRIVED">Arrived</SelectItem>
+            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+            <SelectItem value="DONE">Done</SelectItem>
+          </SelectContent>
+        </Select>
       )
     },
     {
@@ -81,7 +84,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="text"
-            className="w-full px-2 py-1 text-sm"
+            className="w-full rounded-md bg-background text-foreground border border-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={dateFrom ? format(dateFrom, 'dd/MM/yyyy') : ''}
             onChange={e => {
               const val = e.target.value;
@@ -95,7 +98,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
           />
           <input
             type="text"
-            className="w-full px-2 py-1 text-sm"
+            className="w-full rounded-md bg-background text-foreground border border-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={dateTo ? format(dateTo, 'dd/MM/yyyy') : ''}
             onChange={e => {
               const val = e.target.value;
