@@ -70,43 +70,13 @@ export const CollapsibleFilters: React.FC<CollapsibleFiltersProps> = ({
         )}
       </div>
 
-      {/* Filter Sections */}
-      <div className="space-y-1">
+      {/* Filter Sections - always visible, no collapsible */}
+      <div className="space-y-4">
         {sections.map((section) => (
-          <Collapsible
-            key={section.id}
-            open={openSections[section.id]}
-            onOpenChange={() => toggleSection(section.id)}
-          >
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-between h-9 px-3 text-sm font-normal hover:bg-muted/50",
-                  section.hasActiveFilters && "bg-primary/5 border border-primary/20"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <span>{section.title}</span>
-                  {section.hasActiveFilters && (
-                    <Badge variant="outline" className="text-xs h-4 px-1">
-                      Active
-                    </Badge>
-                  )}
-                </div>
-                {openSections[section.id] ? (
-                  <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="px-3 pb-3 pt-1 animate-accordion-down data-[state=closed]:animate-accordion-up">
-              <div className="border-l-2 border-muted pl-3 space-y-2">
-                {section.content}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          <div key={section.id}>
+            <div className="font-semibold text-xs mb-1">{section.title}</div>
+            <div>{section.content}</div>
+          </div>
         ))}
       </div>
     </div>
