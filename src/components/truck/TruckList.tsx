@@ -98,10 +98,10 @@ export const TruckList: React.FC<TruckListProps> = ({
                                 ? formatDate(truck.actual_arrival_date)
                                 : formatDate(truck.arrival_date)
                               )
-                            : (truck.arrival_date && truck.arrival_time ? formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`) : '--')}
+                            : (truck.arrival_date && truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--')}
                         </div>
                         <div className="font-medium">
-                          {truck.actual_arrival_time ? formatTime(truck.actual_arrival_time) : formatTime(truck.arrival_time)}
+                          {truck.actual_arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatTime(truck.actual_arrival_time)) : (val => val.includes('Invalid') ? '--' : val)(formatTime(truck.arrival_time))}
                         </div>
                       </div>
                       <div>
@@ -235,9 +235,9 @@ export const TruckList: React.FC<TruckListProps> = ({
                         {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
                           ? (truck.actual_arrival_date && truck.actual_arrival_time
                               ? `${formatDate(truck.actual_arrival_date)} ${formatTime(truck.actual_arrival_time)}`
-                              : `${formatDate(truck.arrival_date)} ${truck.arrival_time ? formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`) : '--'}`
+                              : `${formatDate(truck.arrival_date)} ${truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--'}`
                             )
-                          : truck.arrival_date && truck.arrival_time ? formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`) : '--'}
+                          : truck.arrival_date && truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--'}
                       </TableCell>
                       <TableCell>
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
