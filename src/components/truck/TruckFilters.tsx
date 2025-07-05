@@ -61,19 +61,15 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
       hasActiveFilters: !!status,
       defaultOpen: true,
       content: (
-        <Select value={status || 'all'} onValueChange={(value) => onStatusChange(value === 'all' ? '' : value)}>
-          <SelectTrigger className="w-full" aria-label="Filter by status">
-            <SelectValue placeholder="All Statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(TRUCK_STATUSES).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <input
+          type="text"
+          className="w-full px-2 py-1 text-sm"
+          value={status || ''}
+          onChange={e => onStatusChange(e.target.value)}
+          placeholder="Status (e.g. Scheduled, Arrived, In Progress, Done)"
+          aria-label="Status"
+          maxLength={20}
+        />
       )
     },
     {
@@ -85,7 +81,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="text"
-            className="w-full border rounded px-2 py-1 text-sm"
+            className="w-full px-2 py-1 text-sm"
             value={dateFrom ? format(dateFrom, 'dd/MM/yyyy') : ''}
             onChange={e => {
               const val = e.target.value;
@@ -99,7 +95,7 @@ export const TruckFilters: React.FC<TruckFiltersProps> = React.memo(({
           />
           <input
             type="text"
-            className="w-full border rounded px-2 py-1 text-sm"
+            className="w-full px-2 py-1 text-sm"
             value={dateTo ? format(dateTo, 'dd/MM/yyyy') : ''}
             onChange={e => {
               const val = e.target.value;
