@@ -102,3 +102,24 @@ export const getTodayISO = (): string => {
 export const getTodayFormatted = (): string => {
   return formatDate(new Date());
 };
+
+/**
+ * Robustly formats a time string (accepts Date, ISO, or HH:mm)
+ * @param value - Date object, string, or timestamp
+ * @returns Formatted time string in HH:mm or '--' if invalid
+ */
+export const formatTimeString = (value: Date | string | number): string => {
+  if (typeof value === 'string' && /^\d{2}:\d{2}$/.test(value)) {
+    // Accepts HH:mm format
+    return value;
+  }
+  const d = new Date(value);
+  if (isNaN(d.getTime())) {
+    return '--';
+  }
+  return d.toLocaleTimeString('en-GB', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
