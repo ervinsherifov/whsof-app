@@ -19,7 +19,8 @@ export const validateLicensePlate = (licensePlate: string): boolean => {
   if (!licensePlate || licensePlate.length === 0 || licensePlate.length > 20) {
     return false;
   }
-  return /^[A-Za-z0-9\-\s]+$/.test(licensePlate);
+  // Allow letters, numbers, spaces, hyphens, and slashes
+  return /^[A-Za-z0-9\-\s\/]+$/.test(licensePlate);
 };
 
 /**
