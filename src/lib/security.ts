@@ -8,7 +8,7 @@ export const sanitizeText = (input: string | null | undefined): string => {
   
   return input
     .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/[<>&"']/g, '') // Remove dangerous characters
+    .replace(/[<>&"']/g, '') // Remove dangerous characters, but allow '/'
     .trim();
 };
 
