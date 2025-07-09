@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatDate, formatTime, formatDateTime } from '@/lib/dateUtils';
+import { formatDate, formatTime, formatDateTime, formatTimeString } from '@/lib/dateUtils';
 import { formatProcessingTime } from '@/lib/truckUtils';
 import { SearchHighlight } from '@/components/ui/search-highlight';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -93,15 +93,29 @@ export const TruckList: React.FC<TruckListProps> = ({
                             ? 'Actual Arrival:' : 'Arrival:'}
                         </span>
                         <div className="font-medium">
-                          {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
-                            ? (truck.actual_arrival_date 
-                                ? formatDate(truck.actual_arrival_date)
-                                : formatDate(truck.arrival_date)
-                              )
-                            : (truck.arrival_date && truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--')}
+                          {(() => {
+                            // Prefer actual arrival if available
+                            const date = truck.actual_arrival_date || truck.arrival_date;
+                            const time = truck.actual_arrival_time || truck.arrival_time;
+                            const formattedDate = date ? formatDate(date) : '--';
+                            const formattedTime = time ? formatTimeString(time) : '--';
+                            if (
+                              !date ||
+                              !time ||
+                              formattedDate === 'Invalid Date' ||
+                              formattedTime === 'Invalid Time' ||
+                              formattedTime === '--'
+                            ) {
+                              return '--';
+                            }
+                            return `${formattedDate} ${formattedTime}`;
+                          })()}
                         </div>
                         <div className="font-medium">
-                          {truck.actual_arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatTime(truck.actual_arrival_time)) : (val => val.includes('Invalid') ? '--' : val)(formatTime(truck.arrival_time))}
+                          {(() => {
+                            const time = truck.actual_arrival_time ? formatTimeString(truck.actual_arrival_time) : formatTimeString(truck.arrival_time);
+                            return time;
+                          })()}
                         </div>
                       </div>
                       <div>
@@ -232,12 +246,23 @@ export const TruckList: React.FC<TruckListProps> = ({
                         <SearchHighlight text={truck.license_plate} searchTerm={searchTerm} />
                       </TableCell>
                       <TableCell>
-                        {truck.status === 'ARRIVED' || truck.status === 'IN_PROGRESS' || truck.status === 'DONE'
-                          ? (truck.actual_arrival_date && truck.actual_arrival_time
-                              ? `${formatDate(truck.actual_arrival_date)} ${formatTime(truck.actual_arrival_time)}`
-                              : `${formatDate(truck.arrival_date)} ${truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--'}`
-                            )
-                          : truck.arrival_date && truck.arrival_time ? (val => val.includes('Invalid') ? '--' : val)(formatDateTime(`${truck.arrival_date}T${truck.arrival_time}`)) : '--'}
+                        {(() => {
+                          // Prefer actual arrival if available
+                          const date = truck.actual_arrival_date || truck.arrival_date;
+                          const time = truck.actual_arrival_time || truck.arrival_time;
+                          const formattedDate = date ? formatDate(date) : '--';
+                          const formattedTime = time ? formatTimeString(time) : '--';
+                          if (
+                            !date ||
+                            !time ||
+                            formattedDate === 'Invalid Date' ||
+                            formattedTime === 'Invalid Time' ||
+                            formattedTime === '--'
+                          ) {
+                            return '--';
+                          }
+                          return `${formattedDate} ${formattedTime}`;
+                        })()}
                       </TableCell>
                       <TableCell>
                         {truck.ramp_number ? `Ramp ${truck.ramp_number}` : 'Not assigned'}
